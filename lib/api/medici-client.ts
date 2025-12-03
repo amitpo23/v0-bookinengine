@@ -274,6 +274,7 @@ class MediciApiClient {
       dateFrom: params.dateFrom,
       dateTo: params.dateTo,
       pax,
+      ShowExtendedData: true, // Added ShowExtendedData for full hotel info with images
       stars: params.stars || null,
       limit: params.limit || null,
     }

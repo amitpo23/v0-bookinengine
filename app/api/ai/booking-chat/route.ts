@@ -19,27 +19,28 @@ async function searchMediciHotels(params: {
 
   const url = `${MEDICI_API_BASE}/api/hotels/GetInnstantSearchPrice`
 
-  // According to docs: use either HotelName OR City, not both
-  // Format: adults as number, paxChildren as array of ages
   const body: Record<string, any> = {
     dateFrom: params.dateFrom,
     dateTo: params.dateTo,
-    adults: params.adults, // number, not string
-    paxChildren: params.children || [], // array of ages, e.g. [10, 13]
-    stars: null,
+    pax: [
+      {
+        adults: String(params.adults || 2), // adults as STRING per API docs
+        children: params.children || [],
+      },
+    ],
+    ShowExtendedData: true, // Get full hotel data with images, facilities, etc.
     limit: 10,
   }
 
-  // Use hotelName OR city - not both!
-  if (params.hotelName) {
-    body.hotelName = params.hotelName
-  } else if (params.city) {
+  // Use city OR hotelName - not both!
+  if (params.city) {
     body.city = params.city
+  } else if (params.hotelName) {
+    body.hotelName = params.hotelName
   } else {
-    body.hotelName = DEFAULT_HOTEL_NAME
+    body.city = "Dubai" // Default city for testing
   }
 
-  console.log("[v0] Request URL:", url)
   console.log("[v0] Request body:", JSON.stringify(body, null, 2))
 
   try {
@@ -53,26 +54,16 @@ async function searchMediciHotels(params: {
     })
 
     console.log("[v0] Response status:", response.status)
-    console.log("[v0] Response headers:", Object.fromEntries(response.headers.entries()))
-
-    const responseText = await response.text()
-    console.log("[v0] Raw response:", responseText.slice(0, 2000))
 
     if (!response.ok) {
-      console.log("[v0] Error response:", responseText)
-      throw new Error(`API error: ${response.status} - ${responseText}`)
+      const errorText = await response.text()
+      console.log("[v0] Error response:", errorText)
+      throw new Error(`API error: ${response.status}`)
     }
 
-    // Try to parse as JSON
-    try {
-      const data = JSON.parse(responseText)
-      console.log("[v0] Parsed response type:", typeof data, Array.isArray(data) ? "array" : "object")
-      console.log("[v0] Response keys:", data ? Object.keys(data) : "null")
-      return data
-    } catch (e) {
-      console.log("[v0] Response is not JSON, returning as text")
-      return { rawResponse: responseText }
-    }
+    const data = await response.json()
+    console.log("[v0] Response items count:", data?.items?.length || 0)
+    return data
   } catch (error) {
     console.error("[v0] Search error:", error)
     throw error
@@ -92,7 +83,7 @@ export async function POST(req: Request) {
     const hotelApiName = hotelConfig?.apiSettings?.mediciHotelName || DEFAULT_HOTEL_NAME
     const hotelCity = hotelConfig?.apiSettings?.mediciCity || hotelConfig?.city || "Tel Aviv"
 
-    console.log("[v0] Chat request - Hotel:", hotelName, "API Name:", hotelApiName, "City:", hotelCity)
+    console.log("[v0] Chat request - Hotel:", hotelName, "API Name:", hotelApiName)
 
     const today = new Date().toISOString().split("T")[0]
 
@@ -113,7 +104,7 @@ export async function POST(req: Request) {
 - שם: ${hotelName}
 - עיר: ${hotelCity}
 
-אם האורח שואל על זמינות או רוצה להזמין, אסוף את הפרטים הבאים:
+אם האורח שואל על זמינות או רוצה להזמין, אוסף את הפרטים הבאים:
 - תאריך צ'ק-אין (בפורמט YYYY-MM-DD)
 - תאריך צ'ק-אאוט (בפורמט YYYY-MM-DD)
 - מספר מבוגרים (ברירת מחדל: 2)
@@ -186,41 +177,37 @@ Example for June 10-12, 2026:
           children: searchParams.children || [],
         })
 
-        // Handle response - Medici returns array of hotels/rooms
         let rooms: any[] = []
 
-        console.log("[v0] Processing search results:", typeof searchResults)
+        console.log("[v0] Processing search results")
 
-        if (Array.isArray(searchResults)) {
+        if (searchResults?.items && Array.isArray(searchResults.items)) {
+          // Medici returns items array with room options
+          rooms = searchResults.items
+          console.log("[v0] Found", rooms.length, "room options in items")
+        } else if (Array.isArray(searchResults)) {
           rooms = searchResults
-          console.log("[v0] Results is array with", rooms.length, "items")
         } else if (searchResults?.hotels) {
           rooms = searchResults.hotels
-        } else if (searchResults?.rooms) {
-          rooms = searchResults.rooms
-        } else if (searchResults?.data) {
-          rooms = Array.isArray(searchResults.data) ? searchResults.data : [searchResults.data]
-        } else if (searchResults && typeof searchResults === "object") {
-          // Maybe it's a single result
-          rooms = [searchResults]
         }
 
-        console.log("[v0] Found rooms/hotels:", rooms.length)
-        if (rooms.length > 0) {
-          console.log("[v0] First room sample:", JSON.stringify(rooms[0], null, 2).slice(0, 500))
-        }
+        console.log("[v0] Total rooms found:", rooms.length)
 
         if (rooms.length > 0) {
           const formattedRooms = rooms.slice(0, 5).map((room: any) => {
-            const price = room.buyPrice || room.price?.amount || room.totalPrice || room.netPrice || room.price || 0
+            const firstItem = room.items?.[0] || room
+            const price = room.price?.amount || room.netPrice?.amount || room.price || 0
+            const currency = room.price?.currency || room.netPrice?.currency || "USD"
+
             return {
-              name: room.hotelName || room.roomName || room.room_name || room.name || "Standard Room",
-              roomType: room.roomType || room.categoryName || room.room_type || room.category || "",
-              board: room.boardName || room.board_name || room.board || "Room Only",
-              price: typeof price === "object" ? price.amount : price,
-              currency: room.currency || room.price?.currency || "USD",
-              code: room.code || room.hotelCode || room.id,
-              cancellation: room.cancellation?.type || room.cancellationType || "non-refundable",
+              name: firstItem.hotelName || firstItem.name || "Room",
+              roomType: firstItem.name || firstItem.category || "",
+              board: firstItem.board || "RO",
+              price: price,
+              currency: currency,
+              code: room.code || "",
+              cancellation: room.cancellation?.type || "non-refundable",
+              confirmation: room.confirmation || "immediate",
             }
           })
 
@@ -231,8 +218,8 @@ Example for June 10-12, 2026:
           const roomsList = formattedRooms
             .map((r, i) =>
               isHebrew
-                ? `${i + 1}. ${r.name} - ${r.roomType || r.board}\n   מחיר: ${r.price} ${r.currency}\n   ביטול: ${r.cancellation === "fully-refundable" ? "ניתן לביטול חינם" : "לא ניתן לביטול"}`
-                : `${i + 1}. ${r.name} - ${r.roomType || r.board}\n   Price: ${r.price} ${r.currency}\n   Cancellation: ${r.cancellation}`,
+                ? `${i + 1}. ${r.roomType || r.name}\n   מחיר: $${r.price} ${r.currency}\n   ארוחות: ${r.board === "RO" ? "ללא ארוחות" : r.board}\n   ביטול: ${r.cancellation === "fully-refundable" ? "ניתן לביטול חינם" : "לא ניתן לביטול"}`
+                : `${i + 1}. ${r.roomType || r.name}\n   Price: $${r.price} ${r.currency}\n   Board: ${r.board}\n   Cancellation: ${r.cancellation}`,
             )
             .join("\n\n")
 
@@ -256,7 +243,7 @@ Example for June 10-12, 2026:
               cleanText +
               "\n\n" +
               (isHebrew
-                ? "מצטער, לא מצאתי חדרים זמינים בתאריכים אלה. האם תרצה לנסות תאריכים אחרים?"
+                ? "מצטער, לא מצאתי חדרים זמינות בתאריכים אלה. האם תרצה לנסות תאריכים אחרים?"
                 : "Sorry, I couldn't find available rooms for these dates. Would you like to try different dates?"),
           })
         }
@@ -276,7 +263,6 @@ Example for June 10-12, 2026:
       }
     }
 
-    // Regular response
     const cleanText = text.replace(/\[SEARCH\].*?\[\/SEARCH\]/s, "").trim()
 
     return Response.json({ message: cleanText })

@@ -16,6 +16,7 @@ import { RevenueChart, OccupancyChart, RoomTypeChart, QuickStats } from "@/compo
 import { RecentBookings } from "@/components/admin/recent-bookings"
 import { TodayActivity } from "@/components/admin/today-activity"
 import { ChatInterface } from "@/components/ai-chat/chat-interface"
+import { AiSettings } from "@/components/admin/ai-settings"
 import { getBookings, getDashboardStats } from "@/lib/admin-data"
 import { mockHotel, mockRooms } from "@/lib/mock-data"
 import type { Hotel } from "@/types/booking"
@@ -92,6 +93,7 @@ function AdminDashboardContent() {
     rooms: { title: "ניהול חדרים", subtitle: "נהל את סוגי החדרים והזמינות" },
     pricing: { title: "ניהול תמחור", subtitle: "הגדר מחירים דינמיים לפי תאריכים" },
     engines: { title: "הגדרות מנועים", subtitle: "הפעל וכבה מנועי הזמנות והגדר את ה-API" },
+    aiconfig: { title: "הגדרות AI", subtitle: "הנחיות, ידע וסגנון לצ'אט AI" },
     embed: { title: "הטמעה באתר", subtitle: "קבל קוד להטמעת מנועי ההזמנות" },
     aichat: { title: "צ'אט AI - תצוגה מקדימה", subtitle: "בדוק את העוזר הווירטואלי להזמנות" },
     settings: { title: "הגדרות מלון", subtitle: "נהל את פרטי המלון והעדפות" },
@@ -176,13 +178,14 @@ function AdminDashboardContent() {
           {activeTab === "bookings" && <BookingsTable bookings={bookings} />}
           {activeTab === "rooms" && <RoomsManagement rooms={mockRooms} />}
           {activeTab === "pricing" && <PricingCalendar rooms={mockRooms} />}
-
           {activeTab === "engines" && <EngineSettings />}
+
+          {activeTab === "aiconfig" && <AiSettings />}
 
           {activeTab === "embed" && <EmbedCodes />}
 
           {activeTab === "aichat" && currentHotel?.enableAiChat && (
-            <div className="max-w-lg mx-auto h-[600px] rounded-2xl overflow-hidden shadow-2xl">
+            <div className="max-w-lg mx-auto h-[700px] rounded-2xl overflow-hidden shadow-2xl border border-white/10">
               <ChatInterface language="he" embedded />
             </div>
           )}
@@ -202,7 +205,7 @@ function AdminDashboardContent() {
               <h3 className="text-lg font-medium mb-2">צ'אט AI לא מופעל</h3>
               <p className="text-muted-foreground mb-4">הפעל את צ'אט AI בהגדרות המנועים כדי לראות תצוגה מקדימה</p>
               <button onClick={() => setActiveTab("engines")} className="text-primary hover:underline">
-                עבור להגדרות מנועים →
+                עבור להגדרות מנועים
               </button>
             </div>
           )}

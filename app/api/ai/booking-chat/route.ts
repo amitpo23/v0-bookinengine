@@ -24,21 +24,20 @@ async function searchMediciHotels(params: {
     dateTo: params.dateTo,
     pax: [
       {
-        adults: String(params.adults || 2), // adults as STRING per API docs
+        adults: String(params.adults || 2),
         children: params.children || [],
       },
     ],
-    ShowExtendedData: true, // Get full hotel data with images, facilities, etc.
+    ShowExtendedData: true,
     limit: 10,
   }
 
-  // Use city OR hotelName - not both!
   if (params.city) {
     body.city = params.city
   } else if (params.hotelName) {
     body.hotelName = params.hotelName
   } else {
-    body.city = "Dubai" // Default city for testing
+    body.city = "Dubai"
   }
 
   console.log("[v0] Request body:", JSON.stringify(body, null, 2))
@@ -182,7 +181,6 @@ Example for June 10-12, 2026:
         console.log("[v0] Processing search results")
 
         if (searchResults?.items && Array.isArray(searchResults.items)) {
-          // Medici returns items array with room options
           rooms = searchResults.items
           console.log("[v0] Found", rooms.length, "room options in items")
         } else if (Array.isArray(searchResults)) {
@@ -200,14 +198,22 @@ Example for June 10-12, 2026:
             const currency = room.price?.currency || room.netPrice?.currency || "USD"
 
             return {
+              code: room.code || "",
+              hotelId: firstItem.hotelId || room.hotelId || 0,
               name: firstItem.hotelName || firstItem.name || "Room",
-              roomType: firstItem.name || firstItem.category || "",
+              hotelName: firstItem.hotelName || hotelName,
+              roomType: firstItem.name || firstItem.category || "Standard Room",
               board: firstItem.board || "RO",
               price: price,
               currency: currency,
-              code: room.code || "",
               cancellation: room.cancellation?.type || "non-refundable",
               confirmation: room.confirmation || "immediate",
+              image: firstItem.images?.[0] || firstItem.image || null,
+              images: firstItem.images || [],
+              facilities: firstItem.facilities || [],
+              description: firstItem.description || "",
+              location: firstItem.city || hotelCity,
+              rating: firstItem.stars || 4,
             }
           })
 
@@ -228,11 +234,25 @@ Example for June 10-12, 2026:
               cleanText +
               "\n\n" +
               (isHebrew
-                ? `מצאתי ${formattedRooms.length} אפשרויות זמינות עבורך:\n\n${roomsList}\n\nאיזה חדר תרצה להזמין?`
-                : `I found ${formattedRooms.length} available options for you:\n\n${roomsList}\n\nWhich room would you like to book?`),
+                ? `מצאתי ${formattedRooms.length} אפשרויות זמינות עבורך:\n\n${roomsList}\n\nלחץ על "בחר והמשך" כדי להתחיל בתהליך ההזמנה.`
+                : `I found ${formattedRooms.length} available options for you:\n\n${roomsList}\n\nClick "Select & Continue" to start the booking process.`),
             bookingData: {
               type: "search_results",
-              data: { rooms: formattedRooms },
+              data: {
+                rooms: formattedRooms,
+                searchContext: {
+                  dateFrom: searchParams.dateFrom,
+                  dateTo: searchParams.dateTo,
+                  adults: searchParams.adults || 2,
+                  children: searchParams.children || [],
+                },
+              },
+            },
+            searchContext: {
+              dateFrom: searchParams.dateFrom,
+              dateTo: searchParams.dateTo,
+              adults: searchParams.adults || 2,
+              children: searchParams.children || [],
             },
           })
         } else {

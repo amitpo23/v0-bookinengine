@@ -73,6 +73,13 @@ const BotIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
+const SparklesIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+    <path d="M18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
+  </svg>
+)
+
 const ChevronLeftIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <polyline points="15 18 9 12 15 6" />
@@ -128,7 +135,8 @@ const menuItems = [
   { id: "bookings", label: "הזמנות", icon: CalendarIcon, badge: 3 },
   { id: "rooms", label: "חדרים", icon: BedIcon },
   { id: "pricing", label: "תמחור", icon: DollarSignIcon },
-  { id: "api", label: "הגדרות API", icon: ApiIcon, isNew: true },
+  { id: "engines", label: "מנועי הזמנות", icon: ApiIcon },
+  { id: "aiconfig", label: "הגדרות AI", icon: SparklesIcon, isNew: true },
   { id: "aichat", label: "צ׳אט AI", icon: BotIcon, isPro: true },
   { id: "embed", label: "הטמעה", icon: CodeIcon },
   { id: "settings", label: "הגדרות", icon: SettingsIcon },
@@ -161,8 +169,8 @@ export function AdminSidebar({
         <div className="h-16 flex items-center justify-between px-4 border-b border-sidebar-border">
           {!collapsed && (
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">B</span>
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <span className="text-white font-bold text-lg">B</span>
               </div>
               <div className="flex flex-col">
                 <span className="font-semibold text-sidebar-foreground text-sm">BookingEngine</span>
@@ -171,8 +179,8 @@ export function AdminSidebar({
             </div>
           )}
           {collapsed && (
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center mx-auto">
-              <span className="text-primary-foreground font-bold text-lg">B</span>
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
+              <span className="text-white font-bold text-lg">B</span>
             </div>
           )}
           <Button
@@ -215,9 +223,9 @@ export function AdminSidebar({
                 key={item.id}
                 onClick={() => onTabChange(item.id)}
                 className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
                   isActive
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-gradient-to-r from-emerald-600 to-cyan-600 text-white shadow-lg shadow-emerald-500/20"
                     : "text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent",
                 )}
               >
@@ -230,9 +238,7 @@ export function AdminSidebar({
                         variant={isActive ? "secondary" : "default"}
                         className={cn(
                           "h-5 min-w-[20px] flex items-center justify-center text-xs",
-                          isActive
-                            ? "bg-primary-foreground/20 text-primary-foreground"
-                            : "bg-primary text-primary-foreground",
+                          isActive ? "bg-white/20 text-white" : "bg-emerald-500 text-white",
                         )}
                       >
                         {item.badge}
@@ -247,7 +253,10 @@ export function AdminSidebar({
                       </Badge>
                     )}
                     {item.isNew && (
-                      <Badge variant="outline" className="text-xs bg-green-500/10 text-green-400 border-green-500/30">
+                      <Badge
+                        variant="outline"
+                        className="text-xs bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                      >
                         חדש
                       </Badge>
                     )}

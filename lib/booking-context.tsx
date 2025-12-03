@@ -5,6 +5,23 @@ import type { BookingSearch, SelectedRoom, GuestDetails, Hotel } from "@/types/b
 import { addDays } from "@/lib/date-utils"
 import type { HotelSearchResult } from "@/lib/api/medici-client"
 
+interface ApiBookingData {
+  code: string
+  hotelId: number
+  hotelName: string
+  roomName: string
+  roomId: string
+  boardId: number
+  price: number
+  currency: string
+  dateFrom: string
+  dateTo: string
+  adults: number
+  children: number[]
+  prebookToken?: string
+  priceConfirmed?: number
+}
+
 interface BookingContextType {
   hotel: Hotel | null
   setHotel: (hotel: Hotel) => void
@@ -27,6 +44,14 @@ interface BookingContextType {
   setIsSearching: (loading: boolean) => void
   searchError: string | null
   setSearchError: (error: string | null) => void
+  apiBookingData: ApiBookingData | null
+  setApiBookingData: (data: ApiBookingData | null) => void
+  isPreBooking: boolean
+  setIsPreBooking: (loading: boolean) => void
+  preBookError: string | null
+  setPreBookError: (error: string | null) => void
+  bookingConfirmation: { confirmationCode: string; bookingId: string } | null
+  setBookingConfirmation: (data: { confirmationCode: string; bookingId: string } | null) => void
 }
 
 const BookingContext = createContext<BookingContextType | undefined>(undefined)
@@ -52,11 +77,22 @@ export function BookingProvider({ children, initialHotel }: { children: ReactNod
   const [isSearching, setIsSearching] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
 
+  const [apiBookingData, setApiBookingData] = useState<ApiBookingData | null>(null)
+  const [isPreBooking, setIsPreBooking] = useState(false)
+  const [preBookError, setPreBookError] = useState<string | null>(null)
+  const [bookingConfirmation, setBookingConfirmation] = useState<{
+    confirmationCode: string
+    bookingId: string
+  } | null>(null)
+
   const nights = Math.ceil(
     (new Date(search.checkOut).getTime() - new Date(search.checkIn).getTime()) / (1000 * 60 * 60 * 24),
   )
 
-  const totalPrice = selectedRooms.reduce((sum, sr) => sum + sr.ratePlan.price * sr.quantity * nights, 0)
+  const totalPrice =
+    apiBookingData?.priceConfirmed ||
+    apiBookingData?.price ||
+    selectedRooms.reduce((sum, sr) => sum + sr.ratePlan.price * sr.quantity * nights, 0)
 
   const addRoom = (room: SelectedRoom) => {
     setSelectedRooms((prev) => {
@@ -112,6 +148,14 @@ export function BookingProvider({ children, initialHotel }: { children: ReactNod
         setIsSearching,
         searchError,
         setSearchError,
+        apiBookingData,
+        setApiBookingData,
+        isPreBooking,
+        setIsPreBooking,
+        preBookError,
+        setPreBookError,
+        bookingConfirmation,
+        setBookingConfirmation,
       }}
     >
       {children}

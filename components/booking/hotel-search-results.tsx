@@ -9,7 +9,9 @@ import { useI18n } from "@/lib/i18n/context"
 import { cn } from "@/lib/utils"
 import { BOARD_TYPES, ROOM_CATEGORIES, type HotelSearchResult, type RoomResult } from "@/lib/api/medici-client"
 import { useState } from "react"
+import { formatDateForApi } from "@/lib/date-utils"
 
+// ... existing icon components ...
 const StarIcon = ({ className }: { className?: string }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -75,23 +77,61 @@ const ChevronUpIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
+const LoaderIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={cn("animate-spin", className)}
+  >
+    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+  </svg>
+)
+
+const CheckIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+)
+
 interface HotelSearchResultsProps {
   results: HotelSearchResult[]
 }
 
 export function HotelSearchResults({ results }: HotelSearchResultsProps) {
   const { locale, dir } = useI18n()
-  const { addRoom, nights } = useBooking()
+  const { addRoom, nights, search, setCurrentStep, setApiBookingData, isPreBooking, setIsPreBooking, setPreBookError } =
+    useBooking()
   const [expandedHotel, setExpandedHotel] = useState<number | null>(null)
+  const [selectingRoom, setSelectingRoom] = useState<string | null>(null)
 
   const noResultsText = locale === "he" ? "לא נמצאו תוצאות" : "No results found"
   const tryAgainText = locale === "he" ? "נסה לשנות את פרטי החיפוש" : "Try changing your search criteria"
   const roomsText = locale === "he" ? "חדרים זמינים" : "Available Rooms"
   const fromText = locale === "he" ? "החל מ-" : "From "
   const perNightText = locale === "he" ? "/ לילה" : "/ night"
-  const selectText = locale === "he" ? "בחר" : "Select"
+  const selectText = locale === "he" ? "בחר והמשך" : "Select & Continue"
+  const selectingText = locale === "he" ? "בודק זמינות..." : "Checking availability..."
   const showRoomsText = locale === "he" ? "הצג חדרים" : "Show Rooms"
   const hideRoomsText = locale === "he" ? "הסתר חדרים" : "Hide Rooms"
+  const freeCancellationText = locale === "he" ? "ביטול חינם" : "Free Cancellation"
 
   const formatPrice = (price: number, currency = "USD") => {
     return new Intl.NumberFormat(locale === "he" ? "he-IL" : "en-US", {
@@ -118,36 +158,94 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
     return Math.min(...rooms.map((r) => r.buyPrice))
   }
 
-  const handleSelectRoom = (hotel: HotelSearchResult, room: RoomResult) => {
-    const internalRoom = {
-      id: room.roomId,
-      hotelId: String(hotel.hotelId),
-      name: room.roomName || getCategoryName(room.categoryId),
-      description: `${getCategoryName(room.categoryId)} - ${getBoardName(room.boardId)}`,
-      images: [hotel.imageUrl || "/comfortable-hotel-room.png"],
-      maxGuests: room.maxOccupancy,
-      maxAdults: room.maxOccupancy,
-      maxChildren: 0,
-      bedType: getCategoryName(room.categoryId),
-      size: 30,
-      amenities: [],
-      basePrice: room.buyPrice,
-      available: 5,
-    }
+  const handleSelectRoom = async (hotel: HotelSearchResult, room: RoomResult) => {
+    const roomKey = `${hotel.hotelId}-${room.roomId}-${room.boardId}`
+    setSelectingRoom(roomKey)
+    setIsPreBooking(true)
+    setPreBookError(null)
 
-    const ratePlan = {
-      id: `${room.roomId}-${room.boardId}`,
-      roomId: room.roomId,
-      name: getBoardName(room.boardId),
-      description: room.roomCategory || "",
-      price: room.buyPrice,
-      includes: [getBoardName(room.boardId)],
-      cancellationPolicy: "free" as const,
-      prepayment: "none" as const,
-      mealPlan: getMealPlanFromBoardId(room.boardId),
-    }
+    try {
+      const dateFrom = formatDateForApi(search.checkIn)
+      const dateTo = formatDateForApi(search.checkOut)
 
-    addRoom({ room: internalRoom, ratePlan, quantity: 1 })
+      // Call PreBook API
+      const response = await fetch("/api/booking/prebook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: room.code,
+          dateFrom,
+          dateTo,
+          hotelId: hotel.hotelId,
+          adults: search.adults,
+          children: search.childrenAges || [],
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "PreBook failed")
+      }
+
+      // Save API booking data
+      setApiBookingData({
+        code: room.code,
+        hotelId: hotel.hotelId,
+        hotelName: hotel.hotelName,
+        roomName: room.roomName || getCategoryName(room.categoryId),
+        roomId: room.roomId,
+        boardId: room.boardId,
+        price: room.buyPrice,
+        currency: room.currency || "USD",
+        dateFrom,
+        dateTo,
+        adults: search.adults,
+        children: search.childrenAges || [],
+        prebookToken: data.token,
+        priceConfirmed: data.priceConfirmed,
+      })
+
+      // Also add to selected rooms for UI display
+      const internalRoom = {
+        id: room.roomId,
+        hotelId: String(hotel.hotelId),
+        name: room.roomName || getCategoryName(room.categoryId),
+        description: `${getCategoryName(room.categoryId)} - ${getBoardName(room.boardId)}`,
+        images: [hotel.imageUrl || "/comfortable-hotel-room.png"],
+        maxGuests: room.maxOccupancy,
+        maxAdults: room.maxOccupancy,
+        maxChildren: 0,
+        bedType: getCategoryName(room.categoryId),
+        size: 30,
+        amenities: [],
+        basePrice: data.priceConfirmed || room.buyPrice,
+        available: 5,
+      }
+
+      const ratePlan = {
+        id: `${room.roomId}-${room.boardId}`,
+        roomId: room.roomId,
+        name: getBoardName(room.boardId),
+        description: room.roomCategory || "",
+        price: data.priceConfirmed || room.buyPrice,
+        includes: [getBoardName(room.boardId)],
+        cancellationPolicy: "free" as const,
+        prepayment: "none" as const,
+        mealPlan: getMealPlanFromBoardId(room.boardId),
+      }
+
+      addRoom({ room: internalRoom, ratePlan, quantity: 1 })
+
+      // Proceed to guest details (step 3)
+      setCurrentStep(3)
+    } catch (error: any) {
+      console.error("[v0] PreBook error:", error)
+      setPreBookError(error.message || "Failed to reserve room")
+    } finally {
+      setSelectingRoom(null)
+      setIsPreBooking(false)
+    }
   }
 
   const getMealPlanFromBoardId = (
@@ -256,47 +354,71 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
           {expandedHotel === hotel.hotelId && hotel.rooms && (
             <div className="border-t border-border">
               <div className="divide-y divide-border">
-                {hotel.rooms.map((room, idx) => (
-                  <div key={`${room.roomId}-${idx}`} className="p-4 hover:bg-muted/30 transition-colors">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-foreground mb-1">
-                          {room.roomName || getCategoryName(room.categoryId)}
-                        </h4>
-                        <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-                          <Badge variant="outline">{getCategoryName(room.categoryId)}</Badge>
-                          <Badge variant="secondary" className="bg-green-100 text-green-700">
-                            {getBoardName(room.boardId)}
-                          </Badge>
-                          {room.maxOccupancy && (
-                            <span>
-                              👥{" "}
-                              {locale === "he" ? `עד ${room.maxOccupancy} אורחים` : `Up to ${room.maxOccupancy} guests`}
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                {hotel.rooms.map((room, idx) => {
+                  const roomKey = `${hotel.hotelId}-${room.roomId}-${room.boardId}`
+                  const isSelecting = selectingRoom === roomKey
 
-                      <div
-                        className={cn("flex items-center gap-4", dir === "rtl" ? "flex-row-reverse md:flex-row" : "")}
-                      >
-                        <div className={dir === "rtl" ? "text-left" : "text-right"}>
-                          <div className="text-xl font-bold text-foreground">
-                            {formatPrice(room.buyPrice, room.currency)}
+                  return (
+                    <div key={`${room.roomId}-${idx}`} className="p-4 hover:bg-muted/30 transition-colors">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-foreground mb-1">
+                            {room.roomName || getCategoryName(room.categoryId)}
+                          </h4>
+                          <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+                            <Badge variant="outline">{getCategoryName(room.categoryId)}</Badge>
+                            <Badge variant="secondary" className="bg-green-100 text-green-700">
+                              {getBoardName(room.boardId)}
+                            </Badge>
+                            {room.maxOccupancy && (
+                              <span>
+                                👥{" "}
+                                {locale === "he"
+                                  ? `עד ${room.maxOccupancy} אורחים`
+                                  : `Up to ${room.maxOccupancy} guests`}
+                              </span>
+                            )}
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {nights > 1
-                              ? locale === "he"
-                                ? `ל-${nights} לילות`
-                                : `for ${nights} nights`
-                              : perNightText}
+                          <div className="flex items-center gap-1 mt-2 text-green-600 text-sm">
+                            <CheckIcon className="h-4 w-4" />
+                            <span>{freeCancellationText}</span>
                           </div>
                         </div>
-                        <Button onClick={() => handleSelectRoom(hotel, room)}>{selectText}</Button>
+
+                        <div
+                          className={cn("flex items-center gap-4", dir === "rtl" ? "flex-row-reverse md:flex-row" : "")}
+                        >
+                          <div className={dir === "rtl" ? "text-left" : "text-right"}>
+                            <div className="text-xl font-bold text-foreground">
+                              {formatPrice(room.buyPrice, room.currency)}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {nights > 1
+                                ? locale === "he"
+                                  ? `ל-${nights} לילות`
+                                  : `for ${nights} nights`
+                                : perNightText}
+                            </div>
+                          </div>
+                          <Button
+                            onClick={() => handleSelectRoom(hotel, room)}
+                            disabled={isSelecting || isPreBooking}
+                            className="min-w-[120px]"
+                          >
+                            {isSelecting ? (
+                              <>
+                                <LoaderIcon className="h-4 w-4 mr-2" />
+                                {selectingText}
+                              </>
+                            ) : (
+                              selectText
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )}

@@ -18,6 +18,7 @@ import { mockHotel, mockRooms } from "@/lib/mock-data"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
+// ... existing icon components ...
 const ArrowRightIcon = ({ className }: { className?: string }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -100,22 +101,71 @@ function BookingWidgetContent() {
     searchResults,
     isSearching,
     searchError,
+    preBookError,
+    apiBookingData,
+    bookingConfirmation,
+    setBookingConfirmation,
   } = useBooking()
   const { t, locale, dir } = useI18n()
 
   const [confirmationNumber, setConfirmationNumber] = useState("")
   const [paymentIntentId, setPaymentIntentId] = useState("")
+  const [isBooking, setIsBooking] = useState(false)
+  const [bookingError, setBookingError] = useState<string | null>(null)
 
-  const handleGuestSubmit = (details: GuestDetails) => {
+  const handleGuestSubmit = async (details: GuestDetails) => {
     setGuestDetails(details)
     setCurrentStep(4)
   }
 
-  const handlePaymentSuccess = (paymentId: string) => {
+  const handlePaymentSuccess = async (paymentId: string) => {
     setPaymentIntentId(paymentId)
-    setConfirmationNumber(`BK${Date.now().toString(36).toUpperCase()}`)
-    setCurrentStep(5)
+    setIsBooking(true)
+    setBookingError(null)
+
+    try {
+      if (apiBookingData?.prebookToken) {
+        // Complete booking via Medici API
+        const response = await fetch("/api/booking/book", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            token: apiBookingData.prebookToken,
+            guestFirstName: details?.firstName || "Guest",
+            guestLastName: details?.lastName || "User",
+            guestEmail: details?.email || "guest@example.com",
+            guestPhone: details?.phone || "",
+            paymentId,
+          }),
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || "Booking failed")
+        }
+
+        setBookingConfirmation({
+          confirmationCode: data.confirmationCode || `BK${Date.now().toString(36).toUpperCase()}`,
+          bookingId: data.bookingId || paymentId,
+        })
+        setConfirmationNumber(data.confirmationCode || `BK${Date.now().toString(36).toUpperCase()}`)
+      } else {
+        // Fallback for non-API bookings
+        setConfirmationNumber(`BK${Date.now().toString(36).toUpperCase()}`)
+      }
+
+      setCurrentStep(5)
+    } catch (error: any) {
+      console.error("[v0] Booking error:", error)
+      setBookingError(error.message || "Failed to complete booking")
+    } finally {
+      setIsBooking(false)
+    }
   }
+
+  // Get guest details for the payment handler
+  const { guestDetails: details } = useBooking()
 
   const BackArrow = dir === "rtl" ? ArrowRightIcon : ArrowLeftIcon
   const backText = locale === "he" ? "חזרה" : "Back"
@@ -164,10 +214,10 @@ function BookingWidgetContent() {
         {/* Steps */}
         {currentStep < 5 && <BookingSteps currentStep={currentStep} />}
 
-        {searchError && (
+        {(searchError || preBookError || bookingError) && (
           <Alert variant="destructive" className="mb-4">
             <AlertCircleIcon className="h-4 w-4" />
-            <AlertDescription>{searchError}</AlertDescription>
+            <AlertDescription>{searchError || preBookError || bookingError}</AlertDescription>
           </Alert>
         )}
 
@@ -235,6 +285,14 @@ function BookingWidgetContent() {
           <div className="flex flex-col lg:flex-row gap-6">
             <div className="flex-1">
               <StripePaymentForm onSuccess={handlePaymentSuccess} />
+              {isBooking && (
+                <div className="mt-4 text-center">
+                  <LoaderIcon className="h-6 w-6 animate-spin mx-auto text-primary mb-2" />
+                  <p className="text-muted-foreground">
+                    {locale === "he" ? "משלים את ההזמנה..." : "Completing your booking..."}
+                  </p>
+                </div>
+              )}
             </div>
             <div className="lg:w-80 lg:sticky lg:top-24 lg:self-start">
               <BookingSummary showContinue={false} />

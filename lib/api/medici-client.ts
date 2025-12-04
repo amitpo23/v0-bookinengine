@@ -403,7 +403,7 @@ class MediciApiClient {
               code: params.code,
               pax: [
                 {
-                  adults: params.adults,
+                  adults: Number(params.adults), // Ensure it's a number
                   children: params.children || [],
                 },
               ],
@@ -418,7 +418,7 @@ class MediciApiClient {
             },
             destinations: [
               {
-                id: params.hotelId,
+                id: Number(params.hotelId),
                 type: "hotel",
               },
             ],
@@ -429,7 +429,7 @@ class MediciApiClient {
             ],
             pax: [
               {
-                adults: params.adults,
+                adults: Number(params.adults), // Ensure it's a number
                 children: params.children || [],
               },
             ],
@@ -455,6 +455,26 @@ class MediciApiClient {
   // STEP 3: BOOK
   // =====================
   async book(params: BookingParams): Promise<BookingResult> {
+    // Create adults array - one guest object per adult
+    const adultsCount = params.searchRequest.pax[0]?.adults || 2
+    const adultsArray = Array.from({ length: adultsCount }, (_, index) => ({
+      lead: index === 0, // First adult is the lead guest
+      title: params.customer.title,
+      name: {
+        first: params.customer.firstName,
+        last: params.customer.lastName,
+      },
+      contact: {
+        address: params.customer.address,
+        city: params.customer.city,
+        country: params.customer.country,
+        email: params.customer.email,
+        phone: params.customer.phone,
+        state: params.customer.country,
+        zip: params.customer.zip,
+      },
+    }))
+
     const innerRequest = {
       customer: {
         title: params.customer.title,
@@ -464,11 +484,12 @@ class MediciApiClient {
         },
         birthDate: params.customer.birthDate || "1985-01-01",
         contact: {
+          address: params.customer.address,
+          city: params.customer.city,
+          country: params.customer.country,
           email: params.customer.email,
           phone: params.customer.phone,
-          country: params.customer.country,
-          city: params.customer.city,
-          address: params.customer.address,
+          state: params.customer.country,
           zip: params.customer.zip,
         },
       },
@@ -487,22 +508,7 @@ class MediciApiClient {
               token: params.token,
               pax: [
                 {
-                  adults: params.searchRequest.pax.map((p, i) => ({
-                    lead: i === 0,
-                    title: params.customer.title,
-                    name: {
-                      first: params.customer.firstName,
-                      last: params.customer.lastName,
-                    },
-                    contact: {
-                      email: params.customer.email,
-                      phone: params.customer.phone,
-                      country: params.customer.country,
-                      city: params.customer.city,
-                      address: params.customer.address,
-                      zip: params.customer.zip,
-                    },
-                  })),
+                  adults: adultsArray,
                   children: params.searchRequest.pax[0]?.children || [],
                 },
               ],
@@ -517,11 +523,19 @@ class MediciApiClient {
             },
             destinations: [
               {
-                id: params.searchRequest.hotelId,
+                id: Number(params.searchRequest.hotelId),
                 type: "hotel",
               },
             ],
-            pax: params.searchRequest.pax,
+            filters: [
+              { name: "payAtTheHotel", value: true },
+              { name: "onRequest", value: false },
+              { name: "showSpecialDeals", value: true },
+            ],
+            pax: params.searchRequest.pax.map((p) => ({
+              adults: Number(p.adults),
+              children: p.children || [],
+            })),
             service: "hotels",
           },
         },

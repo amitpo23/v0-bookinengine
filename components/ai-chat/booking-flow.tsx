@@ -100,6 +100,7 @@ export function BookingFlow({ room, isRtl, onComplete, onCancel }: BookingFlowPr
   const [step, setStep] = useState<BookingStep>("confirm_price")
   const [isLoading, setIsLoading] = useState(false)
   const [prebookToken, setPrebookToken] = useState<string>("")
+  const [prebookId, setPrebookId] = useState<number>(0)
   const [confirmedPrice, setConfirmedPrice] = useState<number>(room.price)
   const [error, setError] = useState<string>("")
 
@@ -121,6 +122,8 @@ export function BookingFlow({ room, isRtl, onComplete, onCancel }: BookingFlowPr
     setError("")
 
     try {
+      console.log("[v0] Starting PreBook with room:", room)
+
       const response = await fetch("/api/booking/prebook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -130,20 +133,25 @@ export function BookingFlow({ room, isRtl, onComplete, onCancel }: BookingFlowPr
           dateTo: room.dateTo,
           hotelId: room.hotelId,
           adults: room.adults,
-          children: room.children,
+          children: room.children || [],
         }),
       })
 
       const data = await response.json()
+      console.log("[v0] PreBook response:", data)
 
-      if (data.success && data.token) {
-        setPrebookToken(data.token)
+      if (data.success || data.token || data.preBookId) {
+        setPrebookToken(data.token || "")
+        setPrebookId(data.preBookId || 0)
         setConfirmedPrice(data.priceConfirmed || room.price)
         setStep("guest_details")
       } else {
-        setError(isRtl ? "לא ניתן לאשר את המחיר כרגע. נסה שוב." : "Unable to confirm price. Please try again.")
+        setError(
+          data.error || (isRtl ? "לא ניתן לאשר את המחיר כרגע. נסה שוב." : "Unable to confirm price. Please try again."),
+        )
       }
-    } catch (err) {
+    } catch (err: any) {
+      console.error("[v0] PreBook error:", err)
       setError(isRtl ? "שגיאה בתקשורת. נסה שוב." : "Connection error. Please try again.")
     } finally {
       setIsLoading(false)
@@ -180,23 +188,26 @@ export function BookingFlow({ room, isRtl, onComplete, onCancel }: BookingFlowPr
     setError("")
 
     try {
+      console.log("[v0] Starting Book with:", { room, prebookToken, prebookId, guestDetails })
+
       const response = await fetch("/api/booking/book", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           code: room.code,
           token: prebookToken,
-          searchRequest: {
-            dateFrom: room.dateFrom,
-            dateTo: room.dateTo,
-            hotelId: room.hotelId,
-            pax: [{ adults: room.adults, children: room.children }],
-          },
+          preBookId: prebookId,
+          dateFrom: room.dateFrom,
+          dateTo: room.dateTo,
+          hotelId: room.hotelId,
+          adults: room.adults,
+          children: room.children || [],
           customer: guestDetails,
         }),
       })
 
       const data = await response.json()
+      console.log("[v0] Book response:", data)
 
       if (data.success) {
         setStep("complete")
@@ -207,7 +218,8 @@ export function BookingFlow({ room, isRtl, onComplete, onCancel }: BookingFlowPr
       } else {
         setError(data.error || (isRtl ? "ההזמנה נכשלה. נסה שוב." : "Booking failed. Please try again."))
       }
-    } catch (err) {
+    } catch (err: any) {
+      console.error("[v0] Book error:", err)
       setError(isRtl ? "שגיאה בתקשורת. נסה שוב." : "Connection error. Please try again.")
     } finally {
       setIsLoading(false)

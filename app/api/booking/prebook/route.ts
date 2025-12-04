@@ -11,6 +11,7 @@ export async function POST(request: NextRequest) {
     const { code, dateFrom, dateTo, hotelId, adults, children } = body
 
     if (!code || !dateFrom || !dateTo || !hotelId) {
+      console.log("[v0] Missing required fields")
       return NextResponse.json({ error: "code, dateFrom, dateTo, and hotelId are required" }, { status: 400 })
     }
 
@@ -23,10 +24,17 @@ export async function POST(request: NextRequest) {
       children: children || [],
     })
 
-    console.log("[v0] PreBook result:", result)
+    console.log("[v0] PreBook result:", JSON.stringify(result, null, 2))
 
-    if (result.status !== "done") {
-      return NextResponse.json({ error: "PreBook failed - room may no longer be available" }, { status: 400 })
+    if (!result.token && !result.preBookId) {
+      console.log("[v0] PreBook failed - no token or preBookId returned")
+      return NextResponse.json(
+        {
+          success: false,
+          error: "PreBook failed - room may no longer be available",
+        },
+        { status: 400 },
+      )
     }
 
     return NextResponse.json({
@@ -35,9 +43,16 @@ export async function POST(request: NextRequest) {
       token: result.token,
       priceConfirmed: result.priceConfirmed,
       currency: result.currency,
+      status: result.status,
     })
   } catch (error: any) {
     console.error("[v0] PreBook API Error:", error.message)
-    return NextResponse.json({ error: error.message || "PreBook failed" }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || "PreBook failed",
+      },
+      { status: 500 },
+    )
   }
 }

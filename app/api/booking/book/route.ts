@@ -5,7 +5,22 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
-    const { code, token, dateFrom, dateTo, hotelId, adults, children, customer, voucherEmail, agencyReference } = body
+    console.log("[v0] ====== BOOK API ROUTE ======")
+    console.log("[v0] Request body:", JSON.stringify(body, null, 2))
+
+    const {
+      code,
+      token,
+      preBookId,
+      dateFrom,
+      dateTo,
+      hotelId,
+      adults,
+      children,
+      customer,
+      voucherEmail,
+      agencyReference,
+    } = body
 
     // Validate required fields
     if (!code || !token || !dateFrom || !dateTo || !hotelId || !customer) {
@@ -22,12 +37,12 @@ export async function POST(request: NextRequest) {
     const result = await mediciApi.book({
       code,
       token,
-      searchRequest: {
-        dateFrom,
-        dateTo,
-        hotelId,
-        pax: [{ adults: adults || 2, children: children || [] }],
-      },
+      preBookId: preBookId ? Number(preBookId) : undefined,
+      dateFrom,
+      dateTo,
+      hotelId: Number(hotelId),
+      adults: Number(adults) || 2,
+      children: children || [],
       customer: {
         title: customer.title || "MR",
         firstName: customer.firstName,
@@ -38,11 +53,12 @@ export async function POST(request: NextRequest) {
         city: customer.city || "",
         address: customer.address || "",
         zip: customer.zip || "",
-        birthDate: customer.birthDate,
       },
       voucherEmail,
       agencyReference,
     })
+
+    console.log("[v0] Book result:", result)
 
     if (!result.success) {
       return NextResponse.json({ error: result.error || "Booking failed" }, { status: 400 })
@@ -55,7 +71,7 @@ export async function POST(request: NextRequest) {
       status: result.status,
     })
   } catch (error: any) {
-    console.error("Book API Error:", error)
+    console.error("[v0] Book API Error:", error.message)
     return NextResponse.json({ error: error.message || "Booking failed" }, { status: 500 })
   }
 }

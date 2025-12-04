@@ -5,6 +5,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
+    console.log("[v0] ====== PREBOOK API ROUTE ======")
+    console.log("[v0] Request body:", JSON.stringify(body, null, 2))
+
     const { code, dateFrom, dateTo, hotelId, adults, children } = body
 
     if (!code || !dateFrom || !dateTo || !hotelId) {
@@ -15,10 +18,12 @@ export async function POST(request: NextRequest) {
       code,
       dateFrom,
       dateTo,
-      hotelId,
-      adults: adults || 2,
+      hotelId: Number(hotelId),
+      adults: Number(adults) || 2,
       children: children || [],
     })
+
+    console.log("[v0] PreBook result:", result)
 
     if (result.status !== "done") {
       return NextResponse.json({ error: "PreBook failed - room may no longer be available" }, { status: 400 })
@@ -26,12 +31,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      preBookId: result.preBookId,
       token: result.token,
       priceConfirmed: result.priceConfirmed,
       currency: result.currency,
     })
   } catch (error: any) {
-    console.error("PreBook API Error:", error)
+    console.error("[v0] PreBook API Error:", error.message)
     return NextResponse.json({ error: error.message || "PreBook failed" }, { status: 500 })
   }
 }

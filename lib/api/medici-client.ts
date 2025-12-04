@@ -8,10 +8,6 @@ const MEDICI_TOKEN =
   process.env.MEDICI_TOKEN ||
   "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIyNCIsIm5iZiI6MTc1MjQ3NTYwNCwiZXhwIjoyMDY4MDA4NDA0LCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.eA8EeHx6gGRtGBts4yXAWnK5P0Wl_LQLD1LKobYBV4U"
 
-// Cancel operations token (UserID 14)
-const MEDICI_CANCEL_TOKEN =
-  "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIxNCIsIm5iZiI6MTc1NDQxNjA5NiwiZXhwIjoyMDY5OTQ4ODk2LCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.SVB1ZRljxG09FWA96xuMKUfY3J8lu1-SMGZwJJhTt5g"
-
 // =====================
 // TYPES
 // =====================
@@ -21,9 +17,10 @@ export interface SearchParams {
   dateTo: string // YYYY-MM-DD
   hotelName?: string
   city?: string
-  pax: { adults: string; children: number[] }[]
+  pax?: { adults: number; children: number[] }[]
   stars?: number | null
   limit?: number | null
+  showExtendedData?: boolean
 }
 
 export interface SearchRoomResult {
@@ -34,6 +31,9 @@ export interface SearchRoomResult {
   stars: number
   address?: string
   imageUrl?: string
+  images?: string[]
+  description?: string
+  facilities?: string[]
   roomName: string
   roomCategory: string
   boardType: string
@@ -51,7 +51,8 @@ export interface SearchRoomResult {
 }
 
 export interface PreBookResult {
-  token: string // CRITICAL: Save this for booking
+  preBookId: number
+  token: string
   status: "done" | "failed"
   priceConfirmed: number
   currency: string
@@ -60,23 +61,22 @@ export interface PreBookResult {
 export interface BookingParams {
   code: string // From search
   token: string // From prebook
-  searchRequest: {
-    dateFrom: string
-    dateTo: string
-    hotelId: number
-    pax: { adults: number; children: number[] }[]
-  }
+  preBookId?: number
+  dateFrom: string
+  dateTo: string
+  hotelId: number
+  adults: number
+  children: number[] // From search
   customer: {
-    title: "MR" | "MRS" | "MS"
+    title: string
     firstName: string
     lastName: string
     email: string
     phone: string
-    country: string
-    city: string
-    address: string
-    zip: string
-    birthDate?: string
+    country?: string
+    city?: string
+    address?: string
+    zip?: string
   }
   voucherEmail?: string
   agencyReference?: string
@@ -137,7 +137,6 @@ export interface Opportunity {
 
 export interface InsertOpportunityParams {
   hotelId?: number
-  destinationId?: number
   startDateStr: string
   endDateStr: string
   boardId: number
@@ -145,7 +144,8 @@ export interface InsertOpportunityParams {
   buyPrice: number
   pushPrice: number
   maxRooms: number
-  reservationFullName?: string
+  paxAdults?: number
+  paxChildren?: number[]
 }
 
 export interface DashboardInfo {
@@ -168,8 +168,6 @@ export const BOARD_TYPES: Record<number, { code: string; name: string; nameHe: s
   3: { code: "HB", name: "Half Board", nameHe: "חצי פנסיון" },
   4: { code: "FB", name: "Full Board", nameHe: "פנסיון מלא" },
   5: { code: "AI", name: "All Inclusive", nameHe: "הכל כלול" },
-  6: { code: "CB", name: "Continental Breakfast", nameHe: "ארוחת בוקר קונטיננטלית" },
-  7: { code: "BD", name: "Bed & Dinner", nameHe: "לינה וארוחת ערב" },
 }
 
 export const ROOM_CATEGORIES: Record<number, { name: string; nameHe: string }> = {
@@ -179,15 +177,6 @@ export const ROOM_CATEGORIES: Record<number, { name: string; nameHe: string }> =
   4: { name: "Suite", nameHe: "סוויטה" },
   5: { name: "Junior Suite", nameHe: "סוויטת ג'וניור" },
   6: { name: "Family", nameHe: "משפחתי" },
-  7: { name: "Single", nameHe: "יחיד" },
-  8: { name: "Double", nameHe: "זוגי" },
-  9: { name: "Twin", nameHe: "טווין" },
-  10: { name: "Triple", nameHe: "שלישייה" },
-  11: { name: "Quad", nameHe: "רביעייה" },
-  12: { name: "Studio", nameHe: "סטודיו" },
-  13: { name: "Apartment", nameHe: "דירה" },
-  14: { name: "Villa", nameHe: "וילה" },
-  15: { name: "Executive", nameHe: "אקזקוטיב" },
 }
 
 // =====================
@@ -197,21 +186,18 @@ export const ROOM_CATEGORIES: Record<number, { name: string; nameHe: string }> =
 class MediciApiClient {
   private baseUrl: string
   private token: string
-  private cancelToken: string
 
   constructor(baseUrl?: string, token?: string) {
     this.baseUrl = baseUrl || MEDICI_BASE_URL
     this.token = token || MEDICI_TOKEN
-    this.cancelToken = MEDICI_CANCEL_TOKEN
   }
 
-  private async request<T>(endpoint: string, method = "POST", body?: object, useCancelToken = false): Promise<T> {
+  private async request<T>(endpoint: string, method = "POST", body?: object): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`
-    const token = useCancelToken ? this.cancelToken : this.token
 
     const headers: HeadersInit = {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${this.token}`,
     }
 
     const options: RequestInit = {
@@ -239,7 +225,7 @@ class MediciApiClient {
 
       const text = await response.text()
       const result = text ? JSON.parse(text) : ({} as T)
-      console.log(`[v0] Response data:`, JSON.stringify(result, null, 2).substring(0, 500))
+      console.log(`[v0] Response data (first 1000 chars):`, JSON.stringify(result, null, 2).substring(0, 1000))
       return result
     } catch (error) {
       console.error(`[v0] Medici API Error [${endpoint}]:`, error)
@@ -264,7 +250,7 @@ class MediciApiClient {
     // Also: use hotelName OR city, NOT both
     const pax = [
       {
-        adults: String(params.adults || 2),
+        adults: params.adults || 2,
         children: params.children || [],
       },
     ]
@@ -274,7 +260,7 @@ class MediciApiClient {
       dateFrom: params.dateFrom,
       dateTo: params.dateTo,
       pax,
-      ShowExtendedData: true, // Added ShowExtendedData for full hotel info with images
+      showExtendedData: params.showExtendedData || true,
       stars: params.stars || null,
       limit: params.limit || null,
     }
@@ -294,49 +280,44 @@ class MediciApiClient {
     if (!response) return []
 
     // Handle array response directly (API returns array of rooms/hotels)
-    const items = Array.isArray(response) ? response : response.hotels || response.rooms || []
+    const items = Array.isArray(response) ? response : response.items || response.hotels || response.rooms || []
     const results: SearchRoomResult[] = []
 
     for (const item of items) {
       // Each item could be a hotel with rooms or a direct room result
-      if (item.rooms && Array.isArray(item.rooms)) {
-        // Hotel with multiple rooms
-        for (const room of item.rooms) {
-          results.push(this.mapRoomResult(item, room))
-        }
-      } else {
-        // Direct room/offer result
-        results.push(this.mapRoomResult(item, item))
+      const roomItems = item.items || [item]
+
+      for (const room of roomItems) {
+        results.push({
+          code: room.code || item.code || "",
+          hotelId: item.hotelId || room.hotelId || 0,
+          hotelName: item.hotelName || room.hotelName || item.name || "Unknown Hotel",
+          city: item.city || room.city || "",
+          stars: item.stars || room.stars || 0,
+          address: item.address || room.address || "",
+          imageUrl: item.imageUrl || item.image || room.imageUrl || "",
+          images: item.images || room.images || [],
+          description: item.description || room.description || "",
+          facilities: item.facilities || room.facilities || [],
+          roomName: room.roomName || room.name || room.roomType || "Standard Room",
+          roomCategory: room.roomCategory || room.category || "Standard",
+          boardType: room.boardType || room.board || "Room Only",
+          boardCode: room.boardCode || "RO",
+          price: {
+            amount: room.price?.amount || item.price?.amount || room.buyPrice || room.total || 0,
+            currency: room.price?.currency || item.price?.currency || "USD",
+          },
+          cancellation: {
+            type: room.cancellation?.type || (room.nonRefundable ? "non-refundable" : "fully-refundable"),
+            deadline: room.cancellation?.deadline,
+            penalty: room.cancellation?.penalty,
+          },
+          maxOccupancy: room.maxOccupancy || room.maxPax || 2,
+        })
       }
     }
 
     return results
-  }
-
-  private mapRoomResult(hotel: any, room: any): SearchRoomResult {
-    return {
-      code: room.code || hotel.code || `${hotel.hotelId || hotel.id}:${room.roomType || "standard"}`,
-      hotelId: hotel.hotelId || hotel.id || 0,
-      hotelName: hotel.hotelName || hotel.name || "Unknown Hotel",
-      city: hotel.city || hotel.destination || "",
-      stars: hotel.stars || hotel.category || 0,
-      address: hotel.address || "",
-      imageUrl: hotel.imageUrl || hotel.image || room.imageUrl || "",
-      roomName: room.roomName || room.name || room.roomType || "Standard Room",
-      roomCategory: room.roomCategory || room.category || "Standard",
-      boardType: room.boardType || room.board || BOARD_TYPES[room.boardId]?.name || "Room Only",
-      boardCode: room.boardCode || room.boardId?.toString() || "RO",
-      price: {
-        amount: room.price?.amount || room.buyPrice || room.total || hotel.price?.amount || 0,
-        currency: room.price?.currency || room.currency || hotel.currency || "USD",
-      },
-      cancellation: {
-        type: room.cancellation?.type || (room.nonRefundable ? "non-refundable" : "fully-refundable"),
-        deadline: room.cancellation?.deadline || room.cancellationDeadline,
-        penalty: room.cancellation?.penalty,
-      },
-      maxOccupancy: room.maxOccupancy || room.maxPax || 2,
-    }
   }
 
   // =====================
@@ -351,148 +332,91 @@ class MediciApiClient {
     children?: number[]
   }): Promise<PreBookResult> {
     // Build the nested JSON request structure
-    const innerRequest = {
-      services: [
+    const preBookBody = {
+      code: params.code,
+      dateFrom: params.dateFrom,
+      dateTo: params.dateTo,
+      hotelId: params.hotelId,
+      pax: [
         {
-          searchCodes: [
-            {
-              code: params.code,
-              pax: [
-                {
-                  adults: params.adults,
-                  children: params.children || [],
-                },
-              ],
-            },
-          ],
-          searchRequest: {
-            currencies: ["USD"],
-            customerCountry: "IL",
-            dates: {
-              from: params.dateFrom,
-              to: params.dateTo,
-            },
-            destinations: [
-              {
-                id: params.hotelId,
-                type: "hotel",
-              },
-            ],
-            filters: [
-              { name: "payAtTheHotel", value: true },
-              { name: "onRequest", value: false },
-              { name: "showSpecialDeals", value: true },
-            ],
-            pax: [
-              {
-                adults: params.adults,
-                children: params.children || [],
-              },
-            ],
-            service: "hotels",
-          },
+          adults: params.adults,
+          children: params.children || [],
         },
       ],
     }
 
-    const response = await this.request<any>("/api/hotels/PreBook", "POST", {
-      jsonRequest: JSON.stringify(innerRequest),
-    })
+    const response = await this.request<any>("/api/hotels/PreBook", "POST", preBookBody)
 
     return {
+      preBookId: response?.preBookId || response?.prebookId || 0,
       token: response?.token || response?.preBookToken || "",
-      status: response?.status === "done" ? "done" : "failed",
-      priceConfirmed: response?.price?.amount || response?.totalPrice || 0,
-      currency: response?.price?.currency || "USD",
+      status: response?.status === "done" || response?.success ? "done" : "failed",
+      priceConfirmed: response?.price?.amount || response?.totalPrice || response?.priceConfirmed || 0,
+      currency: response?.price?.currency || response?.currency || "USD",
     }
   }
 
   // =====================
   // STEP 3: BOOK
   // =====================
-  async book(params: BookingParams): Promise<BookingResult> {
-    const innerRequest = {
-      customer: {
-        title: params.customer.title,
-        name: {
-          first: params.customer.firstName,
-          last: params.customer.lastName,
-        },
-        birthDate: params.customer.birthDate || "1985-01-01",
-        contact: {
-          email: params.customer.email,
-          phone: params.customer.phone,
-          country: params.customer.country,
-          city: params.customer.city,
-          address: params.customer.address,
-          zip: params.customer.zip,
-        },
-      },
-      paymentMethod: {
-        methodName: "account_credit",
-      },
-      reference: {
-        agency: params.agencyReference || "Booking Engine",
-        voucherEmail: params.voucherEmail || params.customer.email,
-      },
-      services: [
+  async book(params: {
+    code: string
+    token: string
+    preBookId?: number
+    dateFrom: string
+    dateTo: string
+    hotelId: number
+    adults: number
+    children: number[] // From search
+    customer: {
+      title: string
+      firstName: string
+      lastName: string
+      email: string
+      phone: string
+      country?: string
+      city?: string
+      address?: string
+      zip?: string
+    }
+    voucherEmail?: string
+    agencyReference?: string
+  }): Promise<BookingResult> {
+    const bookBody = {
+      code: params.code,
+      token: params.token,
+      preBookId: params.preBookId,
+      dateFrom: params.dateFrom,
+      dateTo: params.dateTo,
+      hotelId: params.hotelId,
+      pax: [
         {
-          bookingRequest: [
-            {
-              code: params.code,
-              token: params.token,
-              pax: [
-                {
-                  adults: params.searchRequest.pax.map((p, i) => ({
-                    lead: i === 0,
-                    title: params.customer.title,
-                    name: {
-                      first: params.customer.firstName,
-                      last: params.customer.lastName,
-                    },
-                    contact: {
-                      email: params.customer.email,
-                      phone: params.customer.phone,
-                      country: params.customer.country,
-                      city: params.customer.city,
-                      address: params.customer.address,
-                      zip: params.customer.zip,
-                    },
-                  })),
-                  children: params.searchRequest.pax[0]?.children || [],
-                },
-              ],
-            },
-          ],
-          searchRequest: {
-            currencies: ["USD"],
-            customerCountry: params.customer.country,
-            dates: {
-              from: params.searchRequest.dateFrom,
-              to: params.searchRequest.dateTo,
-            },
-            destinations: [
-              {
-                id: params.searchRequest.hotelId,
-                type: "hotel",
-              },
-            ],
-            pax: params.searchRequest.pax,
-            service: "hotels",
-          },
+          adults: params.adults,
+          children: params.children || [],
         },
       ],
+      customer: {
+        title: params.customer.title || "MR",
+        firstName: params.customer.firstName,
+        lastName: params.customer.lastName,
+        email: params.customer.email,
+        phone: params.customer.phone,
+        country: params.customer.country || "IL",
+        city: params.customer.city || "",
+        address: params.customer.address || "",
+        zip: params.customer.zip || "",
+      },
+      voucherEmail: params.voucherEmail || params.customer.email,
+      agencyReference: params.agencyReference || "Booking Engine",
     }
 
     try {
-      const response = await this.request<any>("/api/hotels/Book", "POST", {
-        jsonRequest: JSON.stringify(innerRequest),
-      })
+      const response = await this.request<any>("/api/hotels/Book", "POST", bookBody)
 
       return {
-        success: response?.status === "confirmed" || response?.bookingID,
-        bookingId: String(response?.bookingID || response?.bookingId || ""),
-        supplierReference: response?.supplier?.reference || response?.supplierRef,
+        success: response?.status === "confirmed" || response?.bookingId || response?.success,
+        bookingId: String(response?.bookingId || response?.bookingID || ""),
+        supplierReference: response?.supplierReference || response?.supplierRef || "",
         status: response?.status || "confirmed",
       }
     } catch (error: any) {
@@ -504,26 +428,34 @@ class MediciApiClient {
   }
 
   // =====================
-  // STEP 4: CANCEL BOOKING
+  // MANUAL BOOK (by code)
   // =====================
-  async cancelBooking(bookingId: number, reason?: string): Promise<{ success: boolean; error?: string }> {
-    const innerRequest = {
-      BookingID: bookingId,
-      CancelReason: reason || "",
-      Force: false,
-      IsManual: false,
-    }
-
+  async manualBook(params: { opportunityId: number; code: string }): Promise<BookingResult> {
     try {
-      await this.request(
-        "/api/hotels/CancelRoomDirectJson",
-        "DELETE",
-        {
-          jsonRequest: JSON.stringify(innerRequest),
-        },
-        true,
-      ) // Use cancel token
+      const response = await this.request<any>("/api/hotels/ManualBook", "POST", {
+        opportunityId: params.opportunityId,
+        code: params.code,
+      })
 
+      return {
+        success: response?.success || response?.bookingId,
+        bookingId: String(response?.bookingId || ""),
+        status: "confirmed",
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message,
+      }
+    }
+  }
+
+  // =====================
+  // CANCEL BOOKING
+  // =====================
+  async cancelBooking(preBookId: number): Promise<{ success: boolean; error?: string }> {
+    try {
+      await this.request(`/api/hotels/CancelRoomActive?prebookId=${preBookId}`, "DELETE")
       return { success: true }
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -538,78 +470,47 @@ class MediciApiClient {
     startDate?: string
     endDate?: string
     hotelName?: string
-    destinationId?: number
-    hotelId?: number
-    boardId?: number
-    categoryId?: number
-    stars?: number
-  }): Promise<ActiveRoom[]> {
+    hotelStars?: number
+    city?: string
+    roomBoard?: string
+    roomCategory?: string
+    provider?: string
+  }): Promise<any[]> {
     const response = await this.request<any>("/api/hotels/GetRoomsActive", "POST", params || {})
-    return this.transformActiveRooms(response)
-  }
-
-  private transformActiveRooms(response: any): ActiveRoom[] {
-    if (!response || !Array.isArray(response)) return []
-
-    return response.map((room: any) => ({
-      prebookId: room.prebookId,
-      hotelName: room.hotelName,
-      hotelId: room.hotelId,
-      city: room.city,
-      stars: room.stars,
-      roomCategory: room.roomCategory,
-      boardType: room.boardType,
-      checkIn: room.checkIn,
-      checkOut: room.checkOut,
-      buyPrice: room.buyPrice,
-      pushPrice: room.pushPrice,
-      profit: room.pushPrice - room.buyPrice,
-      guestName: room.guestName,
-      status: room.status || "active",
-      provider: room.provider,
-    }))
+    return Array.isArray(response) ? response : []
   }
 
   async getSoldRooms(params?: {
     startDate?: string
     endDate?: string
     hotelName?: string
-  }): Promise<SoldRoom[]> {
+  }): Promise<any[]> {
     const response = await this.request<any>("/api/hotels/GetRoomsSales", "POST", params || {})
-    return response || []
+    return Array.isArray(response) ? response : []
   }
 
   async getCancelledRooms(params?: {
     startDate?: string
     endDate?: string
     hotelName?: string
-  }): Promise<CancelledRoom[]> {
+  }): Promise<any[]> {
     const response = await this.request<any>("/api/hotels/GetRoomsCancel", "POST", params || {})
-    return response || []
+    return Array.isArray(response) ? response : []
   }
 
   // =====================
-  // DASHBOARD & ANALYTICS
+  // DASHBOARD
   // =====================
-
   async getDashboardInfo(params?: {
-    startDate?: string
-    endDate?: string
-    destinationId?: number
-    hotelId?: number
-    boardId?: number
-    categoryId?: number
-  }): Promise<DashboardInfo> {
+    hotelStars?: number
+    city?: string
+    hotelName?: string
+    reservationMonthDate?: string
+    checkInMonthDate?: string
+    provider?: string
+  }): Promise<any> {
     const response = await this.request<any>("/api/hotels/GetDashboardInfo", "POST", params || {})
-    return {
-      opportunities: response?.opportunities || 0,
-      rooms: response?.rooms || 0,
-      totalInvestments: response?.totalInvestments || 0,
-      profit: response?.profit || 0,
-      cancellations: response?.cancellations || 0,
-      topProfitableRooms: response?.topProfitableRooms || [],
-      topNonProfitableRooms: response?.topNonProfitableRooms || [],
-    }
+    return response || {}
   }
 
   // =====================
@@ -619,14 +520,23 @@ class MediciApiClient {
   async getOpportunities(params?: {
     startDate?: string
     endDate?: string
-  }): Promise<Opportunity[]> {
+  }): Promise<any[]> {
     const response = await this.request<any>("/api/hotels/GetOpportunities", "POST", params || {})
-    return response || []
+    return Array.isArray(response) ? response : []
   }
 
-  async insertOpportunity(
-    params: InsertOpportunityParams,
-  ): Promise<{ success: boolean; opportunityId?: number; error?: string }> {
+  async insertOpportunity(params: {
+    hotelId?: number
+    startDateStr: string
+    endDateStr: string
+    boardId: number
+    categoryId: number
+    buyPrice: number
+    pushPrice: number
+    maxRooms: number
+    paxAdults?: number
+    paxChildren?: number[]
+  }): Promise<{ success: boolean; opportunityId?: number; error?: string }> {
     try {
       const response = await this.request<any>("/api/hotels/InsertOpportunity", "POST", params)
       return { success: true, opportunityId: response?.opportunityId }
@@ -636,14 +546,13 @@ class MediciApiClient {
   }
 
   // =====================
-  // PRICE MANAGEMENT
+  // PRICE UPDATE
   // =====================
-
-  async updatePushPrice(prebookId: number, newPushPrice: number): Promise<{ success: boolean; error?: string }> {
+  async updatePushPrice(preBookId: number, pushPrice: number): Promise<{ success: boolean; error?: string }> {
     try {
       await this.request("/api/hotels/UpdateRoomsActivePushPrice", "POST", {
-        prebookId,
-        newPushPrice,
+        preBookId,
+        pushPrice,
       })
       return { success: true }
     } catch (error: any) {
@@ -654,35 +563,27 @@ class MediciApiClient {
   // =====================
   // ARCHIVE
   // =====================
-
   async getRoomArchive(params: {
-    startDate?: string
-    endDate?: string
+    stayFrom?: string
+    stayTo?: string
     hotelName?: string
+    minPrice?: number
+    maxPrice?: number
+    city?: string
+    roomBoard?: string
+    roomCategory?: string
     pageNumber?: number
     pageSize?: number
-  }): Promise<{ data: any[]; totalCount: number; pageNumber: number; pageSize: number }> {
+  }): Promise<{ data: any[]; totalCount: number }> {
     const response = await this.request<any>("/api/hotels/GetRoomArchiveData", "POST", {
       ...params,
       pageNumber: params.pageNumber || 1,
-      pageSize: Math.min(params.pageSize || 50, 100),
+      pageSize: params.pageSize || 50,
     })
 
     return {
       data: response?.data || [],
       totalCount: response?.totalCount || 0,
-      pageNumber: response?.pageNumber || 1,
-      pageSize: response?.pageSize || 50,
-    }
-  }
-
-  // Cancel active room by prebookId
-  async cancelRoomActive(prebookId: number): Promise<{ success: boolean; error?: string }> {
-    try {
-      await this.request(`/api/hotels/CancelRoomActive?prebookId=${prebookId}`, "DELETE", undefined, true)
-      return { success: true }
-    } catch (error: any) {
-      return { success: false, error: error.message }
     }
   }
 }
@@ -692,5 +593,3 @@ export const mediciApi = new MediciApiClient()
 
 // Export class for custom instances
 export { MediciApiClient }
-
-export { MediciApiClient as MediciClient }

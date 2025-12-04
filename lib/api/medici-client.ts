@@ -50,6 +50,34 @@ export interface SearchRoomResult {
   maxOccupancy: number
 }
 
+// Room details for grouped hotel results
+export interface RoomResult {
+  code: string
+  roomId: string
+  roomName?: string
+  roomCategory: string
+  categoryId: number
+  boardType: string
+  boardId: number
+  buyPrice: number
+  pushPrice?: number
+  currency?: string
+  maxOccupancy: number
+  nonRefundable?: boolean
+  cancellationDeadline?: string
+}
+
+// Hotel with grouped rooms
+export interface HotelSearchResult {
+  hotelId: number
+  hotelName: string
+  city: string
+  stars: number
+  address?: string
+  imageUrl?: string
+  rooms?: RoomResult[]
+}
+
 export interface PreBookResult {
   token: string // CRITICAL: Save this for booking
   status: "done" | "failed"
@@ -259,7 +287,7 @@ class MediciApiClient {
     children?: number[]
     stars?: number
     limit?: number
-  }): Promise<SearchRoomResult[]> {
+  }): Promise<HotelSearchResult[]> {
     // IMPORTANT: adults must be a STRING per API documentation
     // Also: use hotelName OR city, NOT both
     const pax = [
@@ -290,52 +318,68 @@ class MediciApiClient {
     return this.transformSearchResults(response)
   }
 
-  private transformSearchResults(response: any): SearchRoomResult[] {
+  private transformSearchResults(response: any): HotelSearchResult[] {
     if (!response) return []
 
     // Handle array response directly (API returns array of rooms/hotels)
     const items = Array.isArray(response) ? response : response.hotels || response.rooms || []
-    const results: SearchRoomResult[] = []
+    
+    // Group rooms by hotel
+    const hotelMap = new Map<number, HotelSearchResult>()
 
     for (const item of items) {
-      // Each item could be a hotel with rooms or a direct room result
+      const hotelId = item.hotelId || item.id || 0
+      const hotelName = item.hotelName || item.name || "Unknown Hotel"
+      const city = item.city || item.destination || ""
+      const stars = item.stars || item.category || 0
+      const address = item.address || ""
+      const imageUrl = item.imageUrl || item.image || ""
+
+      // Get or create hotel entry
+      if (!hotelMap.has(hotelId)) {
+        hotelMap.set(hotelId, {
+          hotelId,
+          hotelName,
+          city,
+          stars,
+          address,
+          imageUrl,
+          rooms: [],
+        })
+      }
+
+      const hotel = hotelMap.get(hotelId)!
+
+      // Handle rooms
       if (item.rooms && Array.isArray(item.rooms)) {
         // Hotel with multiple rooms
         for (const room of item.rooms) {
-          results.push(this.mapRoomResult(item, room))
+          hotel.rooms!.push(this.mapRoomToRoomResult(room, item))
         }
-      } else {
+      } else if (item.code || item.buyPrice) {
         // Direct room/offer result
-        results.push(this.mapRoomResult(item, item))
+        hotel.rooms!.push(this.mapRoomToRoomResult(item, item))
       }
     }
 
-    return results
+    return Array.from(hotelMap.values())
   }
 
-  private mapRoomResult(hotel: any, room: any): SearchRoomResult {
+  private mapRoomToRoomResult(room: any, hotel: any): RoomResult {
     return {
-      code: room.code || hotel.code || `${hotel.hotelId || hotel.id}:${room.roomType || "standard"}`,
-      hotelId: hotel.hotelId || hotel.id || 0,
-      hotelName: hotel.hotelName || hotel.name || "Unknown Hotel",
-      city: hotel.city || hotel.destination || "",
-      stars: hotel.stars || hotel.category || 0,
-      address: hotel.address || "",
-      imageUrl: hotel.imageUrl || hotel.image || room.imageUrl || "",
-      roomName: room.roomName || room.name || room.roomType || "Standard Room",
+      code: room.code || `${hotel.hotelId || hotel.id}:${room.roomId || room.roomType || "standard"}`,
+      roomId: String(room.roomId || room.id || Math.random().toString(36).substring(7)),
+      roomName: room.roomName || room.name || room.roomType,
       roomCategory: room.roomCategory || room.category || "Standard",
+      categoryId: room.categoryId || 1,
       boardType: room.boardType || room.board || BOARD_TYPES[room.boardId]?.name || "Room Only",
-      boardCode: room.boardCode || room.boardId?.toString() || "RO",
-      price: {
-        amount: room.price?.amount || room.buyPrice || room.total || hotel.price?.amount || 0,
-        currency: room.price?.currency || room.currency || hotel.currency || "USD",
-      },
-      cancellation: {
-        type: room.cancellation?.type || (room.nonRefundable ? "non-refundable" : "fully-refundable"),
-        deadline: room.cancellation?.deadline || room.cancellationDeadline,
-        penalty: room.cancellation?.penalty,
-      },
+      boardId: room.boardId || 1,
+      buyPrice: room.price?.amount || room.buyPrice || room.total || 0,
+      pushPrice: room.pushPrice || room.sellPrice,
+      currency: room.price?.currency || room.currency || hotel.currency || "USD",
       maxOccupancy: room.maxOccupancy || room.maxPax || 2,
+      nonRefundable: room.nonRefundable || room.cancellation?.type === "non-refundable",
+      cancellationDeadline: room.cancellation?.deadline || room.cancellationDeadline,
     }
   }
 

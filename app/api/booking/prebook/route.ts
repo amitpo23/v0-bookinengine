@@ -26,12 +26,15 @@ export async function POST(request: NextRequest) {
 
     console.log("[v0] PreBook result:", JSON.stringify(result, null, 2))
 
-    if (!result.token && !result.preBookId) {
-      console.log("[v0] PreBook failed - no token or preBookId returned")
+    const hasValidResponse = result.token || result.preBookId || result.status === "done" || result.priceConfirmed > 0
+
+    if (!hasValidResponse) {
+      console.log("[v0] PreBook failed - no valid response indicators")
       return NextResponse.json(
         {
           success: false,
           error: "PreBook failed - room may no longer be available",
+          debug: result,
         },
         { status: 400 },
       )

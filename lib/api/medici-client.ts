@@ -331,8 +331,7 @@ class MediciApiClient {
     adults: number
     children?: number[]
   }): Promise<PreBookResult> {
-    // Build the nested JSON request structure
-    const preBookBody = {
+    const innerRequest = {
       code: params.code,
       dateFrom: params.dateFrom,
       dateTo: params.dateTo,
@@ -345,13 +344,30 @@ class MediciApiClient {
       ],
     }
 
+    const preBookBody = {
+      jsonRequest: JSON.stringify(innerRequest),
+    }
+
+    console.log("[v0] PreBook inner request:", JSON.stringify(innerRequest, null, 2))
+    console.log("[v0] PreBook wrapped body:", JSON.stringify(preBookBody, null, 2))
+
     const response = await this.request<any>("/api/hotels/PreBook", "POST", preBookBody)
 
+    console.log("[v0] PreBook raw response:", JSON.stringify(response, null, 2))
+
+    const preBookId = response?.preBookId || response?.prebookId || response?.PreBookId || response?.id || 0
+    const token = response?.token || response?.preBookToken || response?.Token || ""
+    const priceConfirmed =
+      response?.price?.amount || response?.totalPrice || response?.priceConfirmed || response?.Price || 0
+
+    // Check if we have a valid response
+    const isSuccess = preBookId > 0 || token || response?.success || response?.status === "done"
+
     return {
-      preBookId: response?.preBookId || response?.prebookId || 0,
-      token: response?.token || response?.preBookToken || "",
-      status: response?.status === "done" || response?.success ? "done" : "failed",
-      priceConfirmed: response?.price?.amount || response?.totalPrice || response?.priceConfirmed || 0,
+      preBookId,
+      token,
+      status: isSuccess ? "done" : "failed",
+      priceConfirmed,
       currency: response?.price?.currency || response?.currency || "USD",
     }
   }
@@ -367,7 +383,7 @@ class MediciApiClient {
     dateTo: string
     hotelId: number
     adults: number
-    children: number[] // From search
+    children: number[]
     customer: {
       title: string
       firstName: string
@@ -382,7 +398,7 @@ class MediciApiClient {
     voucherEmail?: string
     agencyReference?: string
   }): Promise<BookingResult> {
-    const bookBody = {
+    const innerRequest = {
       code: params.code,
       token: params.token,
       preBookId: params.preBookId,
@@ -409,6 +425,13 @@ class MediciApiClient {
       voucherEmail: params.voucherEmail || params.customer.email,
       agencyReference: params.agencyReference || "Booking Engine",
     }
+
+    const bookBody = {
+      jsonRequest: JSON.stringify(innerRequest),
+    }
+
+    console.log("[v0] Book inner request:", JSON.stringify(innerRequest, null, 2))
+    console.log("[v0] Book wrapped body:", JSON.stringify(bookBody, null, 2))
 
     try {
       const response = await this.request<any>("/api/hotels/Book", "POST", bookBody)

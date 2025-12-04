@@ -321,21 +321,24 @@ class MediciApiClient {
   private transformSearchResults(response: any): HotelSearchResult[] {
     if (!response) return []
 
-    // Handle array response directly (API returns array of rooms/hotels)
-    const items = Array.isArray(response) ? response : response.hotels || response.rooms || []
+    // The API returns: { items: [ { items: [...rooms], hotelName, ... } ] }
+    // Extract the hotels array
+    const hotels = response.items || []
     
     // Group rooms by hotel
     const hotelMap = new Map<number, HotelSearchResult>()
 
-    for (const item of items) {
-      const hotelId = item.hotelId || item.id || 0
-      const hotelName = item.hotelName || item.name || "Unknown Hotel"
-      const city = item.city || item.destination || ""
-      const stars = item.stars || item.category || 0
-      const address = item.address || ""
-      const imageUrl = item.imageUrl || item.image || ""
+    for (const hotel of hotels) {
+      // Each hotel has: { items: [...rooms], hotelName, hotelId, ... }
+      const hotelId = parseInt(hotel.hotelId) || hotel.id || 0
+      const hotelName = hotel.hotelName || hotel.name || "Unknown Hotel"
+      const city = hotel.city || hotel.destination || ""
+      const stars = hotel.stars || 0
+      const address = hotel.address || ""
+      const imageUrl = hotel.imageUrl || hotel.image || ""
+      const rooms = hotel.items || [] // The rooms are in hotel.items
 
-      // Get or create hotel entry
+      // Create or get hotel entry
       if (!hotelMap.has(hotelId)) {
         hotelMap.set(hotelId, {
           hotelId,
@@ -348,17 +351,11 @@ class MediciApiClient {
         })
       }
 
-      const hotel = hotelMap.get(hotelId)!
+      const hotelEntry = hotelMap.get(hotelId)!
 
-      // Handle rooms
-      if (item.rooms && Array.isArray(item.rooms)) {
-        // Hotel with multiple rooms
-        for (const room of item.rooms) {
-          hotel.rooms!.push(this.mapRoomToRoomResult(room, item))
-        }
-      } else if (item.code || item.buyPrice) {
-        // Direct room/offer result
-        hotel.rooms!.push(this.mapRoomToRoomResult(item, item))
+      // Process each room in hotel.items
+      for (const room of rooms) {
+        hotelEntry.rooms!.push(this.mapRoomToRoomResult(room, hotel))
       }
     }
 
@@ -366,8 +363,17 @@ class MediciApiClient {
   }
 
   private mapRoomToRoomResult(room: any, hotel: any): RoomResult {
+    // Check if room already has a code, otherwise build one
+    // Format: hotelId:category:bedding:board:uniqueId
+    let code = room.code
+    if (!code) {
+      // Generate a unique code if not provided
+      const uniqueId = `${Date.now().toString(36)}${Math.random().toString(36).substring(2, 7)}`
+      code = `${hotel.hotelId}:${room.category}:${room.bedding}:${room.board}:${uniqueId}`
+    }
+    
     return {
-      code: room.code || `${hotel.hotelId || hotel.id}:${room.roomId || room.roomType || "standard"}`,
+      code,
       roomId: String(room.roomId || room.id || Math.random().toString(36).substring(7)),
       roomName: room.roomName || room.name || room.roomType,
       roomCategory: room.roomCategory || room.category || "Standard",

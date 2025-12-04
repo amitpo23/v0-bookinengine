@@ -96,7 +96,6 @@ function BookingWidgetContent() {
     hotel,
     currentStep,
     setCurrentStep,
-    guestDetails,
     setGuestDetails,
     selectedRooms,
     searchResults,
@@ -125,23 +124,33 @@ function BookingWidgetContent() {
     setBookingError(null)
 
     try {
-      if (apiBookingData?.prebookToken) {
+      if (apiBookingData?.prebookToken && details) {
         // Complete booking via Medici API
         const response = await fetch("/api/booking/book", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            token: apiBookingData.prebookToken,
             code: apiBookingData.code,
+            token: apiBookingData.prebookToken,
+            dateFrom: apiBookingData.dateFrom,
+            dateTo: apiBookingData.dateTo,
             hotelId: apiBookingData.hotelId,
-            dateFrom: apiBookingData.searchContext?.dateFrom,
-            dateTo: apiBookingData.searchContext?.dateTo,
-            adults: apiBookingData.searchContext?.adults || 2,
-            guestFirstName: guestDetails?.firstName || "Guest",
-            guestLastName: guestDetails?.lastName || "User",
-            guestEmail: guestDetails?.email || "guest@example.com",
-            guestPhone: guestDetails?.phone || "",
-            paymentId,
+            adults: apiBookingData.adults,
+            children: apiBookingData.children,
+            customer: {
+              title: details?.title || "MR",
+              firstName: details?.firstName || "Guest",
+              lastName: details?.lastName || "User",
+              email: details?.email || "guest@example.com",
+              phone: details?.phone || "",
+              country: details?.country || "IL",
+              city: details?.city || "",
+              address: details?.address || "",
+              zip: details?.zip || "",
+              birthDate: details?.birthDate || undefined,
+            },
+            voucherEmail: details?.email,
+            agencyReference: "Booking Engine",
           }),
         })
 
@@ -151,11 +160,12 @@ function BookingWidgetContent() {
           throw new Error(data.error || "Booking failed")
         }
 
+        const confirmationCode = data.bookingId || `BK${Date.now().toString(36).toUpperCase()}`
         setBookingConfirmation({
-          confirmationCode: data.confirmationCode || `BK${Date.now().toString(36).toUpperCase()}`,
+          confirmationCode: confirmationCode,
           bookingId: data.bookingId || paymentId,
         })
-        setConfirmationNumber(data.confirmationCode || `BK${Date.now().toString(36).toUpperCase()}`)
+        setConfirmationNumber(confirmationCode)
       } else {
         // Fallback for non-API bookings
         setConfirmationNumber(`BK${Date.now().toString(36).toUpperCase()}`)
@@ -169,6 +179,9 @@ function BookingWidgetContent() {
       setIsBooking(false)
     }
   }
+
+  // Get guest details for the payment handler
+  const { guestDetails: details } = useBooking()
 
   const BackArrow = dir === "rtl" ? ArrowRightIcon : ArrowLeftIcon
   const backText = locale === "he" ? "חזרה" : "Back"

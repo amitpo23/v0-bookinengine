@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       dateTo,
       hotelName,
       city,
-      adults,
+      adults: Number(adults),
       children,
       stars,
       limit,

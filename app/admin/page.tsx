@@ -91,6 +91,7 @@ function AdminDashboardContent() {
     dashboard: { title: "לוח בקרה", subtitle: "סקירה כללית של פעילות המלון" },
     bookings: { title: "ניהול הזמנות", subtitle: "צפה ונהל את כל ההזמנות במלון" },
     rooms: { title: "ניהול חדרים", subtitle: "נהל את סוגי החדרים והזמינות" },
+    showcase: { title: "תצוגת חדרים מתקדמת", subtitle: "תצוגה מקצועית של חדרים עם תמונות ומידע" },
     pricing: { title: "ניהול תמחור", subtitle: "הגדר מחירים דינמיים לפי תאריכים" },
     engines: { title: "הגדרות מנועים", subtitle: "הפעל וכבה מנועי הזמנות והגדר את ה-API" },
     aiconfig: { title: "הגדרות AI", subtitle: "הנחיות, ידע וסגנון לצ'אט AI" },
@@ -177,6 +178,7 @@ function AdminDashboardContent() {
 
           {activeTab === "bookings" && <BookingsTable bookings={bookings} />}
           {activeTab === "rooms" && <RoomsManagement rooms={mockRooms} />}
+          {activeTab === "showcase" && <RoomsShowcase />}
           {activeTab === "pricing" && <PricingCalendar rooms={mockRooms} />}
           {activeTab === "engines" && <EngineSettings />}
 

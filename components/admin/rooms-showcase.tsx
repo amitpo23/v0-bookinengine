@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { HotelCard, HotelResults, HotelImageGallery, HotelAmenities } from '@/components/hotels';
+import { HotelCard, HotelResults, HotelImageGallery, HotelAmenities, HotelDetailsEnhanced } from '@/components/hotels';
 import type { HotelData } from '@/types/hotel-types';
 import type { SearchQuery } from '@/types/ui-types';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type RoomsShowcaseProps = {
   rooms?: HotelData[];
@@ -161,56 +162,67 @@ export function RoomsShowcase({ rooms = [], searchQuery }: RoomsShowcaseProps) {
             </button>
           </div>
 
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-semibold text-lg mb-2">{selectedHotel.hotelName}</h4>
-              <p className="text-sm text-muted-foreground">
-                {selectedHotel.roomType || 'Standard Room'}
-              </p>
-            </div>
+          <Tabs defaultValue="basic" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="basic">מידע בסיסי</TabsTrigger>
+              <TabsTrigger value="enhanced">מידע מורחב (Tavily)</TabsTrigger>
+            </TabsList>
 
-            {selectedHotel.images && selectedHotel.images.length > 0 && (
+            <TabsContent value="basic" className="space-y-4">
               <div>
-                <h5 className="font-medium text-sm mb-2">גלריית תמונות</h5>
-                <HotelImageGallery hotel={selectedHotel} />
+                <h4 className="font-semibold text-lg mb-2">{selectedHotel.hotelName}</h4>
+                <p className="text-sm text-muted-foreground">
+                  {selectedHotel.roomType || 'Standard Room'}
+                </p>
               </div>
-            )}
 
-            {selectedHotel.specialOffers && selectedHotel.specialOffers.length > 0 && (
-              <div>
-                <h5 className="font-medium text-sm mb-2">מבצעים</h5>
-                <div className="space-y-2">
-                  {selectedHotel.specialOffers.map((offer) => (
-                    <div
-                      key={offer.id}
-                      className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20"
-                    >
-                      <div className="font-medium text-sm">{offer.title}</div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {offer.description}
-                      </div>
-                      {offer.discount && (
-                        <div className="text-xs font-semibold text-purple-600 mt-1">
-                          {offer.discount}% הנחה
+              {selectedHotel.images && selectedHotel.images.length > 0 && (
+                <div>
+                  <h5 className="font-medium text-sm mb-2">גלריית תמונות</h5>
+                  <HotelImageGallery hotel={selectedHotel} />
+                </div>
+              )}
+
+              {selectedHotel.specialOffers && selectedHotel.specialOffers.length > 0 && (
+                <div>
+                  <h5 className="font-medium text-sm mb-2">מבצעים</h5>
+                  <div className="space-y-2">
+                    {selectedHotel.specialOffers.map((offer) => (
+                      <div
+                        key={offer.id}
+                        className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20"
+                      >
+                        <div className="font-medium text-sm">{offer.title}</div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {offer.description}
                         </div>
-                      )}
-                    </div>
-                  ))}
+                        {offer.discount && (
+                          <div className="text-xs font-semibold text-purple-600 mt-1">
+                            {offer.discount}% הנחה
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                <div>
+                  <div className="text-sm text-muted-foreground">מחיר ללילה</div>
+                  <div className="text-2xl font-bold">${selectedHotel.price}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">קטגוריה</div>
+                  <div className="text-lg font-medium capitalize">{selectedHotel.category}</div>
                 </div>
               </div>
-            )}
+            </TabsContent>
 
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-              <div>
-                <div className="text-sm text-muted-foreground">מחיר ללילה</div>
-                <div className="text-2xl font-bold">${selectedHotel.price}</div>
-              </div>
-              <div>
-                <div className="text-sm text-muted-foreground">קטגוריה</div>
-                <div className="text-lg font-medium capitalize">{selectedHotel.category}</div>
-              </div>
-            </div>
-          </div>
+            <TabsContent value="enhanced">
+              <HotelDetailsEnhanced hotel={selectedHotel} city={demoSearchQuery.destination} />
+            </TabsContent>
+          </Tabs>
         </Card>
       )}
 

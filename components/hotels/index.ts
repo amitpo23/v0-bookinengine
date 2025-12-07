@@ -6,3 +6,4 @@ export { HotelInfo } from './hotel-info';
 export { HotelAmenities } from './hotel-amenities';
 export { HotelImageGallery } from './hotel-image-gallery';
 export { HotelImageGalleryModal } from './hotel-image-gallery-modal';
+export { HotelDetailsEnhanced } from './hotel-details-enhanced';

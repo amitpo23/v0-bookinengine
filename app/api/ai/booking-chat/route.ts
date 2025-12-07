@@ -1,5 +1,6 @@
 import { generateText } from "ai"
 import type { HotelConfig } from "@/types/saas"
+import { getBookingAgentPrompt } from "@/lib/prompts/booking-agent-prompt"
 
 const MEDICI_API_BASE = "https://medici-backend.azurewebsites.net"
 const MEDICI_TOKEN =
@@ -24,7 +25,7 @@ async function searchMediciHotels(params: {
     dateTo: params.dateTo,
     pax: [
       {
-        adults: String(params.adults || 2),
+        adults: params.adults || 2,
         children: params.children || [],
       },
     ],
@@ -86,64 +87,7 @@ export async function POST(req: Request) {
 
     const today = new Date().toISOString().split("T")[0]
 
-    const systemPrompt = isHebrew
-      ? `
-אתה עוזר הזמנות AI של ${hotelName}. תפקידך לעזור לאורחים להזמין חדרים במלון.
-
-כללים:
-1. היה ידידותי ומקצועי
-2. כשאורח מבקש להזמין - שאל על תאריכים (צ'ק-אין וצ'ק-אאוט) ומספר אורחים
-3. כשיש לך את כל הפרטים - חפש זמינות ב-API והצג תוצאות
-4. עזור לאורח לבחור חדר ולהשלים את ההזמנה
-5. תמיד ענה בעברית
-
-התאריך היום הוא: ${today}
-
-מידע על המלון:
-- שם: ${hotelName}
-- עיר: ${hotelCity}
-
-אם האורח שואל על זמינות או רוצה להזמין, אוסף את הפרטים הבאים:
-- תאריך צ'ק-אין (בפורמט YYYY-MM-DD)
-- תאריך צ'ק-אאוט (בפורמט YYYY-MM-DD)
-- מספר מבוגרים (ברירת מחדל: 2)
-
-חשוב: התאריכים חייבים להיות בעתיד!
-
-כשיש לך את כל הפרטים, הוסף בסוף ההודעה:
-[SEARCH]{"dateFrom": "YYYY-MM-DD", "dateTo": "YYYY-MM-DD", "adults": 2}[/SEARCH]
-
-לדוגמה אם מישהו רוצה 10-12 ביוני 2026:
-[SEARCH]{"dateFrom": "2026-06-10", "dateTo": "2026-06-12", "adults": 2}[/SEARCH]
-`
-      : `
-You are the AI booking assistant for ${hotelName}. Your role is to help guests book rooms.
-
-Rules:
-1. Be friendly and professional
-2. When a guest wants to book - ask about dates and number of guests
-3. When you have all details - search availability and show results
-4. Always respond in English
-
-Today's date is: ${today}
-
-Hotel Information:
-- Name: ${hotelName}
-- City: ${hotelCity}
-
-Collect these details for booking:
-- Check-in date (YYYY-MM-DD format)
-- Check-out date (YYYY-MM-DD format)
-- Number of adults (default: 2)
-
-Important: Dates must be in the future!
-
-When you have all details, add at the end:
-[SEARCH]{"dateFrom": "YYYY-MM-DD", "dateTo": "YYYY-MM-DD", "adults": 2}[/SEARCH]
-
-Example for June 10-12, 2026:
-[SEARCH]{"dateFrom": "2026-06-10", "dateTo": "2026-06-12", "adults": 2}[/SEARCH]
-`
+    const systemPrompt = getBookingAgentPrompt(language, hotelName, hotelCity, today)
 
     console.log("[v0] Calling AI model...")
 
@@ -169,7 +113,7 @@ Example for June 10-12, 2026:
 
         const searchResults = await searchMediciHotels({
           hotelName: hotelApiName,
-          city: hotelCity,
+          city: searchParams.city || hotelCity,
           dateFrom: searchParams.dateFrom,
           dateTo: searchParams.dateTo,
           adults: searchParams.adults || 2,
@@ -192,7 +136,7 @@ Example for June 10-12, 2026:
         console.log("[v0] Total rooms found:", rooms.length)
 
         if (rooms.length > 0) {
-          const formattedRooms = rooms.slice(0, 5).map((room: any) => {
+          const formattedRooms = rooms.slice(0, 6).map((room: any) => {
             const firstItem = room.items?.[0] || room
             const price = room.price?.amount || room.netPrice?.amount || room.price || 0
             const currency = room.price?.currency || room.netPrice?.currency || "USD"
@@ -212,21 +156,32 @@ Example for June 10-12, 2026:
               images: firstItem.images || [],
               facilities: firstItem.facilities || [],
               description: firstItem.description || "",
-              location: firstItem.city || hotelCity,
+              location: firstItem.city || searchParams.city || hotelCity,
               rating: firstItem.stars || 4,
             }
           })
 
-          console.log("[v0] Formatted rooms:", JSON.stringify(formattedRooms, null, 2))
+          console.log("[v0] Formatted rooms:", JSON.stringify(formattedRooms.slice(0, 2), null, 2))
 
           const cleanText = text.replace(/\[SEARCH\].*?\[\/SEARCH\]/s, "").trim()
 
           const roomsList = formattedRooms
-            .map((r, i) =>
-              isHebrew
-                ? `${i + 1}. ${r.roomType || r.name}\n   מחיר: $${r.price} ${r.currency}\n   ארוחות: ${r.board === "RO" ? "ללא ארוחות" : r.board}\n   ביטול: ${r.cancellation === "fully-refundable" ? "ניתן לביטול חינם" : "לא ניתן לביטול"}`
-                : `${i + 1}. ${r.roomType || r.name}\n   Price: $${r.price} ${r.currency}\n   Board: ${r.board}\n   Cancellation: ${r.cancellation}`,
-            )
+            .map((r, i) => {
+              const label =
+                i === 0
+                  ? isHebrew
+                    ? " (הכי משתלם)"
+                    : " (Best Value)"
+                  : i === formattedRooms.length - 1
+                    ? isHebrew
+                      ? " (הכי גמיש)"
+                      : " (Most Flexible)"
+                    : ""
+
+              return isHebrew
+                ? `${i + 1}. ${r.hotelName} - ${r.roomType}${label}\n   מחיר: $${r.price} ${r.currency}\n   פנסיון: ${r.board === "RO" ? "ללא ארוחות" : r.board === "BB" ? "ארוחת בוקר" : r.board}\n   ביטול: ${r.cancellation === "fully-refundable" ? "ניתן לביטול חינם" : "לא ניתן לביטול"}`
+                : `${i + 1}. ${r.hotelName} - ${r.roomType}${label}\n   Price: $${r.price} ${r.currency}\n   Board: ${r.board === "RO" ? "Room Only" : r.board === "BB" ? "Breakfast" : r.board}\n   Cancellation: ${r.cancellation === "fully-refundable" ? "Free cancellation" : "Non-refundable"}`
+            })
             .join("\n\n")
 
           return Response.json({
@@ -234,8 +189,8 @@ Example for June 10-12, 2026:
               cleanText +
               "\n\n" +
               (isHebrew
-                ? `מצאתי ${formattedRooms.length} אפשרויות זמינות עבורך:\n\n${roomsList}\n\nלחץ על "בחר והמשך" כדי להתחיל בתהליך ההזמנה.`
-                : `I found ${formattedRooms.length} available options for you:\n\n${roomsList}\n\nClick "Select & Continue" to start the booking process.`),
+                ? `מצאתי ${formattedRooms.length} אפשרויות זמינות עבורך:\n\n${roomsList}\n\nאיזה חדר מעניין אותך? לחץ על "בחר והמשך" כדי להתחיל בתהליך ההזמנה.`
+                : `I found ${formattedRooms.length} available options for you:\n\n${roomsList}\n\nWhich room interests you? Click "Select & Continue" to start the booking process.`),
             bookingData: {
               type: "search_results",
               data: {
@@ -245,6 +200,7 @@ Example for June 10-12, 2026:
                   dateTo: searchParams.dateTo,
                   adults: searchParams.adults || 2,
                   children: searchParams.children || [],
+                  city: searchParams.city || hotelCity,
                 },
               },
             },
@@ -253,6 +209,7 @@ Example for June 10-12, 2026:
               dateTo: searchParams.dateTo,
               adults: searchParams.adults || 2,
               children: searchParams.children || [],
+              city: searchParams.city || hotelCity,
             },
           })
         } else {
@@ -263,8 +220,8 @@ Example for June 10-12, 2026:
               cleanText +
               "\n\n" +
               (isHebrew
-                ? "מצטער, לא מצאתי חדרים זמינות בתאריכים אלה. האם תרצה לנסות תאריכים אחרים?"
-                : "Sorry, I couldn't find available rooms for these dates. Would you like to try different dates?"),
+                ? "לצערי לא מצאתי חדרים זמינים בתאריכים אלה. אפשרויות:\n- לנסות תאריכים אחרים (±1-2 ימים)\n- לחפש באזור אחר\n- לשנות את מספר האורחים\n\nמה תרצה לנסות?"
+                : "Unfortunately, I couldn't find available rooms for these dates. Options:\n- Try different dates (±1-2 days)\n- Search in a different area\n- Change the number of guests\n\nWhat would you like to try?"),
           })
         }
       } catch (error) {
@@ -277,8 +234,8 @@ Example for June 10-12, 2026:
             cleanText +
             "\n\n" +
             (isHebrew
-              ? "מצטער, נתקלתי בבעיה בחיפוש. אנא נסה שוב."
-              : "Sorry, I encountered an issue while searching. Please try again."),
+              ? "הייתה בעיה ביצירת קשר עם מערכת ההזמנות. אנא נסה שוב בעוד מספר רגעים או נסה תאריכים/יעד אחרים."
+              : "There was an issue contacting the booking system. Please try again in a few moments or try different dates/destination."),
         })
       }
     }

@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useHotelConfig } from "@/lib/hotel-config-context"
 import type { HotelConfig } from "@/types/saas"
+import { Badge } from "@/components/ui/badge"
 
 // SVG Icons
 const BotIcon = ({ className }: { className?: string }) => (
@@ -51,7 +52,7 @@ const TrashIcon = ({ className }: { className?: string }) => (
 
 const SparklesIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+    <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.456-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
   </svg>
 )
 
@@ -101,6 +102,7 @@ export function AiSettings() {
     useEmojis: false,
     suggestUpsells: true,
     collectContactInfo: true,
+    externalInfoSources: [],
   }
 
   const handleSave = () => {
@@ -235,7 +237,7 @@ export function AiSettings() {
 
       {hotel.enableAiChat && (
         <Tabs defaultValue="messages" className="space-y-6">
-          <TabsList className="grid grid-cols-5 w-full max-w-3xl">
+          <TabsList className="grid grid-cols-6 w-full max-w-3xl">
             <TabsTrigger value="messages" className="flex items-center gap-2">
               <MessageIcon className="w-4 h-4" />
               הודעות
@@ -255,6 +257,10 @@ export function AiSettings() {
             <TabsTrigger value="assistant" className="flex items-center gap-2">
               <SparklesIcon className="w-4 h-4" />
               עוזר אדמין
+            </TabsTrigger>
+            <TabsTrigger value="sources" className="flex items-center gap-2">
+              <DocumentIcon className="w-4 h-4" />
+              מקורות מידע
             </TabsTrigger>
           </TabsList>
 
@@ -733,6 +739,72 @@ AI: שלום! אשמח לעזור. לאילו תאריכים?
                     )}
                   </CardContent>
                 </Card>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Data Sources Tab */}
+          <TabsContent value="sources" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>מקורות מידע חיצוניים</CardTitle>
+                <CardDescription>הגדר לינקים ומקורות מידע שה-AI ישתמש בהם להשלמת מידע על מלונות</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 p-4 border border-dashed rounded-lg">
+                  <div>
+                    <Label>שם המקור</Label>
+                    <Input placeholder="לדוגמה: Booking.com, TripAdvisor..." className="mt-2" />
+                  </div>
+                  <div>
+                    <Label>כתובת URL</Label>
+                    <Input placeholder="https://..." className="mt-2" />
+                  </div>
+                  <div>
+                    <Label>סוג המידע</Label>
+                    <select className="w-full mt-2 p-2 rounded-lg bg-background border border-input">
+                      <option value="reviews">ביקורות</option>
+                      <option value="images">תמונות</option>
+                      <option value="amenities">מתקנים</option>
+                      <option value="prices">מחירים</option>
+                      <option value="all">הכל</option>
+                    </select>
+                  </div>
+                  <Button className="w-fit">
+                    <PlusIcon className="w-4 h-4 mr-2" />
+                    הוסף מקור
+                  </Button>
+                </div>
+
+                <div className="space-y-3">
+                  <Card className="bg-secondary/30">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
+                              AI
+                            </span>
+                            <div>
+                              <h4 className="font-medium">AI Hotel Info Agent</h4>
+                              <p className="text-sm text-muted-foreground">מביא מידע אוטומטי על מלונות מהאינטרנט</p>
+                            </div>
+                          </div>
+                        </div>
+                        <Badge variant="secondary" className="bg-green-500/20 text-green-400">
+                          פעיל
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                  <p className="text-sm text-amber-600 dark:text-amber-400">
+                    <strong>טיפ:</strong> הוסף לינקים לעמודי המלונות שלך באתרים חיצוניים כדי שה-AI יוכל להביא מידע מדויק
+                    יותר.
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

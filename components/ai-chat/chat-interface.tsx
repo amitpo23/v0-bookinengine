@@ -23,6 +23,9 @@ interface ChatInterfaceProps {
   hotelId?: string
   language?: "he" | "en"
   embedded?: boolean
+  agentName?: string
+  agentAvatar?: string
+  darkMode?: boolean
 }
 
 // SVG Icons
@@ -152,11 +155,13 @@ function HotelCard({
   isRtl,
   onSelect,
   searchContext,
+  darkMode = true,
 }: {
   hotel: any
   isRtl: boolean
   onSelect: (room: BookingRoom) => void
   searchContext?: { dateFrom: string; dateTo: string; adults: number; children: number[] }
+  darkMode?: boolean
 }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [liked, setLiked] = useState(false)
@@ -195,7 +200,14 @@ function HotelCard({
   }
 
   return (
-    <Card className="overflow-hidden bg-slate-800/80 backdrop-blur-sm border-white/10 hover:border-emerald-500/50 transition-all duration-300 group hover:shadow-xl hover:shadow-emerald-500/10">
+    <Card
+      className={cn(
+        "overflow-hidden backdrop-blur-sm border transition-all duration-300 group hover:shadow-xl",
+        darkMode
+          ? "bg-slate-800/80 border-white/10 hover:border-emerald-500/50 hover:shadow-emerald-500/10"
+          : "bg-white border-slate-200 hover:border-emerald-500/50 hover:shadow-emerald-500/20",
+      )}
+    >
       {/* Image */}
       <div className="relative h-44 overflow-hidden">
         <img
@@ -207,7 +219,12 @@ function HotelCard({
             target.src = `/placeholder.svg?height=200&width=300&query=${encodeURIComponent(hotel.name + " hotel")}`
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-transparent to-transparent" />
+        <div
+          className={cn(
+            "absolute inset-0 bg-gradient-to-t via-transparent to-transparent",
+            darkMode ? "from-slate-900/90" : "from-black/60",
+          )}
+        />
 
         {images.length > 1 && (
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
@@ -252,9 +269,13 @@ function HotelCard({
       <div className="p-4 space-y-3">
         <div className="flex justify-between items-start gap-2">
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-white text-sm truncate">{hotel.name}</h4>
+            <h4 className={cn("font-semibold text-sm truncate", darkMode ? "text-white" : "text-slate-900")}>
+              {hotel.name}
+            </h4>
             {hotel.location && (
-              <p className="flex items-center gap-1 text-xs text-slate-400 mt-0.5">
+              <p
+                className={cn("flex items-center gap-1 text-xs mt-0.5", darkMode ? "text-slate-400" : "text-slate-500")}
+              >
                 <LocationIcon />
                 <span className="truncate">{hotel.location}</span>
               </p>
@@ -267,7 +288,11 @@ function HotelCard({
           </div>
         </div>
 
-        {hotel.description && <p className="text-xs text-slate-400 line-clamp-2">{hotel.description}</p>}
+        {hotel.description && (
+          <p className={cn("text-xs line-clamp-2", darkMode ? "text-slate-400" : "text-slate-600")}>
+            {hotel.description}
+          </p>
+        )}
 
         <div className="flex flex-wrap gap-2">
           {facilities.slice(0, 4).map((facility: string, idx: number) => {
@@ -276,7 +301,10 @@ function HotelCard({
             return (
               <span
                 key={idx}
-                className="flex items-center gap-1 px-2 py-1 text-[10px] text-slate-400 bg-slate-700/50 rounded-full"
+                className={cn(
+                  "flex items-center gap-1 px-2 py-1 text-[10px] rounded-full",
+                  darkMode ? "text-slate-400 bg-slate-700/50" : "text-slate-600 bg-slate-100",
+                )}
               >
                 {icon || <span className="w-3.5 h-3.5 rounded-full bg-emerald-500/30" />}
                 <span className="truncate max-w-[80px]">{facility}</span>
@@ -285,7 +313,12 @@ function HotelCard({
           })}
         </div>
 
-        <div className="flex items-center justify-between text-xs text-slate-400 pt-1 border-t border-white/5">
+        <div
+          className={cn(
+            "flex items-center justify-between text-xs pt-1 border-t",
+            darkMode ? "text-slate-400 border-white/5" : "text-slate-500 border-slate-200",
+          )}
+        >
           <span>{hotel.roomType || hotel.room_type || (isRtl ? "חדר סטנדרטי" : "Standard Room")}</span>
           <span className="flex items-center gap-1">
             <BreakfastIcon />
@@ -304,7 +337,14 @@ function HotelCard({
   )
 }
 
-export function ChatInterface({ hotelId, language = "he", embedded = false }: ChatInterfaceProps) {
+export function ChatInterface({
+  hotelId,
+  language = "he",
+  embedded = false,
+  agentName,
+  agentAvatar,
+  darkMode = true,
+}: ChatInterfaceProps) {
   const { currentHotel } = useHotelConfig()
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
@@ -322,7 +362,7 @@ export function ChatInterface({ hotelId, language = "he", embedded = false }: Ch
   const isRtl = language === "he"
   const hotel = currentHotel || {
     id: "demo-hotel",
-    name: isRtl ? "מלון הדוגמה" : "Demo Hotel",
+    name: agentName || (isRtl ? "מלון הדוגמה" : "Demo Hotel"),
     city: isRtl ? "תל אביב" : "Tel Aviv",
     apiSettings: {
       provider: "medici" as const,
@@ -340,10 +380,10 @@ export function ChatInterface({ hotelId, language = "he", embedded = false }: Ch
 
   useEffect(() => {
     if (messages.length === 0 && hotel) {
+      const displayName = agentName || hotel.name
       const welcomeMessage = isRtl
-        ? hotel.aiChatSettings?.welcomeMessageHe || `שלום! אני העוזר החכם של ${hotel.name}. איך אוכל לעזור לך היום?`
-        : hotel.aiChatSettings?.welcomeMessage ||
-          `Hello! I'm the AI assistant for ${hotel.name}. How can I help you today?`
+        ? hotel.aiChatSettings?.welcomeMessageHe || `שלום! אני ${displayName}. איך אוכל לעזור לך היום?`
+        : hotel.aiChatSettings?.welcomeMessage || `Hello! I'm ${displayName}. How can I help you today?`
 
       setMessages([
         {
@@ -354,7 +394,7 @@ export function ChatInterface({ hotelId, language = "he", embedded = false }: Ch
         },
       ])
     }
-  }, [hotel, isRtl, messages.length])
+  }, [hotel, isRtl, messages.length, agentName])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -454,7 +494,7 @@ export function ChatInterface({ hotelId, language = "he", embedded = false }: Ch
       <div
         className={cn(
           "flex flex-col h-full p-4",
-          "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950",
+          darkMode ? "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" : "bg-slate-50",
           embedded ? "rounded-2xl overflow-hidden shadow-2xl" : "",
         )}
         dir={isRtl ? "rtl" : "ltr"}
@@ -473,35 +513,55 @@ export function ChatInterface({ hotelId, language = "he", embedded = false }: Ch
     <div
       className={cn(
         "flex flex-col h-full",
-        "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950",
+        darkMode ? "bg-black" : "bg-slate-50",
         embedded ? "rounded-2xl overflow-hidden shadow-2xl" : "",
       )}
       dir={isRtl ? "rtl" : "ltr"}
     >
-      {/* Premium Header */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/20 via-cyan-600/20 to-emerald-600/20" />
-        <div className="relative flex items-center gap-4 p-5 border-b border-white/10 backdrop-blur-xl">
+      {/* Header with Agent Info */}
+      <div className={cn("relative overflow-hidden border-b", darkMode ? "border-white/10" : "border-slate-200")}>
+        <div
+          className={cn(
+            "absolute inset-0",
+            darkMode
+              ? "bg-gradient-to-r from-emerald-600/10 via-cyan-600/10 to-emerald-600/10"
+              : "bg-gradient-to-r from-emerald-50 to-cyan-50",
+          )}
+        />
+        <div className="relative flex items-center gap-4 p-5 backdrop-blur-xl">
           <div className="relative">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 via-cyan-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-              <BotIcon />
-            </div>
-            <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 border-2 border-slate-900 rounded-full" />
+            {agentAvatar ? (
+              <img
+                src={agentAvatar || "/placeholder.svg"}
+                alt={agentName || "Agent"}
+                className="w-12 h-12 rounded-full object-cover shadow-lg"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 via-cyan-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                <BotIcon />
+              </div>
+            )}
+            <span
+              className={cn(
+                "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full",
+                darkMode ? "border-2 border-black" : "border-2 border-white",
+              )}
+            />
           </div>
           <div className="flex-1">
-            <h3 className="font-bold text-lg text-white">{hotel?.name || "AI Assistant"}</h3>
+            <h3 className={cn("font-bold text-lg", darkMode ? "text-white" : "text-slate-900")}>
+              {agentName || hotel?.name || "AI Assistant"}
+            </h3>
             <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 text-xs text-emerald-400">
+              <span className="flex items-center gap-1 text-xs text-emerald-500">
                 <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
                 {isRtl ? "מקוון" : "Online"}
               </span>
-              <span className="text-slate-500">•</span>
-              <span className="text-xs text-slate-400">{isRtl ? "זמן תגובה: מיידי" : "Response: Instant"}</span>
+              <span className={darkMode ? "text-slate-600" : "text-slate-400"}>•</span>
+              <span className={cn("text-xs", darkMode ? "text-slate-400" : "text-slate-500")}>
+                {isRtl ? "זמן תגובה: מיידי" : "Response: Instant"}
+              </span>
             </div>
-          </div>
-          <div className="flex items-center gap-1 px-3 py-1.5 bg-white/5 rounded-full border border-white/10">
-            <BotIcon />
-            <span className="text-xs font-medium text-slate-300">AI</span>
           </div>
         </div>
       </div>
@@ -510,11 +570,18 @@ export function ChatInterface({ hotelId, language = "he", embedded = false }: Ch
       <div className="flex-1 overflow-y-auto p-5 space-y-5">
         {messages.map((message) => (
           <div key={message.id} className={cn("flex gap-3", message.role === "user" ? "justify-end" : "justify-start")}>
-            {message.role === "assistant" && (
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex-shrink-0 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                <BotIcon />
-              </div>
-            )}
+            {message.role === "assistant" &&
+              (agentAvatar ? (
+                <img
+                  src={agentAvatar || "/placeholder.svg"}
+                  alt={agentName || "Agent"}
+                  className="w-9 h-9 rounded-full object-cover flex-shrink-0 shadow-lg"
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex-shrink-0 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                  <BotIcon />
+                </div>
+              ))}
 
             <div className={cn("max-w-[85%] space-y-3")}>
               <div
@@ -522,7 +589,9 @@ export function ChatInterface({ hotelId, language = "he", embedded = false }: Ch
                   "rounded-2xl px-4 py-3 shadow-lg",
                   message.role === "user"
                     ? "bg-gradient-to-r from-emerald-600 to-cyan-600 text-white rounded-br-md"
-                    : "bg-slate-800/80 backdrop-blur-sm text-slate-100 border border-white/5 rounded-bl-md",
+                    : darkMode
+                      ? "bg-slate-800/80 backdrop-blur-sm text-slate-100 border border-white/5 rounded-bl-md"
+                      : "bg-white text-slate-900 border border-slate-200 rounded-bl-md",
                 )}
               >
                 <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
@@ -537,22 +606,35 @@ export function ChatInterface({ hotelId, language = "he", embedded = false }: Ch
                       isRtl={isRtl}
                       onSelect={handleSelectRoom}
                       searchContext={searchContext || message.bookingData?.data.searchContext}
+                      darkMode={darkMode}
                     />
                   ))}
                 </div>
               )}
 
               {message.bookingData?.type === "booking_confirmation" && (
-                <Card className="mt-3 p-5 bg-gradient-to-r from-emerald-900/40 to-cyan-900/40 border-emerald-500/30 backdrop-blur-sm">
+                <Card
+                  className={cn(
+                    "mt-3 p-5 backdrop-blur-sm",
+                    darkMode
+                      ? "bg-gradient-to-r from-emerald-900/40 to-cyan-900/40 border-emerald-500/30"
+                      : "bg-gradient-to-r from-emerald-50 to-cyan-50 border-emerald-200",
+                  )}
+                >
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                    <div
+                      className={cn(
+                        "w-12 h-12 rounded-full flex items-center justify-center",
+                        darkMode ? "bg-emerald-500/20" : "bg-emerald-100",
+                      )}
+                    >
                       <CheckIcon />
                     </div>
                     <div>
-                      <p className="font-semibold text-emerald-400 text-lg">
+                      <p className="font-semibold text-emerald-500 text-lg">
                         {isRtl ? "ההזמנה אושרה!" : "Booking Confirmed!"}
                       </p>
-                      <p className="text-sm text-slate-400">
+                      <p className={cn("text-sm", darkMode ? "text-slate-400" : "text-slate-600")}>
                         {isRtl
                           ? `מספר אישור: ${message.bookingData.data.confirmationNumber}`
                           : `Confirmation: ${message.bookingData.data.confirmationNumber}`}
@@ -562,7 +644,7 @@ export function ChatInterface({ hotelId, language = "he", embedded = false }: Ch
                 </Card>
               )}
 
-              <p className="text-[10px] text-slate-500 px-1">
+              <p className={cn("text-[10px] px-1", darkMode ? "text-slate-600" : "text-slate-400")}>
                 {message.timestamp.toLocaleTimeString(isRtl ? "he-IL" : "en-US", {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -571,7 +653,14 @@ export function ChatInterface({ hotelId, language = "he", embedded = false }: Ch
             </div>
 
             {message.role === "user" && (
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-600 to-slate-700 flex-shrink-0 flex items-center justify-center">
+              <div
+                className={cn(
+                  "w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center",
+                  darkMode
+                    ? "bg-gradient-to-br from-slate-600 to-slate-700"
+                    : "bg-gradient-to-br from-slate-200 to-slate-300",
+                )}
+              >
                 <UserIcon />
               </div>
             )}
@@ -580,10 +669,23 @@ export function ChatInterface({ hotelId, language = "he", embedded = false }: Ch
 
         {isLoading && (
           <div className="flex gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex-shrink-0 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-              <BotIcon />
-            </div>
-            <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl rounded-bl-md px-4 py-3 border border-white/5">
+            {agentAvatar ? (
+              <img
+                src={agentAvatar || "/placeholder.svg"}
+                alt={agentName || "Agent"}
+                className="w-9 h-9 rounded-full object-cover flex-shrink-0 shadow-lg"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex-shrink-0 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <BotIcon />
+              </div>
+            )}
+            <div
+              className={cn(
+                "rounded-2xl rounded-bl-md px-4 py-3 border",
+                darkMode ? "bg-slate-800/80 backdrop-blur-sm border-white/5" : "bg-white border-slate-200",
+              )}
+            >
               <div className="flex gap-1.5">
                 <span
                   className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce"
@@ -613,7 +715,12 @@ export function ChatInterface({ hotelId, language = "he", embedded = false }: Ch
               <button
                 key={idx}
                 onClick={() => setInput(action)}
-                className="px-3 py-1.5 text-xs text-slate-300 bg-slate-800/50 hover:bg-slate-700/50 border border-white/5 rounded-full transition-colors"
+                className={cn(
+                  "px-3 py-1.5 text-xs rounded-full transition-colors border",
+                  darkMode
+                    ? "text-slate-300 bg-slate-800/50 hover:bg-slate-700/50 border-white/5"
+                    : "text-slate-600 bg-white hover:bg-slate-100 border-slate-200",
+                )}
               >
                 {action}
               </button>
@@ -623,7 +730,12 @@ export function ChatInterface({ hotelId, language = "he", embedded = false }: Ch
       )}
 
       {/* Input Area */}
-      <div className="p-4 border-t border-white/10 bg-slate-900/50 backdrop-blur-xl">
+      <div
+        className={cn(
+          "p-4 border-t backdrop-blur-xl",
+          darkMode ? "border-white/10 bg-slate-900/50" : "border-slate-200 bg-white/50",
+        )}
+      >
         <form onSubmit={handleSubmit} className="flex gap-3">
           <input
             ref={inputRef}
@@ -631,7 +743,12 @@ export function ChatInterface({ hotelId, language = "he", embedded = false }: Ch
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={isRtl ? "כתוב הודעה..." : "Type a message..."}
-            className="flex-1 bg-slate-800/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 transition-colors"
+            className={cn(
+              "flex-1 rounded-xl px-4 py-3 focus:outline-none transition-colors border",
+              darkMode
+                ? "bg-slate-800/50 border-white/10 text-white placeholder-slate-500 focus:border-emerald-500/50"
+                : "bg-slate-100 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-emerald-500/50",
+            )}
             disabled={isLoading}
           />
           <Button

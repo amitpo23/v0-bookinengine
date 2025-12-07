@@ -50,6 +50,33 @@ export interface SearchRoomResult {
   maxOccupancy: number
 }
 
+export interface RoomResult {
+  code: string
+  roomId: number
+  roomName: string
+  roomCategory: string
+  categoryId: number
+  boardId: number
+  boardType: string
+  buyPrice: number
+  currency: string
+  maxOccupancy: number
+  cancellationPolicy: string
+}
+
+export interface HotelSearchResult {
+  hotelId: number
+  hotelName: string
+  city: string
+  stars: number
+  address: string
+  imageUrl: string
+  images: string[]
+  description: string
+  facilities: string[]
+  rooms: RoomResult[]
+}
+
 export interface PreBookResult {
   preBookId: number
   token: string
@@ -251,7 +278,7 @@ class MediciApiClient {
     children?: number[]
     stars?: number
     limit?: number
-  }): Promise<SearchRoomResult[]> {
+  }): Promise<HotelSearchResult[]> {
     // IMPORTANT: adults must be a STRING per API documentation
     // Also: use hotelName OR city, NOT both
     const pax = [
@@ -282,45 +309,43 @@ class MediciApiClient {
     return this.transformSearchResults(response)
   }
 
-  private transformSearchResults(response: any): SearchRoomResult[] {
+  private transformSearchResults(response: any): HotelSearchResult[] {
     if (!response) return []
 
     // Handle array response directly (API returns array of rooms/hotels)
     const items = Array.isArray(response) ? response : response.items || response.hotels || response.rooms || []
-    const results: SearchRoomResult[] = []
+    const results: HotelSearchResult[] = []
 
     for (const item of items) {
       // Each item could be a hotel with rooms or a direct room result
       const roomItems = item.items || [item]
 
-      for (const room of roomItems) {
-        results.push({
-          code: room.code || item.code || "",
-          hotelId: item.hotelId || room.hotelId || 0,
-          hotelName: item.hotelName || room.hotelName || item.name || "Unknown Hotel",
-          city: item.city || room.city || "",
-          stars: item.stars || room.stars || 0,
-          address: item.address || room.address || "",
-          imageUrl: item.imageUrl || item.image || room.imageUrl || "",
-          images: item.images || room.images || [],
-          description: item.description || room.description || "",
-          facilities: item.facilities || room.facilities || [],
-          roomName: room.roomName || room.name || room.roomType || "Standard Room",
-          roomCategory: room.roomCategory || room.category || "Standard",
-          boardType: room.boardType || room.board || "Room Only",
-          boardCode: room.boardCode || "RO",
-          price: {
-            amount: room.price?.amount || item.price?.amount || room.buyPrice || room.total || 0,
-            currency: room.price?.currency || item.price?.currency || "USD",
-          },
-          cancellation: {
-            type: room.cancellation?.type || (room.nonRefundable ? "non-refundable" : "fully-refundable"),
-            deadline: room.cancellation?.deadline,
-            penalty: room.cancellation?.penalty,
-          },
-          maxOccupancy: room.maxOccupancy || room.maxPax || 2,
-        })
-      }
+      const rooms: RoomResult[] = roomItems.map((room: any) => ({
+        code: room.code || item.code || "",
+        roomId: room.roomId || room.id || 0,
+        roomName: room.roomName || room.name || room.roomType || "Standard Room",
+        roomCategory: room.roomCategory || room.category || "Standard",
+        categoryId: room.categoryId || room.category || 0,
+        boardId: room.boardId || room.board || 1,
+        boardType: room.boardType || room.board || "Room Only",
+        buyPrice: room.price?.amount || item.price?.amount || room.buyPrice || room.total || 0,
+        currency: room.price?.currency || item.price?.currency || "USD",
+        maxOccupancy: room.maxOccupancy || room.maxPax || 2,
+        cancellationPolicy: room.cancellation?.type || (room.nonRefundable ? "non-refundable" : "fully-refundable"),
+      }))
+
+      results.push({
+        hotelId: item.hotelId || item.id || 0,
+        hotelName: item.hotelName || item.name || "Unknown Hotel",
+        city: item.city || "",
+        stars: item.stars || 0,
+        address: item.address || "",
+        imageUrl: item.imageUrl || item.image || "",
+        images: item.images || [],
+        description: item.description || "",
+        facilities: item.facilities || [],
+        rooms,
+      })
     }
 
     return results

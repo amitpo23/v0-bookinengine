@@ -3,6 +3,7 @@
 // Base URL: https://medici-backend.azurewebsites.net
 
 const MEDICI_BASE_URL = process.env.MEDICI_BASE_URL || "https://medici-backend.azurewebsites.net"
+const MEDICI_IMAGES_BASE = "https://medici-images.azurewebsites.net/images/"
 
 const MEDICI_TOKEN =
   process.env.MEDICI_TOKEN ||
@@ -316,23 +317,35 @@ class MediciApiClient {
     const items = Array.isArray(response) ? response : response.items || response.hotels || response.rooms || []
     const results: HotelSearchResult[] = []
 
+    console.log("[v0] transformSearchResults - items count:", items.length)
+
     for (const item of items) {
       // Each item could be a hotel with rooms or a direct room result
       const roomItems = item.items || [item]
 
-      const rooms: RoomResult[] = roomItems.map((room: any) => ({
-        code: room.code || item.code || "",
-        roomId: room.roomId || room.id || 0,
-        roomName: room.roomName || room.name || room.roomType || "Standard Room",
-        roomCategory: room.roomCategory || room.category || "Standard",
-        categoryId: room.categoryId || room.category || 0,
-        boardId: room.boardId || room.board || 1,
-        boardType: room.boardType || room.board || "Room Only",
-        buyPrice: room.price?.amount || item.price?.amount || room.buyPrice || room.total || 0,
-        currency: room.price?.currency || item.price?.currency || "USD",
-        maxOccupancy: room.maxOccupancy || room.maxPax || 2,
-        cancellationPolicy: room.cancellation?.type || (room.nonRefundable ? "non-refundable" : "fully-refundable"),
-      }))
+      const mainImage = getHotelMainImage(item)
+      const allImages = buildImagesArray(item)
+
+      console.log("[v0] Hotel:", item.hotelName, "mainImage:", mainImage, "allImages count:", allImages.length)
+
+      const rooms: RoomResult[] = roomItems.map((room: any) => {
+        const price = extractPrice(item, room)
+        console.log("[v0] Room:", room.roomName || room.name, "price:", price)
+
+        return {
+          code: room.code || item.code || "",
+          roomId: room.roomId || room.id || 0,
+          roomName: room.roomName || room.name || room.roomType || "Standard Room",
+          roomCategory: room.roomCategory || room.category || "Standard",
+          categoryId: room.categoryId || room.category || 0,
+          boardId: room.boardId || room.board || 1,
+          boardType: room.boardType || room.board || "Room Only",
+          buyPrice: price,
+          currency: room.price?.currency || item.price?.currency || "USD",
+          maxOccupancy: room.maxOccupancy || room.maxPax || 2,
+          cancellationPolicy: room.cancellation?.type || (room.nonRefundable ? "non-refundable" : "fully-refundable"),
+        }
+      })
 
       results.push({
         hotelId: item.hotelId || item.id || 0,
@@ -340,8 +353,8 @@ class MediciApiClient {
         city: item.city || "",
         stars: item.stars || 0,
         address: item.address || "",
-        imageUrl: item.imageUrl || item.image || "",
-        images: item.images || [],
+        imageUrl: mainImage,
+        images: allImages.length > 0 ? allImages : mainImage ? [mainImage] : [],
         description: item.description || "",
         facilities: item.facilities || [],
         rooms,
@@ -661,3 +674,85 @@ export const mediciApi = new MediciApiClient()
 
 // Export class for custom instances
 export { MediciApiClient }
+
+// =====================
+// HELPER FUNCTIONS
+// =====================
+
+function buildFullImageUrl(imagePath: string | undefined): string {
+  if (!imagePath) return ""
+  // If already a full URL, return as is
+  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+    return imagePath
+  }
+  // Build full URL from relative path
+  return `${MEDICI_IMAGES_BASE}${imagePath}`
+}
+
+function getHotelMainImage(item: any): string {
+  // Try different image sources
+  if (item.imageUrl) return buildFullImageUrl(item.imageUrl)
+  if (item.image) return buildFullImageUrl(item.image)
+  if (item.mainImage) return buildFullImageUrl(item.mainImage)
+
+  // Try images array
+  if (item.images && Array.isArray(item.images) && item.images.length > 0) {
+    const firstImage = item.images[0]
+    if (typeof firstImage === "string") return buildFullImageUrl(firstImage)
+    if (firstImage?.url) return buildFullImageUrl(firstImage.url)
+    if (firstImage?.path) return buildFullImageUrl(firstImage.path)
+  }
+
+  // Try items[0].images
+  if (item.items && item.items[0]?.images && item.items[0].images.length > 0) {
+    return buildFullImageUrl(item.items[0].images[0])
+  }
+
+  return ""
+}
+
+function buildImagesArray(item: any): string[] {
+  const images: string[] = []
+
+  // Add from images array
+  if (item.images && Array.isArray(item.images)) {
+    for (const img of item.images) {
+      if (typeof img === "string") {
+        images.push(buildFullImageUrl(img))
+      } else if (img?.url) {
+        images.push(buildFullImageUrl(img.url))
+      } else if (img?.path) {
+        images.push(buildFullImageUrl(img.path))
+      }
+    }
+  }
+
+  // Add from items[0].images
+  if (item.items && item.items[0]?.images) {
+    for (const img of item.items[0].images) {
+      if (typeof img === "string") {
+        images.push(buildFullImageUrl(img))
+      }
+    }
+  }
+
+  return images.filter(Boolean)
+}
+
+function extractPrice(item: any, room: any): number {
+  // Try room-level price first
+  if (room?.price?.amount && room.price.amount > 0) return room.price.amount
+  if (room?.buyPrice && room.buyPrice > 0) return room.buyPrice
+  if (room?.total && room.total > 0) return room.total
+  if (room?.totalPrice && room.totalPrice > 0) return room.totalPrice
+
+  // Try item-level price
+  if (item?.price?.amount && item.price.amount > 0) return item.price.amount
+  if (item?.buyPrice && item.buyPrice > 0) return item.buyPrice
+  if (item?.total && item.total > 0) return item.total
+
+  // Try items[0].price
+  if (item?.items?.[0]?.price?.amount) return item.items[0].price.amount
+
+  return 0
+}

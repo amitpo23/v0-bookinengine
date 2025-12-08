@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -10,22 +12,11 @@ import { cn } from "@/lib/utils"
 import { BOARD_TYPES, ROOM_CATEGORIES, type HotelSearchResult, type RoomResult } from "@/lib/api/medici-client"
 import { useState } from "react"
 import { formatDateForApi } from "@/lib/date-utils"
+import { StarIcon, MapPinIcon, ChevronUpIcon, ChevronDownIcon, CheckIcon, LoaderIcon } from "@/components/icons"
 
 // ... existing icon components ...
-const StarIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    className={className}
-  >
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-  </svg>
-)
 
-const MapPinIcon = ({ className }: { className?: string }) => (
+const WifiIcon = ({ className }: { className?: string }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="16"
@@ -38,12 +29,14 @@ const MapPinIcon = ({ className }: { className?: string }) => (
     strokeLinejoin="round"
     className={className}
   >
-    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-    <circle cx="12" cy="10" r="3" />
+    <path d="M5 12.55a11 11 0 0 1 14.08 0" />
+    <path d="M1.42 9a16 16 0 0 1 21.16 0" />
+    <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+    <circle cx="12" cy="20" r="1" />
   </svg>
 )
 
-const ChevronDownIcon = ({ className }: { className?: string }) => (
+const ParkingIcon = ({ className }: { className?: string }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="16"
@@ -56,11 +49,12 @@ const ChevronDownIcon = ({ className }: { className?: string }) => (
     strokeLinejoin="round"
     className={className}
   >
-    <path d="m6 9 6 6 6-6" />
+    <rect width="18" height="18" x="3" y="3" rx="2" />
+    <path d="M9 17V7h4a3 3 0 0 1 0 6H9" />
   </svg>
 )
 
-const ChevronUpIcon = ({ className }: { className?: string }) => (
+const PoolIcon = ({ className }: { className?: string }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="16"
@@ -73,28 +67,14 @@ const ChevronUpIcon = ({ className }: { className?: string }) => (
     strokeLinejoin="round"
     className={className}
   >
-    <path d="m18 15-6-6-6 6" />
+    <path d="M2 12h20" />
+    <path d="M2 16c.5.5 1 1 2 1s1.5-.5 2-1 1-1 2-1 1.5.5 2 1 1 1 2 1 1.5-.5 2-1 1-1 2-1 1.5.5 2 1 1 1 2 1" />
+    <path d="M12 12V4" />
+    <path d="M8 8h8" />
   </svg>
 )
 
-const LoaderIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={cn("animate-spin", className)}
-  >
-    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-  </svg>
-)
-
-const CheckIcon = ({ className }: { className?: string }) => (
+const RestaurantIcon = ({ className }: { className?: string }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="16"
@@ -107,12 +87,199 @@ const CheckIcon = ({ className }: { className?: string }) => (
     strokeLinejoin="round"
     className={className}
   >
-    <polyline points="20 6 9 17 4 12" />
+    <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+    <path d="M7 2v20" />
+    <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
   </svg>
 )
+
+const HeartIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+  </svg>
+)
+
+const ChevronLeftIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="m15 18-6-6 6-6" />
+  </svg>
+)
+
+const ChevronRightIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="m9 18 6-6-6-6" />
+  </svg>
+)
+
+// ... existing icons (StarIcon, MapPinIcon, etc.) ...
 
 interface HotelSearchResultsProps {
   results: HotelSearchResult[]
+}
+
+function ImageGallery({ images, hotelName }: { images: string[]; hotelName: string }) {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isLiked, setIsLiked] = useState(false)
+
+  const hasImages = images && images.length > 0
+  const displayImages = hasImages ? images : ["/luxury-hotel-room.png"]
+
+  const nextImage = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setCurrentIndex((prev) => (prev + 1) % displayImages.length)
+  }
+
+  const prevImage = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setCurrentIndex((prev) => (prev - 1 + displayImages.length) % displayImages.length)
+  }
+
+  return (
+    <div className="relative w-full h-full group">
+      <Image
+        src={displayImages[currentIndex] || "/placeholder.svg"}
+        alt={`${hotelName} - ${currentIndex + 1}`}
+        fill
+        className="object-cover transition-transform duration-300 group-hover:scale-105"
+      />
+
+      {/* Like button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          setIsLiked(!isLiked)
+        }}
+        className="absolute top-3 right-3 p-2 rounded-full bg-white/80 hover:bg-white transition-colors z-10"
+      >
+        <HeartIcon className={cn("h-5 w-5", isLiked ? "fill-red-500 text-red-500" : "text-gray-600")} />
+      </button>
+
+      {/* Navigation arrows */}
+      {displayImages.length > 1 && (
+        <>
+          <button
+            onClick={prevImage}
+            className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+          >
+            <ChevronLeftIcon className="h-5 w-5 text-gray-800" />
+          </button>
+          <button
+            onClick={nextImage}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+          >
+            <ChevronRightIcon className="h-5 w-5 text-gray-800" />
+          </button>
+
+          {/* Dots indicator */}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+            {displayImages.slice(0, 5).map((_, idx) => (
+              <button
+                key={idx}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setCurrentIndex(idx)
+                }}
+                className={cn(
+                  "w-2 h-2 rounded-full transition-colors",
+                  idx === currentIndex ? "bg-white" : "bg-white/50 hover:bg-white/75",
+                )}
+              />
+            ))}
+            {displayImages.length > 5 && <span className="text-white text-xs ml-1">+{displayImages.length - 5}</span>}
+          </div>
+        </>
+      )}
+
+      {/* Image count badge */}
+      {displayImages.length > 1 && (
+        <div className="absolute top-3 left-3 px-2 py-1 rounded bg-black/60 text-white text-xs z-10">
+          {currentIndex + 1} / {displayImages.length}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function FacilitiesBar({ facilities }: { facilities: string[] }) {
+  const facilityIcons: Record<string, React.ReactNode> = {
+    wifi: <WifiIcon className="h-4 w-4" />,
+    parking: <ParkingIcon className="h-4 w-4" />,
+    pool: <PoolIcon className="h-4 w-4" />,
+    restaurant: <RestaurantIcon className="h-4 w-4" />,
+  }
+
+  // Map common facility names
+  const getFacilityIcon = (facility: string) => {
+    const lower = facility.toLowerCase()
+    if (lower.includes("wifi") || lower.includes("internet")) return facilityIcons.wifi
+    if (lower.includes("parking")) return facilityIcons.parking
+    if (lower.includes("pool") || lower.includes("swimming")) return facilityIcons.pool
+    if (lower.includes("restaurant") || lower.includes("dining")) return facilityIcons.restaurant
+    return null
+  }
+
+  const displayFacilities = facilities.slice(0, 4)
+
+  if (!facilities.length) {
+    // Show default facilities
+    return (
+      <div className="flex items-center gap-3 text-muted-foreground">
+        <div className="flex items-center gap-1" title="WiFi">
+          <WifiIcon className="h-4 w-4" />
+        </div>
+        <div className="flex items-center gap-1" title="Parking">
+          <ParkingIcon className="h-4 w-4" />
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex items-center gap-3 text-muted-foreground">
+      {displayFacilities.map((facility, idx) => {
+        const icon = getFacilityIcon(facility)
+        return icon ? (
+          <div key={idx} className="flex items-center gap-1" title={facility}>
+            {icon}
+          </div>
+        ) : null
+      })}
+      {facilities.length > 4 && <span className="text-xs">+{facilities.length - 4}</span>}
+    </div>
+  )
 }
 
 export function HotelSearchResults({ results }: HotelSearchResultsProps) {
@@ -122,6 +289,7 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
   const [expandedHotel, setExpandedHotel] = useState<number | null>(null)
   const [selectingRoom, setSelectingRoom] = useState<string | null>(null)
 
+  // ... existing text translations ...
   const noResultsText = locale === "he" ? "לא נמצאו תוצאות" : "No results found"
   const tryAgainText = locale === "he" ? "נסה לשנות את פרטי החיפוש" : "Try changing your search criteria"
   const roomsText = locale === "he" ? "חדרים זמינים" : "Available Rooms"
@@ -132,6 +300,8 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
   const showRoomsText = locale === "he" ? "הצג חדרים" : "Show Rooms"
   const hideRoomsText = locale === "he" ? "הסתר חדרים" : "Hide Rooms"
   const freeCancellationText = locale === "he" ? "ביטול חינם" : "Free Cancellation"
+
+  // ... existing helper functions (formatPrice, getBoardName, etc.) ...
 
   const formatPrice = (price: number, currency = "USD") => {
     return new Intl.NumberFormat(locale === "he" ? "he-IL" : "en-US", {
@@ -155,8 +325,11 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
 
   const getLowestPrice = (rooms: RoomResult[]) => {
     if (!rooms.length) return 0
-    return Math.min(...rooms.map((r) => r.buyPrice))
+    const prices = rooms.map((r) => r.buyPrice).filter((p) => p > 0)
+    return prices.length > 0 ? Math.min(...prices) : 0
   }
+
+  // ... existing handleSelectRoom and getMealPlanFromBoardId functions ...
 
   const handleSelectRoom = async (hotel: HotelSearchResult, room: RoomResult) => {
     const roomKey = `${hotel.hotelId}-${room.roomId}-${room.boardId}`
@@ -168,7 +341,6 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
       const dateFrom = formatDateForApi(search.checkIn)
       const dateTo = formatDateForApi(search.checkOut)
 
-      // Call PreBook API
       const response = await fetch("/api/booking/prebook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -188,7 +360,6 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
         throw new Error(data.error || "PreBook failed")
       }
 
-      // Save API booking data
       setApiBookingData({
         code: room.code,
         hotelId: hotel.hotelId,
@@ -206,13 +377,12 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
         priceConfirmed: data.priceConfirmed,
       })
 
-      // Also add to selected rooms for UI display
       const internalRoom = {
         id: room.roomId,
         hotelId: String(hotel.hotelId),
         name: room.roomName || getCategoryName(room.categoryId),
         description: `${getCategoryName(room.categoryId)} - ${getBoardName(room.boardId)}`,
-        images: [hotel.imageUrl || "/comfortable-hotel-room.png"],
+        images: hotel.images.length > 0 ? hotel.images : ["/comfortable-hotel-room.png"],
         maxGuests: room.maxOccupancy,
         maxAdults: room.maxOccupancy,
         maxChildren: 0,
@@ -236,8 +406,6 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
       }
 
       addRoom({ room: internalRoom, ratePlan, quantity: 1 })
-
-      // Proceed to guest details (step 3)
       setCurrentStep(3)
     } catch (error: any) {
       console.error("[v0] PreBook error:", error)
@@ -280,150 +448,190 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
   }
 
   return (
-    <div className="space-y-4" dir={dir}>
+    <div className="space-y-6" dir={dir}>
       <p className="text-sm text-muted-foreground">
         {locale === "he" ? `נמצאו ${results.length} מלונות` : `Found ${results.length} hotels`}
       </p>
 
-      {results.map((hotel) => (
-        <Card key={hotel.hotelId} className="overflow-hidden hover:shadow-lg transition-shadow">
-          <div className="flex flex-col md:flex-row">
-            <div className="relative w-full md:w-64 h-48 md:h-auto flex-shrink-0">
-              <Image
-                src={hotel.imageUrl || "/placeholder.svg?height=300&width=400&query=luxury hotel"}
-                alt={hotel.hotelName}
-                fill
-                className="object-cover"
-              />
-            </div>
+      {results.map((hotel) => {
+        const lowestPrice = getLowestPrice(hotel.rooms || [])
 
-            <CardContent className="flex-1 p-4">
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-xl font-bold text-foreground">{hotel.hotelName}</h3>
-                    <div className="flex items-center">
-                      {Array.from({ length: hotel.stars || 0 }).map((_, i) => (
-                        <StarIcon key={i} className="h-4 w-4 text-yellow-400" />
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1 text-muted-foreground text-sm mb-3">
-                    <MapPinIcon className="h-4 w-4" />
-                    <span>{hotel.city}</span>
-                    {hotel.address && <span className="mx-1">•</span>}
-                    {hotel.address && <span>{hotel.address}</span>}
-                  </div>
-
-                  <Badge variant="secondary" className="mb-3">
-                    {hotel.rooms?.length || 0} {roomsText}
-                  </Badge>
-                </div>
-
-                <div className={cn("flex flex-col gap-2", dir === "rtl" ? "md:items-start" : "md:items-end")}>
-                  <div className={dir === "rtl" ? "text-left" : "text-right"}>
-                    <span className="text-sm text-muted-foreground">{fromText}</span>
-                    <div className="text-2xl font-bold text-primary">
-                      {formatPrice(getLowestPrice(hotel.rooms || []))}
-                    </div>
-                    <span className="text-xs text-muted-foreground">{perNightText}</span>
-                  </div>
-                  <Button
-                    variant={expandedHotel === hotel.hotelId ? "outline" : "default"}
-                    onClick={() => setExpandedHotel(expandedHotel === hotel.hotelId ? null : hotel.hotelId)}
-                    className="min-w-[140px]"
-                  >
-                    {expandedHotel === hotel.hotelId ? (
-                      <>
-                        {hideRoomsText}
-                        <ChevronUpIcon className="h-4 w-4 ml-1" />
-                      </>
-                    ) : (
-                      <>
-                        {showRoomsText}
-                        <ChevronDownIcon className="h-4 w-4 ml-1" />
-                      </>
-                    )}
-                  </Button>
-                </div>
+        return (
+          <Card
+            key={hotel.hotelId}
+            className="overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-md"
+          >
+            <div className="flex flex-col md:flex-row">
+              {/* Image Gallery */}
+              <div className="relative w-full md:w-80 h-56 md:h-auto flex-shrink-0 bg-muted">
+                <ImageGallery images={hotel.images} hotelName={hotel.hotelName} />
+                {/* Free cancellation badge */}
+                <Badge className="absolute bottom-3 left-3 bg-green-600 text-white border-0 z-10">
+                  {freeCancellationText}
+                </Badge>
               </div>
-            </CardContent>
-          </div>
 
-          {expandedHotel === hotel.hotelId && hotel.rooms && (
-            <div className="border-t border-border">
-              <div className="divide-y divide-border">
-                {hotel.rooms.map((room, idx) => {
-                  const roomKey = `${hotel.hotelId}-${room.roomId}-${room.boardId}`
-                  const isSelecting = selectingRoom === roomKey
-
-                  return (
-                    <div key={`${room.roomId}-${idx}`} className="p-4 hover:bg-muted/30 transition-colors">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-foreground mb-1">
-                            {room.roomName || getCategoryName(room.categoryId)}
-                          </h4>
-                          <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-                            <Badge variant="outline">{getCategoryName(room.categoryId)}</Badge>
-                            <Badge variant="secondary" className="bg-green-100 text-green-700">
-                              {getBoardName(room.boardId)}
-                            </Badge>
-                            {room.maxOccupancy && (
-                              <span>
-                                👥{" "}
-                                {locale === "he"
-                                  ? `עד ${room.maxOccupancy} אורחים`
-                                  : `Up to ${room.maxOccupancy} guests`}
-                              </span>
-                            )}
+              <CardContent className="flex-1 p-5">
+                <div className="flex flex-col h-full justify-between">
+                  <div>
+                    {/* Hotel name and stars */}
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div>
+                        <h3 className="text-xl font-bold text-foreground mb-1">{hotel.hotelName}</h3>
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center">
+                            {Array.from({ length: hotel.stars || 0 }).map((_, i) => (
+                              <StarIcon key={i} className="h-4 w-4 text-yellow-400" />
+                            ))}
                           </div>
-                          <div className="flex items-center gap-1 mt-2 text-green-600 text-sm">
-                            <CheckIcon className="h-4 w-4" />
-                            <span>{freeCancellationText}</span>
-                          </div>
-                        </div>
-
-                        <div
-                          className={cn("flex items-center gap-4", dir === "rtl" ? "flex-row-reverse md:flex-row" : "")}
-                        >
-                          <div className={dir === "rtl" ? "text-left" : "text-right"}>
-                            <div className="text-xl font-bold text-foreground">
-                              {formatPrice(room.buyPrice, room.currency)}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {nights > 1
-                                ? locale === "he"
-                                  ? `ל-${nights} לילות`
-                                  : `for ${nights} nights`
-                                : perNightText}
-                            </div>
-                          </div>
-                          <Button
-                            onClick={() => handleSelectRoom(hotel, room)}
-                            disabled={isSelecting || isPreBooking}
-                            className="min-w-[120px]"
-                          >
-                            {isSelecting ? (
-                              <>
-                                <LoaderIcon className="h-4 w-4 mr-2" />
-                                {selectingText}
-                              </>
-                            ) : (
-                              selectText
-                            )}
-                          </Button>
+                          {hotel.stars > 0 && (
+                            <span className="text-sm text-muted-foreground">
+                              {hotel.stars} {locale === "he" ? "כוכבים" : "stars"}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
-                  )
-                })}
-              </div>
+
+                    {/* Location */}
+                    <div className="flex items-center gap-1 text-muted-foreground text-sm mb-3">
+                      <MapPinIcon className="h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">
+                        {hotel.city}
+                        {hotel.address && ` • ${hotel.address}`}
+                      </span>
+                    </div>
+
+                    {/* Description */}
+                    {hotel.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{hotel.description}</p>
+                    )}
+
+                    {/* Facilities */}
+                    <FacilitiesBar facilities={hotel.facilities} />
+                  </div>
+
+                  {/* Price and CTA */}
+                  <div className="flex items-end justify-between mt-4 pt-4 border-t border-border">
+                    <div>
+                      <Badge variant="secondary" className="mb-2">
+                        {hotel.rooms?.length || 0} {roomsText}
+                      </Badge>
+                    </div>
+
+                    <div className={cn("flex flex-col gap-2", dir === "rtl" ? "items-start" : "items-end")}>
+                      {lowestPrice > 0 && (
+                        <div className={dir === "rtl" ? "text-left" : "text-right"}>
+                          <span className="text-sm text-muted-foreground">{fromText}</span>
+                          <div className="text-2xl font-bold text-primary">{formatPrice(lowestPrice)}</div>
+                          <span className="text-xs text-muted-foreground">{perNightText}</span>
+                        </div>
+                      )}
+                      <Button
+                        variant={expandedHotel === hotel.hotelId ? "outline" : "default"}
+                        onClick={() => setExpandedHotel(expandedHotel === hotel.hotelId ? null : hotel.hotelId)}
+                        className="min-w-[140px]"
+                      >
+                        {expandedHotel === hotel.hotelId ? (
+                          <>
+                            {hideRoomsText}
+                            <ChevronUpIcon className="h-4 w-4 ml-1" />
+                          </>
+                        ) : (
+                          <>
+                            {showRoomsText}
+                            <ChevronDownIcon className="h-4 w-4 ml-1" />
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
             </div>
-          )}
-        </Card>
-      ))}
+
+            {/* Expanded rooms list */}
+            {expandedHotel === hotel.hotelId && hotel.rooms && (
+              <div className="border-t border-border bg-muted/30">
+                <div className="divide-y divide-border">
+                  {hotel.rooms.map((room, idx) => {
+                    const roomKey = `${hotel.hotelId}-${room.roomId}-${room.boardId}`
+                    const isSelecting = selectingRoom === roomKey
+
+                    return (
+                      <div key={`${room.roomId}-${idx}`} className="p-4 hover:bg-muted/50 transition-colors">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-foreground mb-2">
+                              {room.roomName || getCategoryName(room.categoryId)}
+                            </h4>
+                            <div className="flex flex-wrap gap-2 text-sm">
+                              <Badge variant="outline">{getCategoryName(room.categoryId)}</Badge>
+                              <Badge
+                                variant="secondary"
+                                className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                              >
+                                {getBoardName(room.boardId)}
+                              </Badge>
+                              {room.maxOccupancy && (
+                                <Badge variant="outline">
+                                  👥{" "}
+                                  {locale === "he"
+                                    ? `עד ${room.maxOccupancy} אורחים`
+                                    : `Up to ${room.maxOccupancy} guests`}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1 mt-2 text-emerald-600 text-sm">
+                              <CheckIcon className="h-4 w-4" />
+                              <span>{freeCancellationText}</span>
+                            </div>
+                          </div>
+
+                          <div
+                            className={cn(
+                              "flex items-center gap-4",
+                              dir === "rtl" ? "flex-row-reverse md:flex-row" : "",
+                            )}
+                          >
+                            <div className={dir === "rtl" ? "text-left" : "text-right"}>
+                              <div className="text-2xl font-bold text-foreground">
+                                {formatPrice(room.buyPrice, room.currency)}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {nights > 1
+                                  ? locale === "he"
+                                    ? `ל-${nights} לילות`
+                                    : `for ${nights} nights`
+                                  : perNightText}
+                              </div>
+                            </div>
+                            <Button
+                              onClick={() => handleSelectRoom(hotel, room)}
+                              disabled={isSelecting || isPreBooking}
+                              className="min-w-[130px]"
+                              size="lg"
+                            >
+                              {isSelecting ? (
+                                <>
+                                  <LoaderIcon className="h-4 w-4 mr-2" />
+                                  {selectingText}
+                                </>
+                              ) : (
+                                selectText
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </Card>
+        )
+      })}
     </div>
   )
 }

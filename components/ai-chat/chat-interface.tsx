@@ -7,6 +7,27 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { BookingFlow } from "./booking-flow"
+import {
+  Wifi,
+  Waves,
+  UtensilsCrossed,
+  Wine,
+  Car,
+  Dumbbell,
+  Sparkles,
+  Wind,
+  Ban,
+  Coffee,
+  Building2,
+  MapPin,
+  Star,
+  Bed,
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  Check,
+} from "lucide-react"
 
 interface Message {
   id: string
@@ -28,128 +49,6 @@ interface ChatInterfaceProps {
   darkMode?: boolean
 }
 
-// SVG Icons
-const SendIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-  </svg>
-)
-
-const BotIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={1.5}
-      d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"
-    />
-  </svg>
-)
-
-const UserIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-    />
-  </svg>
-)
-
-const CheckIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-    />
-  </svg>
-)
-
-const StarIcon = ({ filled = true }: { filled?: boolean }) => (
-  <svg
-    className={cn("w-3.5 h-3.5", filled ? "fill-amber-400 text-amber-400" : "fill-slate-600 text-slate-600")}
-    viewBox="0 0 24 24"
-  >
-    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-  </svg>
-)
-
-const WifiIcon = () => (
-  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"
-    />
-  </svg>
-)
-
-const PoolIcon = () => (
-  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M4 16s1-1 4-1 5 2 8 2 4-1 4-1M4 20s1-1 4-1 5 2 8 2 4-1 4-1M12 4v4m-4 0h8"
-    />
-  </svg>
-)
-
-const BreakfastIcon = () => (
-  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"
-    />
-  </svg>
-)
-
-const LocationIcon = () => (
-  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-    />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-  </svg>
-)
-
-const HeartIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-    />
-  </svg>
-)
-
-interface BookingRoom {
-  code: string
-  name: string
-  hotelName: string
-  hotelId: number
-  roomType: string
-  price: number
-  currency: string
-  board: string
-  cancellation: string
-  dateFrom: string
-  dateTo: string
-  adults: number
-  children: number[]
-  image?: string
-}
-
 function HotelCard({
   hotel,
   isRtl,
@@ -165,20 +64,35 @@ function HotelCard({
 }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [liked, setLiked] = useState(false)
+  const [showDetails, setShowDetails] = useState(false)
+  const [imageError, setImageError] = useState(false)
 
-  const images =
-    hotel.images?.length > 0
-      ? hotel.images
-      : [hotel.image || `/placeholder.svg?height=200&width=300&query=${encodeURIComponent(hotel.name + " hotel room")}`]
+  const images = hotel.images?.length > 0 ? hotel.images : hotel.image ? [hotel.image] : []
 
-  const facilities = hotel.facilities || hotel.amenities || []
+  const hasImages = images.length > 0 && !imageError
+  const currentImage = hasImages ? images[currentImageIndex] : null
+  const placeholderImage = `/placeholder.svg?height=300&width=400&query=${encodeURIComponent(hotel.name + " hotel")}`
+
   const facilityIcons: Record<string, React.ReactNode> = {
-    wifi: <WifiIcon />,
-    pool: <PoolIcon />,
-    breakfast: <BreakfastIcon />,
+    wifi: <Wifi className="h-4 w-4" />,
+    internet: <Wifi className="h-4 w-4" />,
+    "free internet": <Wifi className="h-4 w-4" />,
+    pool: <Waves className="h-4 w-4" />,
+    "swimming pool": <Waves className="h-4 w-4" />,
+    restaurant: <UtensilsCrossed className="h-4 w-4" />,
+    bar: <Wine className="h-4 w-4" />,
+    parking: <Car className="h-4 w-4" />,
+    gym: <Dumbbell className="h-4 w-4" />,
+    fitness: <Dumbbell className="h-4 w-4" />,
+    spa: <Sparkles className="h-4 w-4" />,
+    "air condition": <Wind className="h-4 w-4" />,
+    "no smoking": <Ban className="h-4 w-4" />,
+    breakfast: <Coffee className="h-4 w-4" />,
   }
 
+  const facilities = hotel.facilities || []
   const rating = hotel.rating || hotel.stars || 4
+  const description = hotel.description || ""
 
   const handleSelectRoom = () => {
     onSelect({
@@ -195,146 +109,201 @@ function HotelCard({
       dateTo: searchContext?.dateTo || "",
       adults: searchContext?.adults || 2,
       children: searchContext?.children || [],
-      image: images[0],
+      image: currentImage || placeholderImage,
     })
   }
 
-  return (
-    <Card
-      className={cn(
-        "overflow-hidden backdrop-blur-sm border transition-all duration-300 group hover:shadow-xl",
-        darkMode
-          ? "bg-slate-800/80 border-white/10 hover:border-emerald-500/50 hover:shadow-emerald-500/10"
-          : "bg-white border-slate-200 hover:border-emerald-500/50 hover:shadow-emerald-500/20",
-      )}
-    >
-      {/* Image */}
-      <div className="relative h-44 overflow-hidden">
-        <img
-          src={images[currentImageIndex] || "/placeholder.svg"}
-          alt={hotel.name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement
-            target.src = `/placeholder.svg?height=200&width=300&query=${encodeURIComponent(hotel.name + " hotel")}`
-          }}
-        />
-        <div
-          className={cn(
-            "absolute inset-0 bg-gradient-to-t via-transparent to-transparent",
-            darkMode ? "from-slate-900/90" : "from-black/60",
-          )}
-        />
+  const nextImage = () => {
+    if (images.length > 1) {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length)
+    }
+  }
 
-        {images.length > 1 && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-            {images.slice(0, 5).map((_: any, idx: number) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentImageIndex(idx)}
-                className={cn(
-                  "w-1.5 h-1.5 rounded-full transition-all",
-                  idx === currentImageIndex ? "bg-white w-4" : "bg-white/50 hover:bg-white/75",
-                )}
-              />
-            ))}
+  const prevImage = () => {
+    if (images.length > 1) {
+      setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
+    }
+  }
+
+  const bgColor = darkMode ? "bg-slate-800/90" : "bg-white"
+  const textColor = darkMode ? "text-white" : "text-gray-900"
+  const subtextColor = darkMode ? "text-gray-300" : "text-gray-600"
+  const borderColor = darkMode ? "border-slate-700" : "border-gray-200"
+
+  return (
+    <div
+      className={`rounded-xl overflow-hidden ${bgColor} border ${borderColor} shadow-lg hover:shadow-xl transition-all duration-300`}
+    >
+      {/* Image Section */}
+      <div className="relative h-48 bg-slate-700">
+        {hasImages ? (
+          <>
+            <img
+              src={currentImage || "/placeholder.svg"}
+              alt={hotel.name}
+              className="w-full h-full object-cover"
+              onError={() => setImageError(true)}
+            />
+            {/* Image Navigation */}
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={prevImage}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition-colors"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={nextImage}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition-colors"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+                {/* Image Dots */}
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                  {images.slice(0, 5).map((_, idx) => (
+                    <div
+                      key={idx}
+                      className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                        idx === currentImageIndex ? "bg-white" : "bg-white/50"
+                      }`}
+                    />
+                  ))}
+                  {images.length > 5 && <span className="text-white text-xs ml-1">+{images.length - 5}</span>}
+                </div>
+              </>
+            )}
+          </>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-600 to-slate-800">
+            <Building2 className="h-16 w-16 text-slate-500" />
           </div>
         )}
 
+        {/* Badges */}
+        <div className="absolute top-3 left-3 flex gap-2">
+          {hotel.cancellation === "fully-refundable" && (
+            <span className="bg-emerald-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+              {isRtl ? "ביטול חינם" : "Free Cancel"}
+            </span>
+          )}
+        </div>
+
+        {/* Like Button */}
         <button
           onClick={() => setLiked(!liked)}
-          className={cn(
-            "absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all",
-            liked ? "bg-rose-500 text-white" : "bg-black/30 backdrop-blur-sm text-white/80 hover:bg-black/50",
-          )}
+          className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm hover:bg-white/30 p-2 rounded-full transition-colors"
         >
-          <HeartIcon />
+          <Heart className={`h-4 w-4 ${liked ? "fill-red-500 text-red-500" : "text-white"}`} />
         </button>
 
-        {(hotel.cancellation?.type === "free" || hotel.cancellation === "fully-refundable") && (
-          <span className="absolute top-3 left-3 px-2 py-1 text-[10px] font-medium bg-emerald-500/90 text-white rounded-full backdrop-blur-sm">
-            {isRtl ? "ביטול חינם" : "Free Cancel"}
-          </span>
-        )}
-
-        <div className="absolute bottom-3 right-3 text-right">
-          <p className="text-2xl font-bold text-white drop-shadow-lg">
-            ${hotel.price?.toFixed(0) || hotel.pricePerNight?.toFixed(0) || "---"}
-          </p>
-          <p className="text-[10px] text-white/80">{isRtl ? "ללילה" : "/night"}</p>
+        {/* Price Badge */}
+        <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+          <span className="text-emerald-400 font-bold text-xl">${hotel.price}</span>
+          <span className="text-gray-300 text-sm">/{isRtl ? "לילה" : "night"}</span>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="p-4 space-y-3">
-        <div className="flex justify-between items-start gap-2">
-          <div className="flex-1 min-w-0">
-            <h4 className={cn("font-semibold text-sm truncate", darkMode ? "text-white" : "text-slate-900")}>
-              {hotel.name}
-            </h4>
-            {hotel.location && (
-              <p
-                className={cn("flex items-center gap-1 text-xs mt-0.5", darkMode ? "text-slate-400" : "text-slate-500")}
-              >
-                <LocationIcon />
-                <span className="truncate">{hotel.location}</span>
-              </p>
-            )}
+      {/* Content Section */}
+      <div className={`p-4 ${textColor}`}>
+        {/* Header */}
+        <div className="flex items-start justify-between mb-2">
+          <div className={isRtl ? "text-right" : "text-left"}>
+            <h3 className="font-bold text-lg">{hotel.hotelName || hotel.name}</h3>
+            <div className={`flex items-center gap-1 ${subtextColor} text-sm`}>
+              <MapPin className="h-3.5 w-3.5" />
+              <span>{hotel.location || hotel.address}</span>
+            </div>
           </div>
+          {/* Star Rating */}
           <div className="flex items-center gap-0.5">
-            {[...Array(5)].map((_, i) => (
-              <StarIcon key={i} filled={i < rating} />
+            {Array.from({ length: rating }).map((_, i) => (
+              <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
             ))}
           </div>
         </div>
 
-        {hotel.description && (
-          <p className={cn("text-xs line-clamp-2", darkMode ? "text-slate-400" : "text-slate-600")}>
-            {hotel.description}
-          </p>
-        )}
-
-        <div className="flex flex-wrap gap-2">
-          {facilities.slice(0, 4).map((facility: string, idx: number) => {
-            const facilityLower = facility.toLowerCase()
-            const icon = Object.entries(facilityIcons).find(([key]) => facilityLower.includes(key))?.[1]
-            return (
-              <span
-                key={idx}
-                className={cn(
-                  "flex items-center gap-1 px-2 py-1 text-[10px] rounded-full",
-                  darkMode ? "text-slate-400 bg-slate-700/50" : "text-slate-600 bg-slate-100",
-                )}
-              >
-                {icon || <span className="w-3.5 h-3.5 rounded-full bg-emerald-500/30" />}
-                <span className="truncate max-w-[80px]">{facility}</span>
-              </span>
-            )
-          })}
-        </div>
-
-        <div
-          className={cn(
-            "flex items-center justify-between text-xs pt-1 border-t",
-            darkMode ? "text-slate-400 border-white/5" : "text-slate-500 border-slate-200",
-          )}
-        >
-          <span>{hotel.roomType || hotel.room_type || (isRtl ? "חדר סטנדרטי" : "Standard Room")}</span>
-          <span className="flex items-center gap-1">
-            <BreakfastIcon />
-            {hotel.meals || hotel.board || (isRtl ? "לינה בלבד" : "Room Only")}
+        {/* Room Type & Board */}
+        <div className={`flex items-center gap-2 ${subtextColor} text-sm mb-3`}>
+          <Bed className="h-4 w-4" />
+          <span>{hotel.roomType}</span>
+          <span className="text-gray-500">•</span>
+          <span>
+            {hotel.board === "RO"
+              ? isRtl
+                ? "ללא ארוחות"
+                : "Room Only"
+              : hotel.board === "BB"
+                ? isRtl
+                  ? "ארוחת בוקר"
+                  : "Breakfast"
+                : hotel.board}
           </span>
         </div>
 
-        <Button
-          className="w-full h-10 text-sm font-medium bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 border-0 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all"
+        {/* Facilities */}
+        {facilities.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-3">
+            {facilities.slice(0, 5).map((facility: string, idx: number) => {
+              const icon = facilityIcons[facility.toLowerCase()]
+              return (
+                <span
+                  key={idx}
+                  className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
+                    darkMode ? "bg-slate-700 text-gray-300" : "bg-gray-100 text-gray-600"
+                  }`}
+                >
+                  {icon || <Check className="h-3 w-3" />}
+                  <span className="capitalize">{facility}</span>
+                </span>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Description (expandable) */}
+        {description && (
+          <div className="mb-3">
+            <p className={`text-sm ${subtextColor} ${showDetails ? "" : "line-clamp-2"}`}>{description}</p>
+            {description.length > 100 && (
+              <button
+                onClick={() => setShowDetails(!showDetails)}
+                className="text-emerald-500 text-sm hover:underline mt-1"
+              >
+                {showDetails ? (isRtl ? "הצג פחות" : "Show less") : isRtl ? "קרא עוד" : "Read more"}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Book Button */}
+        <button
           onClick={handleSelectRoom}
+          className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-medium py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
         >
           {isRtl ? "בחר והמשך" : "Select & Continue"}
-        </Button>
+          <ArrowLeft className={`h-4 w-4 ${isRtl ? "" : "rotate-180"}`} />
+        </button>
       </div>
-    </Card>
+    </div>
   )
+}
+
+interface BookingRoom {
+  code: string
+  name: string
+  hotelName: string
+  hotelId: number
+  roomType: string
+  price: number
+  currency: string
+  board: string
+  cancellation: string
+  dateFrom: string
+  dateTo: string
+  adults: number
+  children: number[]
+  image?: string
 }
 
 export function ChatInterface({
@@ -538,7 +507,7 @@ export function ChatInterface({
               />
             ) : (
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 via-cyan-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                <BotIcon />
+                <ArrowLeft className="h-4 w-4" />
               </div>
             )}
             <span
@@ -579,7 +548,7 @@ export function ChatInterface({
                 />
               ) : (
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex-shrink-0 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                  <BotIcon />
+                  <ArrowLeft className="h-4 w-4" />
                 </div>
               ))}
 
@@ -628,7 +597,7 @@ export function ChatInterface({
                         darkMode ? "bg-emerald-500/20" : "bg-emerald-100",
                       )}
                     >
-                      <CheckIcon />
+                      <ArrowLeft className="h-4 w-4" />
                     </div>
                     <div>
                       <p className="font-semibold text-emerald-500 text-lg">
@@ -661,7 +630,7 @@ export function ChatInterface({
                     : "bg-gradient-to-br from-slate-200 to-slate-300",
                 )}
               >
-                <UserIcon />
+                <ArrowLeft className="h-4 w-4" />
               </div>
             )}
           </div>
@@ -677,7 +646,7 @@ export function ChatInterface({
               />
             ) : (
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex-shrink-0 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                <BotIcon />
+                <ArrowLeft className="h-4 w-4" />
               </div>
             )}
             <div
@@ -756,7 +725,7 @@ export function ChatInterface({
             disabled={isLoading || !input.trim()}
             className="w-12 h-12 rounded-xl bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <SendIcon />
+            <ArrowLeft className="h-4 w-4" />
           </Button>
         </form>
       </div>

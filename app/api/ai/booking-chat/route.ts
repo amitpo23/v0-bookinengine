@@ -3,10 +3,41 @@ import type { HotelConfig } from "@/types/saas"
 import { getBookingAgentPrompt } from "@/lib/prompts/booking-agent-prompt"
 
 const MEDICI_API_BASE = "https://medici-backend.azurewebsites.net"
+const MEDICI_IMAGES_BASE = "https://cdn.medicihotels.com/images/" // Added image base URL
 const MEDICI_TOKEN =
   "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIyNCIsIm5iZiI6MTc1MjQ3NTYwNCwiZXhwIjoyMDY4MDA4NDA0LCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.eA8EeHx6gGRtGBts4yXAWnK5P0Wl_LQLD1LKobYBV4U"
 
 const DEFAULT_HOTEL_NAME = "Dizengoff Inn"
+
+function buildImageUrl(imageUrl: string | { url?: string } | null): string {
+  if (!imageUrl) return ""
+
+  const url = typeof imageUrl === "object" ? imageUrl.url : imageUrl
+  if (!url) return ""
+
+  // If already a full URL, return as-is
+  if (url.startsWith("http")) return url
+
+  // Build full URL from relative path
+  return `${MEDICI_IMAGES_BASE}${url}`
+}
+
+function getMainImage(images: any[]): string {
+  if (!images || images.length === 0) return ""
+
+  const mainImage = images.find((img) => img.title === "mainimage")
+  if (mainImage) return buildImageUrl(mainImage)
+
+  return buildImageUrl(images[0])
+}
+
+function buildImageGallery(images: any[]): string[] {
+  if (!images || images.length === 0) return []
+  return images
+    .slice(0, 10)
+    .map((img) => buildImageUrl(img))
+    .filter(Boolean)
+}
 
 async function searchMediciHotels(params: {
   hotelName?: string
@@ -137,31 +168,59 @@ export async function POST(req: Request) {
 
         if (rooms.length > 0) {
           const formattedRooms = rooms.slice(0, 6).map((room: any) => {
-            const firstItem = room.items?.[0] || room
             const price = room.price?.amount || room.netPrice?.amount || room.price || 0
             const currency = room.price?.currency || room.netPrice?.currency || "USD"
 
+            // Get images from the room data
+            const rawImages = room.images || []
+            const mainImage = getMainImage(rawImages)
+            const imageGallery = buildImageGallery(rawImages)
+
+            // Extract facilities
+            const facilities = room.facilities?.tags || room.facilities?.list || []
+
+            // Get room options (different room types within the hotel)
+            const roomOptions = room.rooms || []
+
             return {
               code: room.code || "",
-              hotelId: firstItem.hotelId || room.hotelId || 0,
-              name: firstItem.hotelName || firstItem.name || "Room",
-              hotelName: firstItem.hotelName || hotelName,
-              roomType: firstItem.name || firstItem.category || "Standard Room",
-              board: firstItem.board || "RO",
+              hotelId: room.hotelId || 0,
+              name: room.hotelName || room.name || "Hotel",
+              hotelName: room.hotelName || hotelName,
+              roomType: room.name || room.category || "Standard Room",
+              board: room.board || "RO",
               price: price,
               currency: currency,
               cancellation: room.cancellation?.type || "non-refundable",
               confirmation: room.confirmation || "immediate",
-              image: firstItem.images?.[0] || firstItem.image || null,
-              images: firstItem.images || [],
-              facilities: firstItem.facilities || [],
-              description: firstItem.description || "",
-              location: firstItem.city || searchParams.city || hotelCity,
-              rating: firstItem.stars || 4,
+              image: mainImage,
+              images: imageGallery,
+              description: room.description || "",
+              facilities: facilities,
+              location: room.city || searchParams.city || hotelCity,
+              address: room.address || "",
+              rating: room.stars || 4,
+              roomOptions: roomOptions.slice(0, 5).map((opt: any) => ({
+                roomId: opt.roomId,
+                categoryId: opt.categoryId,
+                boardId: opt.boardId,
+                price: opt.buyPrice || price,
+                currency: opt.currency || currency,
+                maxOccupancy: opt.maxOccupancy || 2,
+                cancellation: opt.cancellationPolicy || "non-refundable",
+              })),
             }
           })
 
-          console.log("[v0] Formatted rooms:", JSON.stringify(formattedRooms.slice(0, 2), null, 2))
+          console.log(
+            "[v0] Formatted rooms with images:",
+            formattedRooms.map((r) => ({
+              name: r.name,
+              image: r.image?.slice(0, 50),
+              imagesCount: r.images?.length,
+              facilities: r.facilities?.slice(0, 3),
+            })),
+          )
 
           const cleanText = text.replace(/\[SEARCH\].*?\[\/SEARCH\]/s, "").trim()
 
@@ -220,7 +279,7 @@ export async function POST(req: Request) {
               cleanText +
               "\n\n" +
               (isHebrew
-                ? "לצערי לא מצאתי חדרים זמינים בתאריכים אלה. אפשרויות:\n- לנסות תאריכים אחרים (±1-2 ימים)\n- לחפש באזור אחר\n- לשנות את מספר האורחים\n\nמה תרצה לנסות?"
+                ? "לצערי לא מצאתי חדרים זמינות בתאריכים אלה. אפשרויות:\n- לנסות תאריכים אחרים (±1-2 ימים)\n- לחפש באזור אחר\n- לשנות את מספר האורחים\n\nמה תרצה לנסות?"
                 : "Unfortunately, I couldn't find available rooms for these dates. Options:\n- Try different dates (±1-2 days)\n- Search in a different area\n- Change the number of guests\n\nWhat would you like to try?"),
           })
         }

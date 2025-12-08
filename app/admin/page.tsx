@@ -17,6 +17,7 @@ import { RecentBookings } from "@/components/admin/recent-bookings"
 import { TodayActivity } from "@/components/admin/today-activity"
 import { ChatInterface } from "@/components/ai-chat/chat-interface"
 import { AiSettings } from "@/components/admin/ai-settings"
+import { AgentsManagement } from "@/components/admin/agents-management"
 import { getBookings, getDashboardStats } from "@/lib/admin-data"
 import { mockHotel, mockRooms } from "@/lib/mock-data"
 import type { Hotel } from "@/types/booking"
@@ -93,6 +94,7 @@ function AdminDashboardContent() {
     rooms: { title: "ניהול חדרים", subtitle: "נהל את סוגי החדרים והזמינות" },
     pricing: { title: "ניהול תמחור", subtitle: "הגדר מחירים דינמיים לפי תאריכים" },
     engines: { title: "הגדרות מנועים", subtitle: "הפעל וכבה מנועי הזמנות והגדר את ה-API" },
+    agents: { title: "ניהול סוכנים", subtitle: "צור ונהל סוכני AI בעלי התמחויות שונות" },
     aiconfig: { title: "הגדרות AI", subtitle: "הנחיות, ידע וסגנון לצ'אט AI" },
     embed: { title: "הטמעה באתר", subtitle: "קבל קוד להטמעת מנועי ההזמנות" },
     aichat: { title: "צ'אט AI - תצוגה מקדימה", subtitle: "בדוק את העוזר הווירטואלי להזמנות" },
@@ -179,6 +181,8 @@ function AdminDashboardContent() {
           {activeTab === "rooms" && <RoomsManagement rooms={mockRooms} />}
           {activeTab === "pricing" && <PricingCalendar rooms={mockRooms} />}
           {activeTab === "engines" && <EngineSettings />}
+
+          {activeTab === "agents" && <AgentsManagement />}
 
           {activeTab === "aiconfig" && <AiSettings />}
 

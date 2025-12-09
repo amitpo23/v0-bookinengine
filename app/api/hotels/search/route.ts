@@ -30,47 +30,41 @@ export async function POST(request: NextRequest) {
       limit: limit ? Number(limit) : 20,
     })
 
-    console.log("[v0] Search returned", results.length, "room results")
+    console.log("[v0] Search returned", results.length, "hotel results")
 
-    const hotelMap = new Map<number, any>()
-
-    for (const room of results) {
-      const hotelId = room.hotelId || 0
-
-      if (!hotelMap.has(hotelId)) {
-        hotelMap.set(hotelId, {
-          hotelId: hotelId,
-          hotelName: room.hotelName || "Unknown Hotel",
-          city: room.city || "",
-          stars: room.stars || 0,
-          address: room.address || "",
-          imageUrl: room.imageUrl || "",
-          images: room.images || [],
-          description: room.description || "",
-          facilities: room.facilities || [],
-          rooms: [],
-        })
-      }
-
-      // Add room to hotel
-      const hotel = hotelMap.get(hotelId)
-      hotel.rooms.push({
+    // Each result is a HotelSearchResult with rooms: RoomResult[]
+    const groupedResults = results.map((hotel) => ({
+      hotelId: hotel.hotelId,
+      hotelName: hotel.hotelName,
+      city: hotel.city,
+      stars: hotel.stars,
+      address: hotel.address,
+      imageUrl: hotel.imageUrl,
+      images: hotel.images,
+      description: hotel.description,
+      facilities: hotel.facilities,
+      rooms: hotel.rooms.map((room, index) => ({
         code: room.code,
-        roomId: hotel.rooms.length + 1,
+        roomId: room.roomId || index + 1,
         roomName: room.roomName,
         roomCategory: room.roomCategory,
-        categoryId: getCategoryIdFromName(room.roomCategory),
-        boardId: getBoardIdFromCode(room.boardCode),
+        categoryId: room.categoryId || getCategoryIdFromName(room.roomCategory),
+        boardId: room.boardId || getBoardIdFromCode(room.boardType),
         boardType: room.boardType,
-        buyPrice: room.price?.amount || 0,
-        currency: room.price?.currency || "USD",
+        buyPrice: room.buyPrice, // Use buyPrice directly from transform
+        currency: room.currency || "USD",
         maxOccupancy: room.maxOccupancy || 2,
-        cancellationPolicy: room.cancellation?.type || "fully-refundable",
-      })
-    }
+        cancellationPolicy: room.cancellationPolicy || "fully-refundable",
+      })),
+    }))
 
-    const groupedResults = Array.from(hotelMap.values())
-    console.log("[v0] Grouped into", groupedResults.length, "hotels")
+    console.log("[v0] Returning", groupedResults.length, "hotels")
+    if (groupedResults.length > 0) {
+      console.log(
+        "[v0] First hotel rooms:",
+        groupedResults[0].rooms.map((r) => ({ name: r.roomName, price: r.buyPrice })),
+      )
+    }
 
     return NextResponse.json({
       success: true,

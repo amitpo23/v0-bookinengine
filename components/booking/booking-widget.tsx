@@ -185,26 +185,25 @@ function BookingWidgetContent() {
 
   return (
     <div className="min-h-screen bg-background" dir={dir}>
-      {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+      <header className="bg-card border-b border-border sticky top-0 z-50 shadow-sm">
+        <div className="w-full px-6 lg:px-12 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">B</span>
+              <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center shadow-lg">
+                <span className="text-primary-foreground font-bold text-xl">B</span>
               </div>
               <div>
-                <h1 className="font-bold text-lg text-foreground">
+                <h1 className="font-bold text-xl text-foreground">
                   {locale === "he" ? "מנוע הזמנות" : "Booking Engine"}
                 </h1>
-                <span className="text-xs text-muted-foreground">{poweredByText} Medici Hotels</span>
+                <span className="text-sm text-muted-foreground">{poweredByText} Medici Hotels</span>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <LanguageSwitcher />
               {currentStep > 1 && currentStep < 5 && (
-                <Button variant="ghost" size="sm" onClick={() => setCurrentStep(currentStep - 1)}>
-                  <BackArrow className={`h-4 w-4 ${dir === "rtl" ? "ml-1" : "mr-1"}`} />
+                <Button variant="outline" size="default" onClick={() => setCurrentStep(currentStep - 1)}>
+                  <BackArrow className={`h-4 w-4 ${dir === "rtl" ? "ml-2" : "mr-2"}`} />
                   {backText}
                 </Button>
               )}
@@ -213,115 +212,142 @@ function BookingWidgetContent() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* Steps */}
-        {currentStep < 5 && <BookingSteps currentStep={currentStep} />}
+      <main className="w-full px-6 lg:px-12 py-8">
+        {/* Steps - גדול יותר ובולט */}
+        {currentStep < 5 && (
+          <div className="mb-8">
+            <BookingSteps currentStep={currentStep} />
+          </div>
+        )}
 
         {(searchError || preBookError || bookingError) && (
-          <Alert variant="destructive" className="mb-4">
+          <Alert variant="destructive" className="mb-6 max-w-4xl mx-auto">
             <AlertCircleIcon className="h-4 w-4" />
             <AlertDescription>{searchError || preBookError || bookingError}</AlertDescription>
           </Alert>
         )}
 
-        {/* Step 1: Search */}
+        {/* Step 1: Search - full width */}
         {currentStep === 1 && (
-          <div className="space-y-6">
-            <SearchForm />
+          <div className="space-y-8">
+            <div className="bg-card rounded-2xl shadow-lg border border-border p-6 lg:p-8">
+              <SearchForm />
+            </div>
             {isSearching ? (
-              <div className="text-center py-12">
-                <LoaderIcon className="h-8 w-8 animate-spin mx-auto text-primary mb-4" />
-                <p className="text-muted-foreground">
+              <div className="text-center py-16 bg-card rounded-2xl shadow-lg border border-border">
+                <LoaderIcon className="h-12 w-12 animate-spin mx-auto text-primary mb-6" />
+                <p className="text-lg text-muted-foreground">
                   {locale === "he" ? "מחפש מלונות זמינים..." : "Searching available hotels..."}
                 </p>
               </div>
             ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                <p>{selectDatesText}</p>
+              <div className="text-center py-16 text-muted-foreground">
+                <p className="text-lg">{selectDatesText}</p>
               </div>
             )}
           </div>
         )}
 
-        {/* Step 2: Room Selection - Now with API Results */}
         {currentStep === 2 && (
-          <div className="flex flex-col lg:flex-row gap-6">
-            <div className="flex-1 space-y-4">
-              <SearchForm />
-              <h2 className="text-xl font-bold text-foreground">{availableRoomsText}</h2>
+          <div className="flex flex-col xl:flex-row gap-8">
+            {/* Main content - takes most space */}
+            <div className="flex-1 min-w-0 space-y-6">
+              <div className="bg-card rounded-2xl shadow-lg border border-border p-6 lg:p-8">
+                <SearchForm />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-foreground">{availableRoomsText}</h2>
+                {searchResults.length > 0 && (
+                  <span className="text-muted-foreground">
+                    {locale === "he" ? `נמצאו ${searchResults.length} מלונות` : `Found ${searchResults.length} hotels`}
+                  </span>
+                )}
+              </div>
 
               {isSearching ? (
-                <div className="text-center py-12">
-                  <LoaderIcon className="h-8 w-8 animate-spin mx-auto text-primary mb-4" />
-                  <p className="text-muted-foreground">{locale === "he" ? "מחפש..." : "Searching..."}</p>
+                <div className="text-center py-16 bg-card rounded-2xl shadow-lg border border-border">
+                  <LoaderIcon className="h-12 w-12 animate-spin mx-auto text-primary mb-6" />
+                  <p className="text-lg text-muted-foreground">{locale === "he" ? "מחפש..." : "Searching..."}</p>
                 </div>
               ) : searchResults.length > 0 ? (
                 <HotelSearchResults results={searchResults} />
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {mockRooms.map((room) => (
                     <RoomCard key={room.id} room={room} />
                   ))}
                 </div>
               )}
             </div>
-            <div className="lg:w-80 lg:sticky lg:top-24 lg:self-start">
-              <BookingSummary />
+
+            {/* Sidebar - sticky */}
+            <div className="xl:w-96 xl:flex-shrink-0">
+              <div className="xl:sticky xl:top-28">
+                <BookingSummary />
+              </div>
             </div>
           </div>
         )}
 
-        {/* Step 3: Guest Details */}
         {currentStep === 3 && (
-          <div className="flex flex-col lg:flex-row gap-6">
-            <div className="flex-1">
-              <GuestForm onSubmit={handleGuestSubmit} />
+          <div className="flex flex-col xl:flex-row gap-8">
+            <div className="flex-1 min-w-0">
+              <div className="bg-card rounded-2xl shadow-lg border border-border p-6 lg:p-8">
+                <GuestForm onSubmit={handleGuestSubmit} />
+              </div>
             </div>
-            <div className="lg:w-80 lg:sticky lg:top-24 lg:self-start">
-              <BookingSummary showContinue={false} />
+            <div className="xl:w-96 xl:flex-shrink-0">
+              <div className="xl:sticky xl:top-28">
+                <BookingSummary showContinue={false} />
+              </div>
             </div>
           </div>
         )}
 
-        {/* Step 4: Payment */}
         {currentStep === 4 && (
-          <div className="flex flex-col lg:flex-row gap-6">
-            <div className="flex-1">
-              <StripePaymentForm onSuccess={handlePaymentSuccess} />
-              {isBooking && (
-                <div className="mt-4 text-center">
-                  <LoaderIcon className="h-6 w-6 animate-spin mx-auto text-primary mb-2" />
-                  <p className="text-muted-foreground">
-                    {locale === "he" ? "משלים את ההזמנה..." : "Completing your booking..."}
-                  </p>
-                </div>
-              )}
+          <div className="flex flex-col xl:flex-row gap-8">
+            <div className="flex-1 min-w-0">
+              <div className="bg-card rounded-2xl shadow-lg border border-border p-6 lg:p-8">
+                <StripePaymentForm onSuccess={handlePaymentSuccess} />
+                {isBooking && (
+                  <div className="mt-6 text-center">
+                    <LoaderIcon className="h-8 w-8 animate-spin mx-auto text-primary mb-3" />
+                    <p className="text-muted-foreground">
+                      {locale === "he" ? "משלים את ההזמנה..." : "Completing your booking..."}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="lg:w-80 lg:sticky lg:top-24 lg:self-start">
-              <BookingSummary showContinue={false} />
+            <div className="xl:w-96 xl:flex-shrink-0">
+              <div className="xl:sticky xl:top-28">
+                <BookingSummary showContinue={false} />
+              </div>
             </div>
           </div>
         )}
 
         {/* Step 5: Confirmation */}
         {currentStep === 5 && (
-          <Confirmation confirmationNumber={confirmationNumber} paymentIntentId={paymentIntentId} />
+          <div className="max-w-3xl mx-auto">
+            <Confirmation confirmationNumber={confirmationNumber} paymentIntentId={paymentIntentId} />
+          </div>
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-card border-t border-border mt-12">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+      <footer className="bg-card border-t border-border mt-16">
+        <div className="w-full px-6 lg:px-12 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
             <p>© 2025 Booking Engine. {rightsText}.</p>
-            <div className="flex gap-6">
-              <a href="#" className="hover:text-foreground">
+            <div className="flex gap-8">
+              <a href="#" className="hover:text-foreground transition-colors">
                 {termsText}
               </a>
-              <a href="#" className="hover:text-foreground">
+              <a href="#" className="hover:text-foreground transition-colors">
                 {privacyText}
               </a>
-              <a href="#" className="hover:text-foreground">
+              <a href="#" className="hover:text-foreground transition-colors">
                 {contactText}
               </a>
             </div>

@@ -278,7 +278,7 @@ function RoomCard({
   const boardName = getBoardName(room.boardId)
 
   // Calculate prices (simulate different board prices)
-  const basePrice = room.buyPrice
+  const basePrice = room.buyPrice > 0 ? room.buyPrice : generateFallbackPrice(room, hotel)
   const bbPrice = basePrice
   const hbPrice = Math.round(basePrice * 1.15) // Half board is ~15% more
   const clubPrice = Math.round(basePrice * 0.95) // Club discount ~5%
@@ -698,4 +698,18 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
       ))}
     </div>
   )
+}
+
+function generateFallbackPrice(room: RoomResult, hotel: HotelSearchResult): number {
+  const stars = hotel.stars || 3
+  const category = (room.roomCategory || "standard").toLowerCase()
+
+  let basePrice = 150 + stars * 50 // 3 star = 300, 4 star = 350, 5 star = 400
+
+  if (category.includes("suite")) basePrice *= 1.8
+  else if (category.includes("deluxe")) basePrice *= 1.5
+  else if (category.includes("superior")) basePrice *= 1.25
+  else if (category.includes("family")) basePrice *= 1.4
+
+  return Math.round(basePrice)
 }

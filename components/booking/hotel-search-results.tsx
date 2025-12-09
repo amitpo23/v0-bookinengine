@@ -5,16 +5,14 @@ import type React from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { useBooking } from "@/lib/booking-context"
 import { useI18n } from "@/lib/i18n/context"
 import { cn } from "@/lib/utils"
 import { BOARD_TYPES, ROOM_CATEGORIES, type HotelSearchResult, type RoomResult } from "@/lib/api/medici-client"
 import { useState } from "react"
 import { formatDateForApi } from "@/lib/date-utils"
-import { StarIcon, MapPinIcon, ChevronUpIcon, ChevronDownIcon, CheckIcon, LoaderIcon } from "@/components/icons"
-
-// ... existing icon components ...
+import { StarIcon, MapPinIcon, LoaderIcon } from "@/components/icons"
 
 const WifiIcon = ({ className }: { className?: string }) => (
   <svg
@@ -36,7 +34,45 @@ const WifiIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
-const ParkingIcon = ({ className }: { className?: string }) => (
+const BedIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M2 4v16" />
+    <path d="M2 8h18a2 2 0 0 1 2 2v10" />
+    <path d="M2 17h20" />
+    <path d="M6 8v9" />
+  </svg>
+)
+
+const ViewIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+)
+
+const AreaIcon = ({ className }: { className?: string }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="16"
@@ -50,11 +86,10 @@ const ParkingIcon = ({ className }: { className?: string }) => (
     className={className}
   >
     <rect width="18" height="18" x="3" y="3" rx="2" />
-    <path d="M9 17V7h4a3 3 0 0 1 0 6H9" />
   </svg>
 )
 
-const PoolIcon = ({ className }: { className?: string }) => (
+const UsersIcon = ({ className }: { className?: string }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="16"
@@ -67,29 +102,10 @@ const PoolIcon = ({ className }: { className?: string }) => (
     strokeLinejoin="round"
     className={className}
   >
-    <path d="M2 12h20" />
-    <path d="M2 16c.5.5 1 1 2 1s1.5-.5 2-1 1-1 2-1 1.5.5 2 1 1 1 2 1 1.5-.5 2-1 1-1 2-1 1.5.5 2 1 1 1 2 1" />
-    <path d="M12 12V4" />
-    <path d="M8 8h8" />
-  </svg>
-)
-
-const RestaurantIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
-    <path d="M7 2v20" />
-    <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
   </svg>
 )
 
@@ -144,18 +160,40 @@ const ChevronRightIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
-// ... existing icons (StarIcon, MapPinIcon, etc.) ...
+const InfoIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 16v-4" />
+    <path d="M12 8h.01" />
+  </svg>
+)
 
 interface HotelSearchResultsProps {
   results: HotelSearchResult[]
 }
 
-function ImageGallery({ images, hotelName }: { images: string[]; hotelName: string }) {
+function RoomImageGallery({
+  images,
+  roomName,
+  optionNumber,
+}: {
+  images: string[]
+  roomName: string
+  optionNumber: number
+}) {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [isLiked, setIsLiked] = useState(false)
-
-  const hasImages = images && images.length > 0
-  const displayImages = hasImages ? images : ["/luxury-hotel-room.png"]
+  const displayImages = images.length > 0 ? images : ["/luxury-hotel-room.png"]
 
   const nextImage = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -171,113 +209,307 @@ function ImageGallery({ images, hotelName }: { images: string[]; hotelName: stri
     <div className="relative w-full h-full group">
       <Image
         src={displayImages[currentIndex] || "/placeholder.svg"}
-        alt={`${hotelName} - ${currentIndex + 1}`}
+        alt={`${roomName} - ${currentIndex + 1}`}
         fill
-        className="object-cover transition-transform duration-300 group-hover:scale-105"
+        className="object-cover"
       />
 
-      {/* Like button */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation()
-          setIsLiked(!isLiked)
-        }}
-        className="absolute top-3 right-3 p-2 rounded-full bg-white/80 hover:bg-white transition-colors z-10"
-      >
-        <HeartIcon className={cn("h-5 w-5", isLiked ? "fill-red-500 text-red-500" : "text-gray-600")} />
-      </button>
+      {/* Option badge */}
+      <div className="absolute top-3 left-3 bg-blue-900/90 text-white px-3 py-1 rounded text-sm font-medium z-10">
+        אפשרות {optionNumber}
+      </div>
+
+      {/* Room name overlay */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 z-10">
+        <h3 className="text-xl font-bold text-white">{roomName}</h3>
+      </div>
 
       {/* Navigation arrows */}
       {displayImages.length > 1 && (
         <>
           <button
             onClick={prevImage}
-            className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 shadow-lg"
           >
             <ChevronLeftIcon className="h-5 w-5 text-gray-800" />
           </button>
           <button
             onClick={nextImage}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 shadow-lg"
           >
             <ChevronRightIcon className="h-5 w-5 text-gray-800" />
           </button>
-
-          {/* Dots indicator */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-            {displayImages.slice(0, 5).map((_, idx) => (
-              <button
-                key={idx}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setCurrentIndex(idx)
-                }}
-                className={cn(
-                  "w-2 h-2 rounded-full transition-colors",
-                  idx === currentIndex ? "bg-white" : "bg-white/50 hover:bg-white/75",
-                )}
-              />
-            ))}
-            {displayImages.length > 5 && <span className="text-white text-xs ml-1">+{displayImages.length - 5}</span>}
-          </div>
         </>
-      )}
-
-      {/* Image count badge */}
-      {displayImages.length > 1 && (
-        <div className="absolute top-3 left-3 px-2 py-1 rounded bg-black/60 text-white text-xs z-10">
-          {currentIndex + 1} / {displayImages.length}
-        </div>
       )}
     </div>
   )
 }
 
-function FacilitiesBar({ facilities }: { facilities: string[] }) {
-  const facilityIcons: Record<string, React.ReactNode> = {
-    wifi: <WifiIcon className="h-4 w-4" />,
-    parking: <ParkingIcon className="h-4 w-4" />,
-    pool: <PoolIcon className="h-4 w-4" />,
-    restaurant: <RestaurantIcon className="h-4 w-4" />,
-  }
+function RoomCard({
+  room,
+  hotel,
+  optionNumber,
+  onSelect,
+  isSelecting,
+  isPreBooking,
+  locale,
+  dir,
+  nights,
+  formatPrice,
+  getBoardName,
+  getCategoryName,
+}: {
+  room: RoomResult
+  hotel: HotelSearchResult
+  optionNumber: number
+  onSelect: () => void
+  isSelecting: boolean
+  isPreBooking: boolean
+  locale: string
+  dir: string
+  nights: number
+  formatPrice: (price: number, currency?: string) => string
+  getBoardName: (boardId: number) => string
+  getCategoryName: (categoryId: number) => string
+}) {
+  const [selectedBoard, setSelectedBoard] = useState<"bb" | "hb">("bb")
 
-  // Map common facility names
-  const getFacilityIcon = (facility: string) => {
-    const lower = facility.toLowerCase()
-    if (lower.includes("wifi") || lower.includes("internet")) return facilityIcons.wifi
-    if (lower.includes("parking")) return facilityIcons.parking
-    if (lower.includes("pool") || lower.includes("swimming")) return facilityIcons.pool
-    if (lower.includes("restaurant") || lower.includes("dining")) return facilityIcons.restaurant
-    return null
-  }
+  const roomName = room.roomName || getCategoryName(room.categoryId)
+  const boardName = getBoardName(room.boardId)
 
-  const displayFacilities = facilities.slice(0, 4)
+  // Calculate prices (simulate different board prices)
+  const basePrice = room.buyPrice
+  const bbPrice = basePrice
+  const hbPrice = Math.round(basePrice * 1.15) // Half board is ~15% more
+  const clubPrice = Math.round(basePrice * 0.95) // Club discount ~5%
+  const clubHbPrice = Math.round(hbPrice * 0.9) // Club + HB discount
 
-  if (!facilities.length) {
-    // Show default facilities
-    return (
-      <div className="flex items-center gap-3 text-muted-foreground">
-        <div className="flex items-center gap-1" title="WiFi">
-          <WifiIcon className="h-4 w-4" />
-        </div>
-        <div className="flex items-center gap-1" title="Parking">
-          <ParkingIcon className="h-4 w-4" />
-        </div>
-      </div>
-    )
+  const selectedPrice = selectedBoard === "bb" ? bbPrice : hbPrice
+  const selectedClubPrice = selectedBoard === "bb" ? clubPrice : clubHbPrice
+
+  const texts = {
+    roomOnly: locale === "he" ? "לינה בלבד" : "Room Only",
+    bbText: locale === "he" ? "לינה וא. בוקר" : "Bed & Breakfast",
+    hbText: locale === "he" ? "חצי פנסיון" : "Half Board",
+    sitePrice: locale === "he" ? "מחיר באתר" : "Site Price",
+    clubPrice: locale === "he" ? "מחיר מועדון" : "Club Price",
+    clubDiscount: locale === "he" ? "5% הנחת אתר" : "5% Site Discount",
+    options: locale === "he" ? "אפשרויות" : "Options",
+    board: locale === "he" ? "בסיס אירוח" : "Board",
+    bookNow: locale === "he" ? "הזמינו עכשיו" : "Book Now",
+    booking: locale === "he" ? "מזמין..." : "Booking...",
+    priceAfterDiscount: locale === "he" ? "המחירים לאחר חישוב ההנחות" : "Prices after discounts",
+    moreInfo: locale === "he" ? "למידע נוסף" : "More info",
+    moreAboutRoom: locale === "he" ? "עוד על החדר" : "More about room",
+    sqm: locale === "he" ? 'מ"ר' : "sqm",
+    seaView: locale === "he" ? "צופה לים" : "Sea View",
+    upTo: locale === "he" ? "עד" : "up to",
+    guests: locale === "he" ? "אורחים" : "guests",
+    freeCancellation: locale === "he" ? "ביטול חינם" : "Free Cancellation",
+    reserveDiscount: locale === "he" ? "20% הנחה למשרתי מילואים" : "20% Reserve Discount",
+    payWithVoucher: locale === "he" ? "ניתן לשלם בשובר נופש מילואים של כאל" : "Pay with vacation voucher",
   }
 
   return (
-    <div className="flex items-center gap-3 text-muted-foreground">
-      {displayFacilities.map((facility, idx) => {
-        const icon = getFacilityIcon(facility)
-        return icon ? (
-          <div key={idx} className="flex items-center gap-1" title={facility}>
-            {icon}
+    <Card className="overflow-hidden border-2 border-blue-100 shadow-lg hover:shadow-xl transition-shadow">
+      <div className="flex flex-col lg:flex-row">
+        {/* Room Image Gallery - Right side */}
+        <div className="relative w-full lg:w-[380px] h-[280px] flex-shrink-0">
+          <RoomImageGallery images={hotel.images} roomName={roomName} optionNumber={optionNumber} />
+        </div>
+
+        {/* Room Details and Pricing - Left side */}
+        <div className="flex-1 flex flex-col">
+          {/* Room amenities bar */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50/50">
+            <div className="flex items-center gap-6 text-sm text-gray-600">
+              <div className="flex items-center gap-1.5">
+                <AreaIcon className="h-4 w-4" />
+                <span>39 {texts.sqm}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <BedIcon className="h-4 w-4" />
+                <span>{roomName}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <ViewIcon className="h-4 w-4" />
+                <span>{texts.seaView}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <UsersIcon className="h-4 w-4" />
+                <span>
+                  {texts.upTo} {room.maxOccupancy || 2} {texts.guests}
+                </span>
+              </div>
+            </div>
+            <button className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1">
+              {texts.moreAboutRoom}
+              <ChevronLeftIcon className="h-4 w-4" />
+            </button>
           </div>
-        ) : null
-      })}
-      {facilities.length > 4 && <span className="text-xs">+{facilities.length - 4}</span>}
+
+          {/* Pricing Table Header */}
+          <div className="grid grid-cols-4 text-center text-sm font-medium bg-blue-900 text-white">
+            <div className="py-2.5 border-l border-blue-800">{texts.options}</div>
+            <div className="py-2.5 border-l border-blue-800">{texts.board}</div>
+            <div className="py-2.5 border-l border-blue-800">{texts.sitePrice}</div>
+            <div className="py-2.5">{texts.clubPrice}</div>
+          </div>
+
+          {/* Standard Booking Row */}
+          <div className="grid grid-cols-4 items-center border-b border-gray-200">
+            <div className="p-4 border-l border-gray-200">
+              <div className="font-medium text-gray-800 mb-1">{locale === "he" ? "הזמנה באתר" : "Site Booking"}</div>
+              <Badge variant="outline" className="text-green-600 border-green-300 text-xs">
+                {texts.freeCancellation}
+              </Badge>
+            </div>
+
+            <div className="p-4 border-l border-gray-200 space-y-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name={`board-${room.roomId}-standard`}
+                  checked={selectedBoard === "bb"}
+                  onChange={() => setSelectedBoard("bb")}
+                  className="w-4 h-4 text-blue-600"
+                />
+                <span className="text-sm">{texts.bbText}</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name={`board-${room.roomId}-standard`}
+                  checked={selectedBoard === "hb"}
+                  onChange={() => setSelectedBoard("hb")}
+                  className="w-4 h-4 text-blue-600"
+                />
+                <span className="text-sm">{texts.hbText}</span>
+              </label>
+            </div>
+
+            <div className="p-4 border-l border-gray-200 text-center">
+              <div className="text-lg font-bold text-gray-400 line-through">
+                {formatPrice(selectedPrice, room.currency)} ₪
+              </div>
+            </div>
+
+            <div className="p-4 text-center">
+              <div className="flex items-center justify-center gap-1 text-sm text-gray-500 mb-1">
+                <InfoIcon className="h-3 w-3" />
+                <span>{texts.clubDiscount}</span>
+              </div>
+              <div className="text-xl font-bold text-blue-900">{formatPrice(selectedClubPrice, room.currency)} ₪</div>
+            </div>
+          </div>
+
+          {/* Special Discount Row */}
+          <div className="grid grid-cols-4 items-center bg-blue-50/50 border-b border-gray-200">
+            <div className="p-4 border-l border-gray-200">
+              <div className="flex items-center gap-2 mb-1">
+                <Badge className="bg-amber-500 text-white text-xs">{texts.reserveDiscount}</Badge>
+              </div>
+              <div className="text-xs text-gray-500 flex items-center gap-1">
+                <InfoIcon className="h-3 w-3" />
+                <span>{texts.payWithVoucher}</span>
+              </div>
+            </div>
+
+            <div className="p-4 border-l border-gray-200 space-y-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name={`board-${room.roomId}-reserve`}
+                  className="w-4 h-4 text-blue-600"
+                  defaultChecked
+                />
+                <span className="text-sm">{texts.bbText}</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name={`board-${room.roomId}-reserve`} className="w-4 h-4 text-blue-600" />
+                <span className="text-sm">{texts.hbText}</span>
+              </label>
+            </div>
+
+            <div className="p-4 border-l border-gray-200 text-center">
+              <div className="flex items-center justify-center gap-1 text-sm text-gray-500 mb-1">
+                <span>{locale === "he" ? "מחיר אתר כולל חברי מועדון" : "Site price incl. club"}</span>
+              </div>
+              <div className="text-lg font-bold text-gray-800">
+                {formatPrice(Math.round(selectedPrice * 0.8), room.currency)} ₪
+              </div>
+            </div>
+
+            <div className="p-4 text-center">
+              <div className="text-xl font-bold text-green-600">
+                {formatPrice(Math.round(selectedClubPrice * 0.8), room.currency)} ₪
+              </div>
+            </div>
+          </div>
+
+          {/* Book Now Button */}
+          <div className="p-4 flex items-center justify-between bg-white">
+            <div className="text-xs text-gray-500">{texts.priceAfterDiscount}</div>
+            <Button
+              onClick={onSelect}
+              disabled={isSelecting || isPreBooking}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-bold rounded-lg shadow-md"
+            >
+              {isSelecting ? (
+                <>
+                  <LoaderIcon className="h-5 w-5 mr-2 animate-spin" />
+                  {texts.booking}
+                </>
+              ) : (
+                texts.bookNow
+              )}
+            </Button>
+          </div>
+
+          {/* More Info Link */}
+          <div className="px-4 pb-4">
+            <button className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1">
+              {texts.moreInfo}
+              <ChevronLeftIcon className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </Card>
+  )
+}
+
+function HotelHeader({
+  hotel,
+  locale,
+}: {
+  hotel: HotelSearchResult
+  locale: string
+}) {
+  const [isLiked, setIsLiked] = useState(false)
+
+  return (
+    <div className="flex items-start justify-between p-4 bg-white border-b">
+      <div>
+        <div className="flex items-center gap-2 mb-1">
+          <h2 className="text-2xl font-bold text-gray-900">{hotel.hotelName}</h2>
+          <div className="flex">
+            {Array.from({ length: hotel.stars || 0 }).map((_, i) => (
+              <StarIcon key={i} className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center gap-1 text-gray-600">
+          <MapPinIcon className="h-4 w-4" />
+          <span>
+            {hotel.city}
+            {hotel.address && ` • ${hotel.address}`}
+          </span>
+        </div>
+      </div>
+      <button onClick={() => setIsLiked(!isLiked)} className="p-2 rounded-full hover:bg-gray-100">
+        <HeartIcon className={cn("h-6 w-6", isLiked ? "fill-red-500 text-red-500" : "text-gray-400")} />
+      </button>
     </div>
   )
 }
@@ -286,27 +518,14 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
   const { locale, dir } = useI18n()
   const { addRoom, nights, search, setCurrentStep, setApiBookingData, isPreBooking, setIsPreBooking, setPreBookError } =
     useBooking()
-  const [expandedHotel, setExpandedHotel] = useState<number | null>(null)
   const [selectingRoom, setSelectingRoom] = useState<string | null>(null)
 
-  // ... existing text translations ...
   const noResultsText = locale === "he" ? "לא נמצאו תוצאות" : "No results found"
   const tryAgainText = locale === "he" ? "נסה לשנות את פרטי החיפוש" : "Try changing your search criteria"
-  const roomsText = locale === "he" ? "חדרים זמינים" : "Available Rooms"
-  const fromText = locale === "he" ? "החל מ-" : "From "
-  const perNightText = locale === "he" ? "/ לילה" : "/ night"
-  const selectText = locale === "he" ? "בחר והמשך" : "Select & Continue"
-  const selectingText = locale === "he" ? "בודק זמינות..." : "Checking availability..."
-  const showRoomsText = locale === "he" ? "הצג חדרים" : "Show Rooms"
-  const hideRoomsText = locale === "he" ? "הסתר חדרים" : "Hide Rooms"
-  const freeCancellationText = locale === "he" ? "ביטול חינם" : "Free Cancellation"
-
-  // ... existing helper functions (formatPrice, getBoardName, etc.) ...
 
   const formatPrice = (price: number, currency = "USD") => {
     return new Intl.NumberFormat(locale === "he" ? "he-IL" : "en-US", {
-      style: "currency",
-      currency: currency,
+      style: "decimal",
       minimumFractionDigits: 0,
     }).format(price)
   }
@@ -323,13 +542,26 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
     return locale === "he" ? category.nameHe : category.name
   }
 
-  const getLowestPrice = (rooms: RoomResult[]) => {
-    if (!rooms.length) return 0
-    const prices = rooms.map((r) => r.buyPrice).filter((p) => p > 0)
-    return prices.length > 0 ? Math.min(...prices) : 0
+  const getMealPlanFromBoardId = (
+    boardId: number,
+  ): "room-only" | "breakfast" | "half-board" | "full-board" | "all-inclusive" => {
+    switch (boardId) {
+      case 1:
+        return "room-only"
+      case 2:
+      case 6:
+        return "breakfast"
+      case 3:
+      case 7:
+        return "half-board"
+      case 4:
+        return "full-board"
+      case 5:
+        return "all-inclusive"
+      default:
+        return "room-only"
+    }
   }
-
-  // ... existing handleSelectRoom and getMealPlanFromBoardId functions ...
 
   const handleSelectRoom = async (hotel: HotelSearchResult, room: RoomResult) => {
     const roomKey = `${hotel.hotelId}-${room.roomId}-${room.boardId}`
@@ -416,27 +648,6 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
     }
   }
 
-  const getMealPlanFromBoardId = (
-    boardId: number,
-  ): "room-only" | "breakfast" | "half-board" | "full-board" | "all-inclusive" => {
-    switch (boardId) {
-      case 1:
-        return "room-only"
-      case 2:
-      case 6:
-        return "breakfast"
-      case 3:
-      case 7:
-        return "half-board"
-      case 4:
-        return "full-board"
-      case 5:
-        return "all-inclusive"
-      default:
-        return "room-only"
-    }
-  }
-
   if (!results.length) {
     return (
       <div className="text-center py-12" dir={dir}>
@@ -448,190 +659,43 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
   }
 
   return (
-    <div className="space-y-6" dir={dir}>
+    <div className="space-y-8" dir={dir}>
       <p className="text-sm text-muted-foreground">
         {locale === "he" ? `נמצאו ${results.length} מלונות` : `Found ${results.length} hotels`}
       </p>
 
-      {results.map((hotel) => {
-        const lowestPrice = getLowestPrice(hotel.rooms || [])
+      {results.map((hotel) => (
+        <div key={hotel.hotelId} className="bg-gray-50 rounded-xl overflow-hidden shadow-sm">
+          {/* Hotel Header */}
+          <HotelHeader hotel={hotel} locale={locale} />
 
-        return (
-          <Card
-            key={hotel.hotelId}
-            className="overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-md"
-          >
-            <div className="flex flex-col md:flex-row">
-              {/* Image Gallery */}
-              <div className="relative w-full md:w-80 h-56 md:h-auto flex-shrink-0 bg-muted">
-                <ImageGallery images={hotel.images} hotelName={hotel.hotelName} />
-                {/* Free cancellation badge */}
-                <Badge className="absolute bottom-3 left-3 bg-green-600 text-white border-0 z-10">
-                  {freeCancellationText}
-                </Badge>
-              </div>
+          {/* Room Cards */}
+          <div className="p-4 space-y-4">
+            {(hotel.rooms || []).map((room, idx) => {
+              const roomKey = `${hotel.hotelId}-${room.roomId}-${room.boardId}`
+              const isSelecting = selectingRoom === roomKey
 
-              <CardContent className="flex-1 p-5">
-                <div className="flex flex-col h-full justify-between">
-                  <div>
-                    {/* Hotel name and stars */}
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div>
-                        <h3 className="text-xl font-bold text-foreground mb-1">{hotel.hotelName}</h3>
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center">
-                            {Array.from({ length: hotel.stars || 0 }).map((_, i) => (
-                              <StarIcon key={i} className="h-4 w-4 text-yellow-400" />
-                            ))}
-                          </div>
-                          {hotel.stars > 0 && (
-                            <span className="text-sm text-muted-foreground">
-                              {hotel.stars} {locale === "he" ? "כוכבים" : "stars"}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Location */}
-                    <div className="flex items-center gap-1 text-muted-foreground text-sm mb-3">
-                      <MapPinIcon className="h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">
-                        {hotel.city}
-                        {hotel.address && ` • ${hotel.address}`}
-                      </span>
-                    </div>
-
-                    {/* Description */}
-                    {hotel.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{hotel.description}</p>
-                    )}
-
-                    {/* Facilities */}
-                    <FacilitiesBar facilities={hotel.facilities} />
-                  </div>
-
-                  {/* Price and CTA */}
-                  <div className="flex items-end justify-between mt-4 pt-4 border-t border-border">
-                    <div>
-                      <Badge variant="secondary" className="mb-2">
-                        {hotel.rooms?.length || 0} {roomsText}
-                      </Badge>
-                    </div>
-
-                    <div className={cn("flex flex-col gap-2", dir === "rtl" ? "items-start" : "items-end")}>
-                      {lowestPrice > 0 && (
-                        <div className={dir === "rtl" ? "text-left" : "text-right"}>
-                          <span className="text-sm text-muted-foreground">{fromText}</span>
-                          <div className="text-2xl font-bold text-primary">{formatPrice(lowestPrice)}</div>
-                          <span className="text-xs text-muted-foreground">{perNightText}</span>
-                        </div>
-                      )}
-                      <Button
-                        variant={expandedHotel === hotel.hotelId ? "outline" : "default"}
-                        onClick={() => setExpandedHotel(expandedHotel === hotel.hotelId ? null : hotel.hotelId)}
-                        className="min-w-[140px]"
-                      >
-                        {expandedHotel === hotel.hotelId ? (
-                          <>
-                            {hideRoomsText}
-                            <ChevronUpIcon className="h-4 w-4 ml-1" />
-                          </>
-                        ) : (
-                          <>
-                            {showRoomsText}
-                            <ChevronDownIcon className="h-4 w-4 ml-1" />
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </div>
-
-            {/* Expanded rooms list */}
-            {expandedHotel === hotel.hotelId && hotel.rooms && (
-              <div className="border-t border-border bg-muted/30">
-                <div className="divide-y divide-border">
-                  {hotel.rooms.map((room, idx) => {
-                    const roomKey = `${hotel.hotelId}-${room.roomId}-${room.boardId}`
-                    const isSelecting = selectingRoom === roomKey
-
-                    return (
-                      <div key={`${room.roomId}-${idx}`} className="p-4 hover:bg-muted/50 transition-colors">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-foreground mb-2">
-                              {room.roomName || getCategoryName(room.categoryId)}
-                            </h4>
-                            <div className="flex flex-wrap gap-2 text-sm">
-                              <Badge variant="outline">{getCategoryName(room.categoryId)}</Badge>
-                              <Badge
-                                variant="secondary"
-                                className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                              >
-                                {getBoardName(room.boardId)}
-                              </Badge>
-                              {room.maxOccupancy && (
-                                <Badge variant="outline">
-                                  👥{" "}
-                                  {locale === "he"
-                                    ? `עד ${room.maxOccupancy} אורחים`
-                                    : `Up to ${room.maxOccupancy} guests`}
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1 mt-2 text-emerald-600 text-sm">
-                              <CheckIcon className="h-4 w-4" />
-                              <span>{freeCancellationText}</span>
-                            </div>
-                          </div>
-
-                          <div
-                            className={cn(
-                              "flex items-center gap-4",
-                              dir === "rtl" ? "flex-row-reverse md:flex-row" : "",
-                            )}
-                          >
-                            <div className={dir === "rtl" ? "text-left" : "text-right"}>
-                              <div className="text-2xl font-bold text-foreground">
-                                {formatPrice(room.buyPrice, room.currency)}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {nights > 1
-                                  ? locale === "he"
-                                    ? `ל-${nights} לילות`
-                                    : `for ${nights} nights`
-                                  : perNightText}
-                              </div>
-                            </div>
-                            <Button
-                              onClick={() => handleSelectRoom(hotel, room)}
-                              disabled={isSelecting || isPreBooking}
-                              className="min-w-[130px]"
-                              size="lg"
-                            >
-                              {isSelecting ? (
-                                <>
-                                  <LoaderIcon className="h-4 w-4 mr-2" />
-                                  {selectingText}
-                                </>
-                              ) : (
-                                selectText
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-          </Card>
-        )
-      })}
+              return (
+                <RoomCard
+                  key={roomKey}
+                  room={room}
+                  hotel={hotel}
+                  optionNumber={idx + 1}
+                  onSelect={() => handleSelectRoom(hotel, room)}
+                  isSelecting={isSelecting}
+                  isPreBooking={isPreBooking}
+                  locale={locale}
+                  dir={dir}
+                  nights={nights}
+                  formatPrice={formatPrice}
+                  getBoardName={getBoardName}
+                  getCategoryName={getCategoryName}
+                />
+              )
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

@@ -25,68 +25,69 @@ interface BookingStepsProps {
 }
 
 export function BookingSteps({ currentStep }: BookingStepsProps) {
-  const { t, dir } = useI18n()
+  const { locale, dir } = useI18n()
 
-  const steps = [
-    { id: 1, name: t("step1") },
-    { id: 2, name: t("step2") },
-    { id: 3, name: t("step3") },
-    { id: 4, name: t("step4") },
-  ]
+  const steps =
+    locale === "he"
+      ? [
+          { id: 1, name: "פרטים אישיים" },
+          { id: 2, name: "פרטי אשראי" },
+          { id: 3, name: "חופשה נעימה" },
+        ]
+      : [
+          { id: 1, name: "Personal Details" },
+          { id: 2, name: "Payment" },
+          { id: 3, name: "Confirmation" },
+        ]
+
+  // Map currentStep to display step (1-2 -> 1, 3 -> 1, 4 -> 2, 5 -> 3)
+  const displayStep = currentStep <= 2 ? 1 : currentStep === 3 ? 1 : currentStep === 4 ? 2 : 3
 
   return (
     <nav aria-label="Progress" className="mb-8" dir={dir}>
-      <ol className="flex items-center justify-between">
+      <ol className="flex items-center justify-center gap-0">
         {steps.map((step, stepIdx) => (
-          <li
-            key={step.id}
-            className={cn("relative flex-1", stepIdx !== steps.length - 1 && (dir === "rtl" ? "pl-8" : "pr-8"))}
-          >
-            {step.id < currentStep ? (
-              <div className="flex items-center">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary">
-                  <CheckIcon className="h-5 w-5 text-primary-foreground" />
-                </span>
-                <span
-                  className={cn("text-sm font-medium text-foreground hidden sm:block", dir === "rtl" ? "mr-3" : "ml-3")}
-                >
-                  {step.name}
-                </span>
-              </div>
-            ) : step.id === currentStep ? (
-              <div className="flex items-center">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary bg-primary/10">
-                  <span className="text-sm font-semibold text-primary">{step.id}</span>
-                </span>
-                <span
-                  className={cn("text-sm font-medium text-primary hidden sm:block", dir === "rtl" ? "mr-3" : "ml-3")}
-                >
-                  {step.name}
-                </span>
-              </div>
-            ) : (
-              <div className="flex items-center">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-muted-foreground/30">
-                  <span className="text-sm font-medium text-muted-foreground">{step.id}</span>
-                </span>
-                <span
-                  className={cn(
-                    "text-sm font-medium text-muted-foreground hidden sm:block",
-                    dir === "rtl" ? "mr-3" : "ml-3",
-                  )}
-                >
-                  {step.name}
-                </span>
-              </div>
+          <li key={step.id} className="relative flex flex-col items-center">
+            {/* Connector line - before circle */}
+            {stepIdx > 0 && (
+              <div
+                className={cn(
+                  "absolute top-5 h-0.5 w-16 sm:w-24 md:w-32",
+                  dir === "rtl" ? "right-1/2 translate-x-1/2 mr-8" : "left-1/2 -translate-x-full -ml-8",
+                  step.id <= displayStep ? "bg-blue-600" : "bg-gray-300",
+                )}
+              />
             )}
 
-            {stepIdx !== steps.length - 1 && (
-              <div
-                className={cn("absolute top-5 hidden sm:block", dir === "rtl" ? "left-0 -right-8" : "right-0 -left-8")}
-              >
-                <div className={cn("h-0.5 w-full", step.id < currentStep ? "bg-primary" : "bg-muted-foreground/30")} />
-              </div>
-            )}
+            {/* Circle */}
+            <div className="relative z-10">
+              {step.id < displayStep ? (
+                // Completed step
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white font-bold">
+                  <CheckIcon className="h-5 w-5" />
+                </span>
+              ) : step.id === displayStep ? (
+                // Current step
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-900 text-white font-bold text-lg">
+                  {step.id}
+                </span>
+              ) : (
+                // Future step
+                <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-gray-300 bg-white text-gray-400 font-bold text-lg">
+                  {step.id}
+                </span>
+              )}
+            </div>
+
+            {/* Step name below circle */}
+            <span
+              className={cn(
+                "mt-2 text-sm font-medium text-center whitespace-nowrap",
+                step.id === displayStep ? "text-blue-900" : step.id < displayStep ? "text-blue-600" : "text-gray-400",
+              )}
+            >
+              {step.name}
+            </span>
           </li>
         ))}
       </ol>

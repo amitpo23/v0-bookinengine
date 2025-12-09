@@ -1,12 +1,13 @@
 "use client"
 
+import { useState } from "react"
 import { formatDate } from "@/lib/date-utils"
 import { useBooking } from "@/lib/booking-context"
 import { useI18n } from "@/lib/i18n/context"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 import { Icons } from "@/components/icons"
 import { cn } from "@/lib/utils"
+import Image from "next/image"
 
 interface BookingSummaryProps {
   showContinue?: boolean
@@ -18,6 +19,7 @@ export function BookingSummary({ showContinue = true, onContinue, className }: B
   const { hotel, search, selectedRooms, removeRoom, updateRoomQuantity, nights, totalPrice, setCurrentStep } =
     useBooking()
   const { t, locale, dir } = useI18n()
+  const [showClubOffer, setShowClubOffer] = useState(true)
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat(locale === "he" ? "he-IL" : "en-US", {
@@ -27,121 +29,116 @@ export function BookingSummary({ showContinue = true, onContinue, className }: B
     }).format(price)
   }
 
-  const taxes = totalPrice * 0.17 // VAT
+  const taxes = totalPrice * 0.17
   const grandTotal = totalPrice + taxes
-  const nightsText = nights === 1 ? t("night") : t("nights")
+  const clubDiscount = Math.round(totalPrice * 0.05) // 5% club discount
+  const clubPrice = totalPrice - clubDiscount
+  const nightsText = nights === 1 ? (locale === "he" ? "לילה" : "night") : locale === "he" ? "לילות" : "nights"
 
   const handleContinue = () => {
     setCurrentStep(3)
     onContinue?.()
   }
 
+  const hotelImage = selectedRooms[0]?.room?.images?.[0] || "/luxury-hotel-pool.png"
+
   if (selectedRooms.length === 0) {
     return (
-      <div className={cn("bg-card rounded-xl border border-border p-6", className)} dir={dir}>
-        <h3 className="font-semibold text-lg mb-4">{t("bookingSummary")}</h3>
-        <p className="text-muted-foreground text-sm text-center py-8">{t("noRoomsSelected")}</p>
+      <div className={cn("bg-white rounded-xl border border-gray-200 p-6 shadow-sm", className)} dir={dir}>
+        <h3 className="font-semibold text-lg mb-4 text-gray-900">
+          {locale === "he" ? "סיכום הזמנה" : "Booking Summary"}
+        </h3>
+        <p className="text-gray-500 text-sm text-center py-8">
+          {locale === "he" ? "טרם נבחרו חדרים" : "No rooms selected"}
+        </p>
       </div>
     )
   }
 
   return (
-    <div className={cn("bg-card rounded-xl border border-border p-6", className)} dir={dir}>
-      <h3 className="font-semibold text-lg mb-4">{t("bookingSummary")}</h3>
+    <div className={cn("bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden", className)} dir={dir}>
+      <div className="relative h-48 w-full">
+        <Image src={hotelImage || "/placeholder.svg"} alt={hotel?.name || "Hotel"} fill className="object-cover" />
+      </div>
 
-      {/* Stay Details */}
-      <div className="space-y-2 text-sm mb-4">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Icons.calendar className="h-4 w-4" />
+      <div className="p-4 border-b border-gray-100">
+        <h3 className="font-bold text-lg text-gray-900 mb-2">{locale === "he" ? "סיכום הזמנה" : "Booking Summary"}</h3>
+        <div className="flex items-center justify-between text-sm text-gray-600">
+          <span className="font-medium">{hotel?.name || "המלון"}</span>
           <span>
             {formatDate(search.checkIn, locale)} - {formatDate(search.checkOut, locale)}
           </span>
         </div>
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Icons.moon className="h-4 w-4" />
-          <span>
-            {nights} {nightsText}
-          </span>
-        </div>
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Icons.users className="h-4 w-4" />
-          <span>
-            {search.adults} {t("adults")}
-            {search.children > 0 ? `, ${search.children} ${t("children")}` : ""}
-          </span>
+        <div className="text-sm text-gray-500 mt-1">
+          {locale === "he" ? `${nights} ${nightsText}` : `${nights} ${nightsText}`}
         </div>
       </div>
 
-      <Separator className="my-4" />
-
-      {/* Selected Rooms */}
-      <div className="space-y-4">
-        {selectedRooms.map((sr) => (
-          <div key={`${sr.room.id}-${sr.ratePlan.id}`} className="space-y-2">
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <p className="font-medium text-sm">{sr.room.name}</p>
-                <p className="text-xs text-muted-foreground">{sr.ratePlan.name}</p>
+      <div className="p-4 space-y-3">
+        {selectedRooms.map((sr, index) => (
+          <div key={`${sr.room.id}-${sr.ratePlan.id}`} className="bg-gray-50 rounded-lg p-3">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-2">
+                <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">
+                  {locale === "he" ? `חדר ${index + 1}` : `Room ${index + 1}`}
+                </span>
+                <span className="text-xs text-amber-600 font-medium">
+                  {locale === "he" ? "הנחה למזמינים באתר" : "Website discount"}
+                </span>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                className="h-6 w-6 text-gray-400 hover:text-red-500"
                 onClick={() => removeRoom(sr.room.id, sr.ratePlan.id)}
               >
-                <Icons.trash className="h-4 w-4" />
+                <Icons.x className="h-4 w-4" />
               </Button>
             </div>
-
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7 bg-transparent"
-                  onClick={() => updateRoomQuantity(sr.room.id, sr.ratePlan.id, sr.quantity - 1)}
-                >
-                  -
-                </Button>
-                <span className="w-6 text-center text-sm">{sr.quantity}</span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7 bg-transparent"
-                  onClick={() => updateRoomQuantity(sr.room.id, sr.ratePlan.id, sr.quantity + 1)}
-                >
-                  +
-                </Button>
-              </div>
-              <span className="font-medium">{formatPrice(sr.ratePlan.price * sr.quantity * nights)}</span>
-            </div>
+            <p className="text-sm text-gray-700 mt-2">
+              {sr.room.name}, {sr.ratePlan.name}
+            </p>
+            <p className="text-lg font-bold text-gray-900 mt-1">
+              {locale === "he" ? "מחיר:" : "Price:"} {formatPrice(sr.ratePlan.price * sr.quantity * nights)}
+            </p>
           </div>
         ))}
       </div>
 
-      <Separator className="my-4" />
+      {showClubOffer && (
+        <div className="mx-4 mb-4 bg-amber-50 border border-amber-200 rounded-lg p-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-amber-800">
+                {locale === "he"
+                  ? `הצטרפות לחוג השמש תחסוך לך ${formatPrice(clubDiscount)}`
+                  : `Join the club to save ${formatPrice(clubDiscount)}`}
+              </p>
+            </div>
+            <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-white rounded-full px-4">
+              {locale === "he" ? "חוג השמש" : "Sun Club"}
+            </Button>
+          </div>
+        </div>
+      )}
 
-      {/* Pricing */}
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">{t("totalRooms")}</span>
-          <span>{formatPrice(totalPrice)}</span>
+      <div className="p-4 border-t border-gray-100 space-y-2">
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-600">{locale === "he" ? "מחיר באתר" : "Website price"}</span>
+          <span className="text-gray-900 font-medium">{formatPrice(totalPrice)}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">{t("vat")}</span>
-          <span>{formatPrice(taxes)}</span>
-        </div>
-        <Separator className="my-2" />
-        <div className="flex justify-between text-base font-bold">
-          <span>{t("totalToPay")}</span>
-          <span className="text-primary">{formatPrice(grandTotal)}</span>
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-600">{locale === "he" ? "מחיר מועדון" : "Club price"}</span>
+          <span className="text-blue-600 font-bold">{formatPrice(clubPrice)}</span>
         </div>
       </div>
 
       {showContinue && (
-        <Button className="w-full mt-6" size="lg" onClick={handleContinue}>
-          {t("continueToBooking")}
-        </Button>
+        <div className="p-4 pt-0">
+          <Button className="w-full bg-blue-600 hover:bg-blue-700" size="lg" onClick={handleContinue}>
+            {locale === "he" ? "המשך להזמנה" : "Continue to booking"}
+          </Button>
+        </div>
       )}
     </div>
   )

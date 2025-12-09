@@ -32,38 +32,59 @@ export async function POST(request: NextRequest) {
 
     console.log("[v0] Search returned", results.length, "hotel results")
 
-    // Each result is a HotelSearchResult with rooms: RoomResult[]
-    const groupedResults = results.map((hotel) => ({
-      hotelId: hotel.hotelId,
-      hotelName: hotel.hotelName,
-      city: hotel.city,
-      stars: hotel.stars,
-      address: hotel.address,
-      imageUrl: hotel.imageUrl,
-      images: hotel.images,
-      description: hotel.description,
-      facilities: hotel.facilities,
-      rooms: hotel.rooms.map((room, index) => ({
-        code: room.code,
-        roomId: room.roomId || index + 1,
-        roomName: room.roomName,
-        roomCategory: room.roomCategory,
-        categoryId: room.categoryId || getCategoryIdFromName(room.roomCategory),
-        boardId: room.boardId || getBoardIdFromCode(room.boardType),
-        boardType: room.boardType,
-        buyPrice: room.buyPrice, // Use buyPrice directly from transform
-        currency: room.currency || "USD",
-        maxOccupancy: room.maxOccupancy || 2,
-        cancellationPolicy: room.cancellationPolicy || "fully-refundable",
-      })),
-    }))
+    const groupedResults = results.map((hotel: any) => {
+      const hotelId = typeof hotel.hotelId === "number" ? hotel.hotelId : Number.parseInt(hotel.hotelId, 10) || 0
+
+      console.log(`[v0] Mapping hotel: ${hotel.hotelName}, hotelId: ${hotelId}`)
+
+      return {
+        hotelId, // Ensure number
+        hotelName: hotel.hotelName,
+        city: hotel.city,
+        stars: hotel.stars,
+        address: hotel.location || hotel.address || "",
+        imageUrl: hotel.hotelImage || hotel.imageUrl || "",
+        images: hotel.images || [],
+        description: hotel.description || "",
+        facilities: hotel.facilities || [],
+        rooms: hotel.rooms.map((room: any, index: number) => {
+          // Log each room's price data for debugging
+          console.log(`[v0] Room ${room.roomName}: code=${room.code}, price=${room.price}, buyPrice=${room.buyPrice}`)
+
+          return {
+            code: room.code || room.roomId || `room-${index}`, // Ensure code is passed
+            roomId: room.roomId || index + 1,
+            roomName: room.roomName || "Standard Room",
+            roomCategory: room.roomType || room.roomCategory || "standard",
+            categoryId: getCategoryIdFromName(room.roomType || room.roomCategory),
+            boardId: room.boardId || getBoardIdFromCode(room.board),
+            boardType: room.board || "RO",
+            buyPrice: room.price || room.buyPrice || 0,
+            originalPrice: room.originalPrice || 0,
+            currency: room.currency || "ILS",
+            maxOccupancy: room.maxOccupancy || 2,
+            size: room.size || 0,
+            view: room.view || "",
+            bedding: room.bedding || "",
+            amenities: room.amenities || [],
+            roomImage: room.roomImage || "",
+            images: room.images || [],
+            cancellationPolicy: room.cancellationPolicy || "free",
+            available: room.available || 1,
+          }
+        }),
+      }
+    })
 
     console.log("[v0] Returning", groupedResults.length, "hotels")
     if (groupedResults.length > 0) {
-      console.log(
-        "[v0] First hotel rooms:",
-        groupedResults[0].rooms.map((r) => ({ name: r.roomName, price: r.buyPrice })),
-      )
+      console.log("[v0] First hotel hotelId:", groupedResults[0].hotelId, "type:", typeof groupedResults[0].hotelId)
+      if (groupedResults[0].rooms.length > 0) {
+        console.log("[v0] First hotel first room:", {
+          code: groupedResults[0].rooms[0].code,
+          buyPrice: groupedResults[0].rooms[0].buyPrice,
+        })
+      }
     }
 
     return NextResponse.json({

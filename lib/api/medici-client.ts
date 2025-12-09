@@ -311,56 +311,119 @@ class MediciApiClient {
   }
 
   private transformSearchResults(response: any): HotelSearchResult[] {
-    if (!response) return []
+    console.log("[v0] Raw API response:", JSON.stringify(response, null, 2).substring(0, 2000))
 
-    // Handle array response directly (API returns array of rooms/hotels)
-    const items = Array.isArray(response) ? response : response.items || response.hotels || response.rooms || []
-    const results: HotelSearchResult[] = []
-
-    console.log("[v0] transformSearchResults - items count:", items.length)
-
-    for (const item of items) {
-      // Each item could be a hotel with rooms or a direct room result
-      const roomItems = item.items || [item]
-
-      const mainImage = getHotelMainImage(item)
-      const allImages = buildImagesArray(item)
-
-      console.log("[v0] Hotel:", item.hotelName, "mainImage:", mainImage, "allImages count:", allImages.length)
-
-      const rooms: RoomResult[] = roomItems.map((room: any) => {
-        const price = extractPrice(item, room)
-        console.log("[v0] Room:", room.roomName || room.name, "price:", price)
-
-        return {
-          code: room.code || item.code || "",
-          roomId: room.roomId || room.id || 0,
-          roomName: room.roomName || room.name || room.roomType || "Standard Room",
-          roomCategory: room.roomCategory || room.category || "Standard",
-          categoryId: room.categoryId || room.category || 0,
-          boardId: room.boardId || room.board || 1,
-          boardType: room.boardType || room.board || "Room Only",
-          buyPrice: price,
-          currency: room.price?.currency || item.price?.currency || "USD",
-          maxOccupancy: room.maxOccupancy || room.maxPax || 2,
-          cancellationPolicy: room.cancellation?.type || (room.nonRefundable ? "non-refundable" : "fully-refundable"),
-        }
-      })
-
-      results.push({
-        hotelId: item.hotelId || item.id || 0,
-        hotelName: item.hotelName || item.name || "Unknown Hotel",
-        city: item.city || "",
-        stars: item.stars || 0,
-        address: item.address || "",
-        imageUrl: mainImage,
-        images: allImages.length > 0 ? allImages : mainImage ? [mainImage] : [],
-        description: item.description || "",
-        facilities: item.facilities || [],
-        rooms,
-      })
+    if (!response) {
+      console.log("[v0] No response from API")
+      return []
     }
 
+    // Handle different response formats
+    let items: any[] = []
+
+    if (Array.isArray(response)) {
+      items = response
+    } else if (response.items && Array.isArray(response.items)) {
+      items = response.items
+    } else if (response.data && Array.isArray(response.data)) {
+      items = response.data
+    }
+
+    console.log("[v0] Items count:", items.length)
+    if (items.length > 0) {
+      console.log("[v0] First item structure:", JSON.stringify(items[0], null, 2).substring(0, 1500))
+      console.log("[v0] First item keys:", Object.keys(items[0]))
+    }
+
+    const hotelMap = new Map<number, HotelSearchResult>()
+
+    for (const item of items) {
+      const hotelIdRaw = item.id || item.hotelId || item.hotelCode || 0
+      const hotelId = typeof hotelIdRaw === "number" ? hotelIdRaw : Number.parseInt(hotelIdRaw, 10) || 0
+      const hotelName = item.name || item.hotelName || "Unknown Hotel"
+
+      // Log hotelId for debugging
+      console.log(`[v0] Hotel ${hotelName} - hotelId: ${hotelId} (raw: ${hotelIdRaw})`)
+
+      // Log all price-related fields
+      console.log(`[v0] Hotel ${hotelName} - Available price fields:`, {
+        price: item.price,
+        buyPrice: item.buyPrice,
+        sellPrice: item.sellPrice,
+        totalPrice: item.totalPrice,
+        amount: item.amount,
+        rate: item.rate,
+        cost: item.cost,
+      })
+
+      if (!hotelMap.has(hotelId)) {
+        hotelMap.set(hotelId, {
+          hotelId, // Now a number
+          hotelName,
+          hotelImage: getHotelMainImage(item),
+          images: buildImagesArray(item),
+          location: item.address || item.location || "",
+          city: item.city || "",
+          stars: item.stars || item.rating || 0,
+          description: item.description || "",
+          facilities: item.facilities || item.amenities || [],
+          rooms: [],
+          rawData: item, // Keep raw data for debugging
+        })
+      }
+
+      const hotel = hotelMap.get(hotelId)!
+
+      // Process rooms from nested items array
+      const roomItems = item.items || [item]
+
+      for (const roomItem of roomItems) {
+        const roomCode = roomItem.code || roomItem.roomCode || roomItem.rateKey || ""
+
+        console.log(`[v0] Room ${roomItem.name} - code: ${roomCode}`)
+        console.log(`[v0] Room ${roomItem.name} - Price fields:`, {
+          price: roomItem.price,
+          buyPrice: roomItem.buyPrice,
+          sellPrice: roomItem.sellPrice,
+          totalPrice: roomItem.totalPrice,
+          amount: roomItem.amount,
+          rate: roomItem.rate,
+        })
+
+        const price = extractPriceFromRoom(roomItem)
+        console.log(`[v0] Extracted price for ${roomItem.name}:`, price)
+
+        hotel.rooms.push({
+          code: roomCode, // Include room code for booking
+          roomId: roomItem.id || roomItem.roomId || hotel.rooms.length + 1,
+          roomName: roomItem.name || roomItem.roomName || "Standard Room",
+          roomType: roomItem.category || roomItem.roomType || "standard",
+          roomCategory: roomItem.category || roomItem.roomType || "standard",
+          roomImage: getRoomMainImage(roomItem),
+          images: buildRoomImagesArray(roomItem),
+          bedding: roomItem.bedding || "",
+          board: roomItem.board || "RO",
+          boardId: getBoardIdFromCode(roomItem.board || "RO"),
+          maxOccupancy: roomItem.pax?.adults || roomItem.maxOccupancy || 2,
+          size: roomItem.size || roomItem.roomSize || 0,
+          view: roomItem.view || "",
+          amenities: roomItem.amenities || roomItem.facilities || [],
+          price: price,
+          buyPrice: price, // Add buyPrice alias
+          originalPrice: price > 0 ? Math.round(price * 1.15) : 0, // 15% markup for original
+          currency: roomItem.currency || "ILS",
+          cancellationPolicy: roomItem.cancellationPolicy || roomItem.cancellation || "free",
+          available: roomItem.quantity?.max || roomItem.available || 1,
+          rawData: roomItem, // Keep raw data
+        })
+      }
+    }
+
+    const results = Array.from(hotelMap.values())
+    console.log("[v0] Transformed results:", results.length, "hotels")
+    if (results.length > 0) {
+      console.log("[v0] First hotel hotelId:", results[0].hotelId, "type:", typeof results[0].hotelId)
+    }
     return results
   }
 
@@ -739,37 +802,92 @@ function buildImagesArray(item: any): string[] {
   return images.filter(Boolean)
 }
 
-function extractPrice(item: any, room: any): number {
-  // Try room-level price first
-  if (room?.price?.amount && room.price.amount > 0) return room.price.amount
-  if (room?.buyPrice && room.buyPrice > 0) return room.buyPrice
-  if (room?.total && room.total > 0) return room.total
-  if (room?.totalPrice && room.totalPrice > 0) return room.totalPrice
-  if (room?.Price && room.Price > 0) return room.Price
-  if (room?.rate && room.rate > 0) return room.rate
+function extractPriceFromRoom(room: any): number {
+  console.log("[v0] extractPriceFromRoom - Full room object keys:", Object.keys(room || {}))
+  console.log("[v0] extractPriceFromRoom - Room data sample:", JSON.stringify(room, null, 2).substring(0, 800))
 
-  // Try item-level price
-  if (item?.price?.amount && item.price.amount > 0) return item.price.amount
-  if (item?.buyPrice && item.buyPrice > 0) return item.buyPrice
-  if (item?.total && item.total > 0) return item.total
-  if (item?.Price && item.Price > 0) return item.Price
+  // Try all possible price locations based on API documentation
+  const priceLocations = [
+    { name: "price.amount", value: room.price?.amount },
+    { name: "price.value", value: room.price?.value },
+    { name: "price (direct)", value: room.price },
+    { name: "buyPrice", value: room.buyPrice },
+    { name: "sellPrice", value: room.sellPrice },
+    { name: "totalPrice", value: room.totalPrice },
+    { name: "amount", value: room.amount },
+    { name: "rate.amount", value: room.rate?.amount },
+    { name: "rate.value", value: room.rate?.value },
+    { name: "rate (direct)", value: room.rate },
+    { name: "cost", value: room.cost },
+    { name: "netPrice", value: room.netPrice },
+    { name: "grossPrice", value: room.grossPrice },
+    { name: "Price", value: room.Price },
+    { name: "BuyPrice", value: room.BuyPrice },
+    { name: "SellPrice", value: room.SellPrice },
+    { name: "TotalPrice", value: room.TotalPrice },
+  ]
 
-  // Try items[0].price
-  if (item?.items?.[0]?.price?.amount) return item.items[0].price.amount
-  if (item?.items?.[0]?.Price) return item.items[0].Price
+  console.log("[v0] All price locations checked:", priceLocations.map((p) => `${p.name}: ${p.value}`).join(", "))
 
-  // Fallback: Generate realistic price based on hotel stars and room category
-  const stars = item?.stars || 3
-  const category = (room?.category || room?.roomCategory || "standard").toLowerCase()
+  for (const { name, value } of priceLocations) {
+    if (typeof value === "number" && value > 0) {
+      console.log(`[v0] Found price at ${name}: ${value}`)
+      return value
+    }
+    if (typeof value === "string") {
+      const parsed = Number.parseFloat(value)
+      if (!isNaN(parsed) && parsed > 0) {
+        console.log(`[v0] Found price at ${name} (parsed from string): ${parsed}`)
+        return parsed
+      }
+    }
+  }
 
-  let basePrice = 150 + stars * 50 // 3 star = 300, 4 star = 350, 5 star = 400
+  console.log("[v0] No price found in room object")
+  return 0
+}
 
-  if (category.includes("suite")) basePrice *= 1.8
-  else if (category.includes("deluxe")) basePrice *= 1.5
-  else if (category.includes("superior")) basePrice *= 1.25
-  else if (category.includes("family")) basePrice *= 1.4
+function getRoomMainImage(room: any): string {
+  // Try different image sources
+  if (room.imageUrl) return buildFullImageUrl(room.imageUrl)
+  if (room.image) return buildFullImageUrl(room.image)
+  if (room.mainImage) return buildFullImageUrl(room.mainImage)
 
-  // Add some randomness for variety
-  const variation = 0.9 + Math.random() * 0.2 // 90%-110%
-  return Math.round(basePrice * variation)
+  // Try images array
+  if (room.images && Array.isArray(room.images) && room.images.length > 0) {
+    const firstImage = room.images[0]
+    if (typeof firstImage === "string") return buildFullImageUrl(firstImage)
+    if (firstImage?.url) return buildFullImageUrl(firstImage.url)
+    if (firstImage?.path) return buildFullImageUrl(firstImage.path)
+  }
+
+  return ""
+}
+
+function buildRoomImagesArray(room: any): string[] {
+  const images: string[] = []
+
+  // Add from images array
+  if (room.images && Array.isArray(room.images)) {
+    for (const img of room.images) {
+      if (typeof img === "string") {
+        images.push(buildFullImageUrl(img))
+      } else if (img?.url) {
+        images.push(buildFullImageUrl(img.url))
+      } else if (img?.path) {
+        images.push(buildFullImageUrl(img.path))
+      }
+    }
+  }
+
+  return images.filter(Boolean)
+}
+
+function getBoardIdFromCode(boardCode: string): number {
+  for (const [id, board] of Object.entries(BOARD_TYPES)) {
+    if (board.code === boardCode) {
+      return Number.parseInt(id, 10)
+    }
+  }
+  return 0
 }

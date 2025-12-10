@@ -514,17 +514,39 @@ function HotelHeader({
   )
 }
 
-export function HotelSearchResults({ results }: HotelSearchResultsProps) {
-  const { locale, dir } = useI18n()
-  const { addRoom, nights, search, setCurrentStep, setApiBookingData, isPreBooking, setIsPreBooking, setPreBookError } =
-    useBooking()
-  const [selectingRoom, setSelectingRoom] = useState<string | null>(null)
+export function HotelSearchResults() {
+  const {
+    searchResults,
+    search,
+    addRoom,
+    nights,
+    setCurrentStep,
+    setApiBookingData,
+    isPreBooking,
+    setIsPreBooking,
+    setPreBookError,
+  } = useBooking()
+  const { t, isRtl, language } = useI18n()
+  const [expandedHotels, setExpandedHotels] = useState<Record<number, boolean>>({})
+  const [roomImageIndexes, setRoomImageIndexes] = useState<Record<string, number>>({})
+  const [selectedBoardTypes, setSelectedBoardTypes] = useState<Record<string, number>>({})
+  const [loadingRoomId, setLoadingRoomId] = useState<string | null>(null)
 
-  const noResultsText = locale === "he" ? "לא נמצאו תוצאות" : "No results found"
-  const tryAgainText = locale === "he" ? "נסה לשנות את פרטי החיפוש" : "Try changing your search criteria"
+  console.log("[v0] HotelSearchResults - searchResults:", searchResults)
+  if (searchResults.length > 0) {
+    console.log("[v0] First hotel:", {
+      hotelId: searchResults[0].hotelId,
+      hotelName: searchResults[0].hotelName,
+      rooms: searchResults[0].rooms?.map((r) => ({
+        code: r.code,
+        roomName: r.roomName,
+        buyPrice: r.buyPrice,
+      })),
+    })
+  }
 
   const formatPrice = (price: number, currency = "USD") => {
-    return new Intl.NumberFormat(locale === "he" ? "he-IL" : "en-US", {
+    return new Intl.NumberFormat(language === "he" ? "he-IL" : "en-US", {
       style: "decimal",
       minimumFractionDigits: 0,
     }).format(price)
@@ -533,13 +555,13 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
   const getBoardName = (boardId: number) => {
     const board = BOARD_TYPES[boardId]
     if (!board) return ""
-    return locale === "he" ? board.nameHe : board.name
+    return language === "he" ? board.nameHe : board.name
   }
 
   const getCategoryName = (categoryId: number) => {
     const category = ROOM_CATEGORIES[categoryId]
     if (!category) return ""
-    return locale === "he" ? category.nameHe : category.name
+    return language === "he" ? category.nameHe : category.name
   }
 
   const getMealPlanFromBoardId = (
@@ -563,9 +585,29 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
     }
   }
 
-  const handleSelectRoom = async (hotel: HotelSearchResult, room: RoomResult) => {
-    const roomKey = `${hotel.hotelId}-${room.roomId}-${room.boardId}`
-    setSelectingRoom(roomKey)
+  const handleBookRoom = async (hotel: HotelSearchResult, room: RoomResult) => {
+    console.log("[v0] ========== HANDLE BOOK ROOM ==========")
+    console.log("[v0] hotel.hotelId:", hotel.hotelId, "type:", typeof hotel.hotelId)
+    console.log("[v0] room.code:", room.code, "length:", room.code?.length)
+    console.log("[v0] room.roomName:", room.roomName)
+    console.log("[v0] room.buyPrice:", room.buyPrice)
+
+    const hotelId = typeof hotel.hotelId === "number" ? hotel.hotelId : Number.parseInt(String(hotel.hotelId), 10)
+    const roomCode = room.code
+
+    if (!roomCode || roomCode.length < 5) {
+      console.error("[v0] Invalid room code:", roomCode)
+      setPreBookError("קוד חדר לא תקין - נא לנסות שוב")
+      return
+    }
+
+    if (!hotelId || hotelId === 0) {
+      console.error("[v0] Invalid hotelId:", hotelId)
+      setPreBookError("מזהה מלון לא תקין - נא לנסות שוב")
+      return
+    }
+
+    setLoadingRoomId(`${room.roomId}-${room.boardId}`)
     setIsPreBooking(true)
     setPreBookError(null)
 
@@ -573,28 +615,33 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
       const dateFrom = formatDateForApi(search.checkIn)
       const dateTo = formatDateForApi(search.checkOut)
 
+      const prebookData = {
+        code: roomCode,
+        dateFrom,
+        dateTo,
+        hotelId: hotelId,
+        adults: search.adults,
+        children: search.childrenAges || [],
+      }
+
+      console.log("[v0] Prebook request:", JSON.stringify(prebookData, null, 2))
+
       const response = await fetch("/api/booking/prebook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code: room.code,
-          dateFrom,
-          dateTo,
-          hotelId: hotel.hotelId,
-          adults: search.adults,
-          children: search.childrenAges || [],
-        }),
+        body: JSON.stringify(prebookData),
       })
 
       const data = await response.json()
+      console.log("[v0] Prebook response:", data)
 
       if (!response.ok) {
         throw new Error(data.error || "PreBook failed")
       }
 
       setApiBookingData({
-        code: room.code,
-        hotelId: hotel.hotelId,
+        code: roomCode,
+        hotelId: hotelId,
         hotelName: hotel.hotelName,
         roomName: room.roomName || getCategoryName(room.categoryId),
         roomId: room.roomId,
@@ -611,7 +658,7 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
 
       const internalRoom = {
         id: room.roomId,
-        hotelId: String(hotel.hotelId),
+        hotelId: String(hotelId),
         name: room.roomName || getCategoryName(room.categoryId),
         description: `${getCategoryName(room.categoryId)} - ${getBoardName(room.boardId)}`,
         images: hotel.images.length > 0 ? hotel.images : ["/comfortable-hotel-room.png"],
@@ -643,37 +690,35 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
       console.error("[v0] PreBook error:", error)
       setPreBookError(error.message || "Failed to reserve room")
     } finally {
-      setSelectingRoom(null)
+      setLoadingRoomId(null)
       setIsPreBooking(false)
     }
   }
 
-  if (!results.length) {
+  if (!searchResults.length) {
     return (
-      <div className="text-center py-12" dir={dir}>
+      <div className="text-center py-12" dir={isRtl ? "rtl" : "ltr"}>
         <div className="text-6xl mb-4">🏨</div>
-        <h3 className="text-xl font-semibold text-foreground mb-2">{noResultsText}</h3>
-        <p className="text-muted-foreground">{tryAgainText}</p>
+        <h3 className="text-xl font-semibold text-foreground mb-2">{t("noResultsText")}</h3>
+        <p className="text-muted-foreground">{t("tryAgainText")}</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-8" dir={dir}>
-      <p className="text-sm text-muted-foreground">
-        {locale === "he" ? `נמצאו ${results.length} מלונות` : `Found ${results.length} hotels`}
-      </p>
+    <div className="space-y-8" dir={isRtl ? "rtl" : "ltr"}>
+      <p className="text-sm text-muted-foreground">{t("foundHotelsText", { count: searchResults.length })}</p>
 
-      {results.map((hotel) => (
+      {searchResults.map((hotel) => (
         <div key={hotel.hotelId} className="bg-gray-50 rounded-xl overflow-hidden shadow-sm">
           {/* Hotel Header */}
-          <HotelHeader hotel={hotel} locale={locale} />
+          <HotelHeader hotel={hotel} locale={language} />
 
           {/* Room Cards */}
           <div className="p-4 space-y-4">
             {(hotel.rooms || []).map((room, idx) => {
               const roomKey = `${hotel.hotelId}-${room.roomId}-${room.boardId}`
-              const isSelecting = selectingRoom === roomKey
+              const isSelecting = loadingRoomId === roomKey
 
               return (
                 <RoomCard
@@ -681,11 +726,11 @@ export function HotelSearchResults({ results }: HotelSearchResultsProps) {
                   room={room}
                   hotel={hotel}
                   optionNumber={idx + 1}
-                  onSelect={() => handleSelectRoom(hotel, room)}
+                  onSelect={() => handleBookRoom(hotel, room)}
                   isSelecting={isSelecting}
                   isPreBooking={isPreBooking}
-                  locale={locale}
-                  dir={dir}
+                  locale={language}
+                  dir={isRtl ? "rtl" : "ltr"}
                   nights={nights}
                   formatPrice={formatPrice}
                   getBoardName={getBoardName}

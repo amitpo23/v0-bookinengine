@@ -33,56 +33,75 @@ export async function POST(request: NextRequest) {
     console.log("[v0] Search returned", results.length, "hotel results")
 
     const groupedResults = results.map((hotel: any) => {
-      const hotelId = typeof hotel.hotelId === "number" ? hotel.hotelId : Number.parseInt(hotel.hotelId, 10) || 0
+      // Ensure hotelId is a valid number
+      let hotelId = 0
+      if (typeof hotel.hotelId === "number" && hotel.hotelId > 0) {
+        hotelId = hotel.hotelId
+      } else if (typeof hotel.hotelId === "string" && hotel.hotelId) {
+        hotelId = Number.parseInt(hotel.hotelId, 10) || 0
+      }
 
-      console.log(`[v0] Mapping hotel: ${hotel.hotelName}, hotelId: ${hotelId}`)
+      console.log(
+        `[v0] Mapping hotel: ${hotel.hotelName}, hotelId: ${hotelId} (original: ${hotel.hotelId}, type: ${typeof hotel.hotelId})`,
+      )
+
+      const mappedRooms = (hotel.rooms || []).map((room: any, index: number) => {
+        const roomCode = room.code || room.rateKey || room.roomCode || ""
+
+        console.log(
+          `[v0] Room ${index + 1}: name=${room.roomName}, code="${roomCode}", price=${room.buyPrice || room.price}`,
+        )
+
+        return {
+          code: roomCode,
+          roomId: String(room.roomId || room.id || index + 1),
+          roomName: room.roomName || room.name || "Standard Room",
+          roomCategory: room.roomCategory || room.roomType || room.category || "standard",
+          categoryId: room.categoryId || getCategoryIdFromName(room.roomCategory || room.roomType),
+          boardId: room.boardId || getBoardIdFromCode(room.board || room.boardType),
+          boardType: room.boardType || room.board || "RO",
+          buyPrice: Number(room.buyPrice) || Number(room.price) || 0,
+          originalPrice: Number(room.originalPrice) || 0,
+          currency: room.currency || "ILS",
+          maxOccupancy: room.maxOccupancy || room.pax?.adults || 2,
+          size: room.size || room.roomSize || 0,
+          view: room.view || "",
+          bedding: room.bedding || "",
+          amenities: room.amenities || room.facilities || [],
+          images: room.images || [],
+          cancellationPolicy: room.cancellationPolicy || "free",
+          available: room.available || room.quantity?.max || 1,
+        }
+      })
 
       return {
-        hotelId, // Ensure number
-        hotelName: hotel.hotelName,
-        city: hotel.city,
-        stars: hotel.stars,
-        address: hotel.location || hotel.address || "",
+        hotelId, // Number
+        hotelName: hotel.hotelName || hotel.name || "Unknown Hotel",
+        city: hotel.city || "",
+        stars: hotel.stars || hotel.rating || 0,
+        address: hotel.address || hotel.location || "",
         imageUrl: hotel.hotelImage || hotel.imageUrl || "",
         images: hotel.images || [],
         description: hotel.description || "",
-        facilities: hotel.facilities || [],
-        rooms: hotel.rooms.map((room: any, index: number) => {
-          // Log each room's price data for debugging
-          console.log(`[v0] Room ${room.roomName}: code=${room.code}, price=${room.price}, buyPrice=${room.buyPrice}`)
-
-          return {
-            code: room.code || room.roomId || `room-${index}`, // Ensure code is passed
-            roomId: room.roomId || index + 1,
-            roomName: room.roomName || "Standard Room",
-            roomCategory: room.roomType || room.roomCategory || "standard",
-            categoryId: getCategoryIdFromName(room.roomType || room.roomCategory),
-            boardId: room.boardId || getBoardIdFromCode(room.board),
-            boardType: room.board || "RO",
-            buyPrice: room.price || room.buyPrice || 0,
-            originalPrice: room.originalPrice || 0,
-            currency: room.currency || "ILS",
-            maxOccupancy: room.maxOccupancy || 2,
-            size: room.size || 0,
-            view: room.view || "",
-            bedding: room.bedding || "",
-            amenities: room.amenities || [],
-            roomImage: room.roomImage || "",
-            images: room.images || [],
-            cancellationPolicy: room.cancellationPolicy || "free",
-            available: room.available || 1,
-          }
-        }),
+        facilities: hotel.facilities || hotel.amenities || [],
+        rooms: mappedRooms,
       }
     })
 
     console.log("[v0] Returning", groupedResults.length, "hotels")
     if (groupedResults.length > 0) {
-      console.log("[v0] First hotel hotelId:", groupedResults[0].hotelId, "type:", typeof groupedResults[0].hotelId)
+      console.log("[v0] First hotel:", {
+        hotelId: groupedResults[0].hotelId,
+        hotelName: groupedResults[0].hotelName,
+        roomsCount: groupedResults[0].rooms.length,
+      })
       if (groupedResults[0].rooms.length > 0) {
-        console.log("[v0] First hotel first room:", {
-          code: groupedResults[0].rooms[0].code,
-          buyPrice: groupedResults[0].rooms[0].buyPrice,
+        const firstRoom = groupedResults[0].rooms[0]
+        console.log("[v0] First room:", {
+          code: firstRoom.code,
+          codeLength: firstRoom.code?.length,
+          buyPrice: firstRoom.buyPrice,
+          roomName: firstRoom.roomName,
         })
       }
     }

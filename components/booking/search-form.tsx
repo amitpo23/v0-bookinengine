@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { formatDateForApi } from "@/lib/date-utils"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -156,27 +156,6 @@ export function SearchForm({ onSearch }: { onSearch?: () => void }) {
   const [guestsOpen, setGuestsOpen] = useState(false)
   const [searchType, setSearchType] = useState<"city" | "hotel">("city")
   const [searchQuery, setSearchQuery] = useState("")
-    const [autocompleteResults, setAutocompleteResults] = useState<any[]>([])
-
-      // Autocomplete logic
-  useEffect(() => {
-    if (searchQuery.length < 2) {
-      setAutocompleteResults([])
-      return
-    }
-
-    const timeoutId = setTimeout(async () => {
-      try {
-        const response = await fetch(`/api/cities/autocomplete?q=${encodeURIComponent(searchQuery)}`)
-        const data = await response.json()
-        setAutocompleteResults(data.results || [])
-      } catch (error) {
-        console.error('Autocomplete error:', error)
-      }
-    }, 300)
-
-    return () => clearTimeout(timeoutId)
-  }, [searchQuery])
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
@@ -296,37 +275,6 @@ export function SearchForm({ onSearch }: { onSearch?: () => void }) {
             className={cn("h-12", dir === "rtl" ? "pr-10" : "pl-10")}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           />
-
-              {/* Autocomplete dropdown */}
-              {autocompleteResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
-                  {autocompleteResults.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => {
-                        if (item.type === 'city') {
-                          setSearchQuery(item.nameEn)
-                        } else {
-                          setSearchQuery(item.name)
-                          setSearchType('hotel')
-                        }
-                        setAutocompleteResults([])
-                      }}
-                      className="w-full text-right px-4 py-3 hover:bg-gray-50 flex items-center gap-3 border-b border-gray-100 last:border-0"
-                    >
-                      {item.type === 'city' ? (
-                        <span className="text-sm">
-                          <span className="font-semibold">{item.name}</span>
-                          {item.count && <span className="text-gray-500 mr-2">({item.count} מלונות)</span>}
-                        </span>
-                      ) : (
-                        <span className="text-sm font-medium">{item.name}</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
         </div>
       </div>
 

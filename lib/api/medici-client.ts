@@ -52,8 +52,8 @@ export interface SearchRoomResult {
 }
 
 export interface RoomResult {
-  code: string
-  roomId: number
+  code: string // This is the critical booking code from API
+  roomId: string // Changed to string for consistency
   roomName: string
   roomCategory: string
   categoryId: number
@@ -63,10 +63,18 @@ export interface RoomResult {
   currency: string
   maxOccupancy: number
   cancellationPolicy: string
+  // Additional fields
+  size?: number
+  view?: string
+  bedding?: string
+  amenities?: string[]
+  images?: string[]
+  available?: number
+  originalPrice?: number
 }
 
 export interface HotelSearchResult {
-  hotelId: number
+  hotelId: number // Must be number for API calls
   hotelName: string
   city: string
   stars: number
@@ -311,7 +319,10 @@ class MediciApiClient {
   }
 
   private transformSearchResults(response: any): HotelSearchResult[] {
-    console.log("[v0] Raw API response:", JSON.stringify(response, null, 2).substring(0, 2000))
+    console.log("[v0] ====== TRANSFORM SEARCH RESULTS ======")
+    console.log("[v0] Raw API response type:", typeof response)
+    console.log("[v0] Raw API response keys:", response ? Object.keys(response) : "null")
+    console.log("[v0] Raw API response (first 3000 chars):", JSON.stringify(response, null, 2).substring(0, 3000))
 
     if (!response) {
       console.log("[v0] No response from API")
@@ -331,44 +342,41 @@ class MediciApiClient {
 
     console.log("[v0] Items count:", items.length)
     if (items.length > 0) {
-      console.log("[v0] First item structure:", JSON.stringify(items[0], null, 2).substring(0, 1500))
+      console.log("[v0] First item FULL structure:", JSON.stringify(items[0], null, 2))
       console.log("[v0] First item keys:", Object.keys(items[0]))
+
+      if (items[0].items && Array.isArray(items[0].items)) {
+        console.log("[v0] First item has nested items, count:", items[0].items.length)
+        if (items[0].items[0]) {
+          console.log("[v0] First nested item FULL:", JSON.stringify(items[0].items[0], null, 2))
+          console.log("[v0] First nested item keys:", Object.keys(items[0].items[0]))
+        }
+      }
     }
 
     const hotelMap = new Map<number, HotelSearchResult>()
 
     for (const item of items) {
-      const hotelIdRaw = item.id || item.hotelId || item.hotelCode || 0
-      const hotelId = typeof hotelIdRaw === "number" ? hotelIdRaw : Number.parseInt(hotelIdRaw, 10) || 0
-      const hotelName = item.name || item.hotelName || "Unknown Hotel"
+      const hotelIdRaw = item.id || item.hotelId || item.hotelCode || item.HotelId || item.hotel_id || 0
+      const hotelId = typeof hotelIdRaw === "number" ? hotelIdRaw : Number.parseInt(String(hotelIdRaw), 10) || 0
+      const hotelName = item.name || item.hotelName || item.HotelName || "Unknown Hotel"
 
-      // Log hotelId for debugging
-      console.log(`[v0] Hotel ${hotelName} - hotelId: ${hotelId} (raw: ${hotelIdRaw})`)
-
-      // Log all price-related fields
-      console.log(`[v0] Hotel ${hotelName} - Available price fields:`, {
-        price: item.price,
-        buyPrice: item.buyPrice,
-        sellPrice: item.sellPrice,
-        totalPrice: item.totalPrice,
-        amount: item.amount,
-        rate: item.rate,
-        cost: item.cost,
-      })
+      console.log(`[v0] Processing hotel: ${hotelName}`)
+      console.log(`[v0] - hotelId raw: ${hotelIdRaw}, parsed: ${hotelId}`)
 
       if (!hotelMap.has(hotelId)) {
         hotelMap.set(hotelId, {
-          hotelId, // Now a number
+          hotelId,
           hotelName,
           hotelImage: getHotelMainImage(item),
           images: buildImagesArray(item),
           location: item.address || item.location || "",
           city: item.city || "",
           stars: item.stars || item.rating || 0,
+          address: item.address || "",
           description: item.description || "",
           facilities: item.facilities || item.amenities || [],
           rooms: [],
-          rawData: item, // Keep raw data for debugging
         })
       }
 
@@ -376,54 +384,93 @@ class MediciApiClient {
 
       // Process rooms from nested items array
       const roomItems = item.items || [item]
+      console.log(`[v0] Hotel ${hotelName} has ${roomItems.length} room items`)
 
-      for (const roomItem of roomItems) {
-        const roomCode = roomItem.code || roomItem.roomCode || roomItem.rateKey || ""
+      for (let roomIdx = 0; roomIdx < roomItems.length; roomIdx++) {
+        const roomItem = roomItems[roomIdx]
 
-        console.log(`[v0] Room ${roomItem.name} - code: ${roomCode}`)
-        console.log(`[v0] Room ${roomItem.name} - Price fields:`, {
-          price: roomItem.price,
-          buyPrice: roomItem.buyPrice,
-          sellPrice: roomItem.sellPrice,
-          totalPrice: roomItem.totalPrice,
-          amount: roomItem.amount,
-          rate: roomItem.rate,
-        })
+        const possibleCodeFields = [
+          roomItem.code,
+          roomItem.Code,
+          roomItem.roomCode,
+          roomItem.RoomCode,
+          roomItem.rateKey,
+          roomItem.RateKey,
+          roomItem.bookingCode,
+          roomItem.BookingCode,
+          roomItem.optionCode,
+          roomItem.OptionCode,
+          roomItem.key,
+          roomItem.Key,
+          roomItem.id?.toString(),
+        ]
+
+        console.log(`[v0] Room ${roomIdx} - All possible code fields:`, possibleCodeFields)
+        console.log(`[v0] Room ${roomIdx} - ALL keys:`, Object.keys(roomItem))
+        console.log(`[v0] Room ${roomIdx} - FULL data:`, JSON.stringify(roomItem, null, 2).substring(0, 1500))
+
+        // Find the first valid string code (length > 5)
+        let roomCode = ""
+        for (const codeField of possibleCodeFields) {
+          if (codeField && typeof codeField === "string" && codeField.length > 5) {
+            roomCode = codeField
+            console.log(`[v0] Found valid room code: ${roomCode.substring(0, 50)}...`)
+            break
+          }
+        }
+
+        // If still no code, use the full object as string if it looks like a code
+        if (!roomCode) {
+          // Sometimes the code is in a nested property
+          if (roomItem.rate?.code) roomCode = roomItem.rate.code
+          else if (roomItem.option?.code) roomCode = roomItem.option.code
+          else if (roomItem.booking?.code) roomCode = roomItem.booking.code
+        }
+
+        console.log(`[v0] Final room code for ${roomItem.name || "unnamed"}: ${roomCode}`)
 
         const price = extractPriceFromRoom(roomItem)
-        console.log(`[v0] Extracted price for ${roomItem.name}:`, price)
+        console.log(`[v0] Extracted price: ${price}`)
 
         hotel.rooms.push({
-          code: roomCode, // Include room code for booking
-          roomId: roomItem.id || roomItem.roomId || hotel.rooms.length + 1,
+          code: roomCode,
+          roomId: String(roomItem.id || roomItem.roomId || `${hotel.hotelId}-${hotel.rooms.length + 1}`),
           roomName: roomItem.name || roomItem.roomName || "Standard Room",
           roomType: roomItem.category || roomItem.roomType || "standard",
           roomCategory: roomItem.category || roomItem.roomType || "standard",
+          categoryId: roomItem.categoryId || roomItem.category_id || 1,
           roomImage: getRoomMainImage(roomItem),
           images: buildRoomImagesArray(roomItem),
           bedding: roomItem.bedding || "",
           board: roomItem.board || "RO",
-          boardId: getBoardIdFromCode(roomItem.board || "RO"),
+          boardId: roomItem.boardId || getBoardIdFromCode(roomItem.board || "RO"),
+          boardType: roomItem.board || "RO",
           maxOccupancy: roomItem.pax?.adults || roomItem.maxOccupancy || 2,
           size: roomItem.size || roomItem.roomSize || 0,
           view: roomItem.view || "",
           amenities: roomItem.amenities || roomItem.facilities || [],
           price: price,
-          buyPrice: price, // Add buyPrice alias
-          originalPrice: price > 0 ? Math.round(price * 1.15) : 0, // 15% markup for original
+          buyPrice: price,
+          originalPrice: price > 0 ? Math.round(price * 1.15) : 0,
           currency: roomItem.currency || "ILS",
           cancellationPolicy: roomItem.cancellationPolicy || roomItem.cancellation || "free",
           available: roomItem.quantity?.max || roomItem.available || 1,
-          rawData: roomItem, // Keep raw data
         })
       }
     }
 
     const results = Array.from(hotelMap.values())
-    console.log("[v0] Transformed results:", results.length, "hotels")
-    if (results.length > 0) {
-      console.log("[v0] First hotel hotelId:", results[0].hotelId, "type:", typeof results[0].hotelId)
+    console.log("[v0] ====== TRANSFORM COMPLETE ======")
+    console.log("[v0] Total hotels:", results.length)
+
+    // Log summary of each hotel and its rooms with codes
+    for (const hotel of results) {
+      console.log(`[v0] Hotel: ${hotel.hotelName} (ID: ${hotel.hotelId})`)
+      for (const room of hotel.rooms) {
+        console.log(`[v0]   - Room: ${room.roomName}, Code: ${room.code?.substring(0, 30)}..., Price: ${room.buyPrice}`)
+      }
     }
+
     return results
   }
 

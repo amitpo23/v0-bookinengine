@@ -15,7 +15,8 @@ export async function GET(request: NextRequest) {
       throw new Error(`Static Data API error: ${response.status}`);
     }
     
-    const hotels = await response.json();
+    const data = await response.json();
+    const hotels = Array.isArray(data) ? data : (data.hotels || data.data || []);
     
     // Filter Isrotel hotels
     let isrotelHotels = hotels.filter((hotel: any) => 

@@ -17,6 +17,8 @@ export async function GET(request: NextRequest) {
     
     const data = await response.json();
     const hotels = Array.isArray(data) ? data : (data.hotels || data.data || []);
+        console.log(`[Static Data] Total hotels from API: ${hotels.length}`);
+    console.log(`[Static Data] First 5 hotels:`, hotels.slice(0, 5).map((h: any) => ({ name: h.name, chain: h.chain, id: h.id })));
     
     // Filter Isrotel hotels
     let isrotelHotels = hotels.filter((hotel: any) => 

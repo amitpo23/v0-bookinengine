@@ -320,6 +320,9 @@ class MediciApiClient {
 
   private transformSearchResults(response: any): HotelSearchResult[] {
     console.log("[v0] ====== TRANSFORM SEARCH RESULTS ======")
+    console.log("[v0] Raw API response type:", typeof response)
+    console.log("[v0] Raw API response keys:", response ? Object.keys(response) : "null")
+    console.log("[v0] Raw API response (first 3000 chars):", JSON.stringify(response, null, 2).substring(0, 3000))
 
     if (!response) {
       console.log("[v0] No response from API")
@@ -338,27 +341,28 @@ class MediciApiClient {
     }
 
     console.log("[v0] Items count:", items.length)
+    if (items.length > 0) {
+      console.log("[v0] First item FULL structure:", JSON.stringify(items[0], null, 2))
+      console.log("[v0] First item keys:", Object.keys(items[0]))
+
+      if (items[0].items && Array.isArray(items[0].items)) {
+        console.log("[v0] First item has nested items, count:", items[0].items.length)
+        if (items[0].items[0]) {
+          console.log("[v0] First nested item FULL:", JSON.stringify(items[0].items[0], null, 2))
+          console.log("[v0] First nested item keys:", Object.keys(items[0].items[0]))
+        }
+      }
+    }
 
     const hotelMap = new Map<number, HotelSearchResult>()
 
     for (const item of items) {
-      const roomItems = item.items || [item]
-
-      // API returns: items[].id = 0, but items[].items[].hotelId = "67919"
-      let hotelIdRaw = item.id || item.hotelId || item.hotelCode || item.HotelId || 0
-
-      // If hotelId is 0, try to get it from the first room item
-      if (!hotelIdRaw || hotelIdRaw === 0) {
-        if (roomItems.length > 0 && roomItems[0].hotelId) {
-          hotelIdRaw = roomItems[0].hotelId
-          console.log(`[v0] Got hotelId from nested item: ${hotelIdRaw}`)
-        }
-      }
-
+      const hotelIdRaw = item.id || item.hotelId || item.hotelCode || item.HotelId || item.hotel_id || 0
       const hotelId = typeof hotelIdRaw === "number" ? hotelIdRaw : Number.parseInt(String(hotelIdRaw), 10) || 0
-      const hotelName = item.name || item.hotelName || roomItems[0]?.hotelName || "Unknown Hotel"
+      const hotelName = item.name || item.hotelName || item.HotelName || "Unknown Hotel"
 
-      console.log(`[v0] Processing hotel: ${hotelName}, hotelId: ${hotelId}`)
+      console.log(`[v0] Processing hotel: ${hotelName}`)
+      console.log(`[v0] - hotelId raw: ${hotelIdRaw}, parsed: ${hotelId}`)
 
       if (!hotelMap.has(hotelId)) {
         hotelMap.set(hotelId, {
@@ -378,12 +382,13 @@ class MediciApiClient {
 
       const hotel = hotelMap.get(hotelId)!
 
+      // Process rooms from nested items array
+      const roomItems = item.items || [item]
       console.log(`[v0] Hotel ${hotelName} has ${roomItems.length} room items`)
 
       for (let roomIdx = 0; roomIdx < roomItems.length; roomIdx++) {
         const roomItem = roomItems[roomIdx]
 
-        // Format: hotelId:category:bedding:board:uniqueId
         const possibleCodeFields = [
           roomItem.code,
           roomItem.Code,
@@ -392,27 +397,40 @@ class MediciApiClient {
           roomItem.rateKey,
           roomItem.RateKey,
           roomItem.bookingCode,
+          roomItem.BookingCode,
+          roomItem.optionCode,
+          roomItem.OptionCode,
+          roomItem.key,
+          roomItem.Key,
+          roomItem.id?.toString(),
         ]
 
-        // Find the first valid string code
+        console.log(`[v0] Room ${roomIdx} - All possible code fields:`, possibleCodeFields)
+        console.log(`[v0] Room ${roomIdx} - ALL keys:`, Object.keys(roomItem))
+        console.log(`[v0] Room ${roomIdx} - FULL data:`, JSON.stringify(roomItem, null, 2).substring(0, 1500))
+
+        // Find the first valid string code (length > 5)
         let roomCode = ""
         for (const codeField of possibleCodeFields) {
           if (codeField && typeof codeField === "string" && codeField.length > 5) {
             roomCode = codeField
+            console.log(`[v0] Found valid room code: ${roomCode.substring(0, 50)}...`)
             break
           }
         }
 
+        // If still no code, use the full object as string if it looks like a code
         if (!roomCode) {
-          const category = roomItem.category || "standard"
-          const bedding = roomItem.bedding || "double"
-          const board = roomItem.board || "RO"
-          const uniquePart = `${Date.now().toString(36)}${roomIdx}`
-          roomCode = `${hotelId}:${category}:${bedding}:${board}:${uniquePart}`
-          console.log(`[v0] Generated room code: ${roomCode}`)
+          // Sometimes the code is in a nested property
+          if (roomItem.rate?.code) roomCode = roomItem.rate.code
+          else if (roomItem.option?.code) roomCode = roomItem.option.code
+          else if (roomItem.booking?.code) roomCode = roomItem.booking.code
         }
 
+        console.log(`[v0] Final room code for ${roomItem.name || "unnamed"}: ${roomCode}`)
+
         const price = extractPriceFromRoom(roomItem)
+        console.log(`[v0] Extracted price: ${price}`)
 
         hotel.rooms.push({
           code: roomCode,
@@ -438,14 +456,20 @@ class MediciApiClient {
           cancellationPolicy: roomItem.cancellationPolicy || roomItem.cancellation || "free",
           available: roomItem.quantity?.max || roomItem.available || 1,
         })
-
-        console.log(`[v0] Added room: ${roomItem.name}, code: ${roomCode.substring(0, 30)}...`)
       }
     }
 
     const results = Array.from(hotelMap.values())
     console.log("[v0] ====== TRANSFORM COMPLETE ======")
     console.log("[v0] Total hotels:", results.length)
+
+    // Log summary of each hotel and its rooms with codes
+    for (const hotel of results) {
+      console.log(`[v0] Hotel: ${hotel.hotelName} (ID: ${hotel.hotelId})`)
+      for (const room of hotel.rooms) {
+        console.log(`[v0]   - Room: ${room.roomName}, Code: ${room.code?.substring(0, 30)}..., Price: ${room.buyPrice}`)
+      }
+    }
 
     return results
   }

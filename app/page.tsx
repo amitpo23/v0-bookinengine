@@ -6,8 +6,26 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import type { Locale } from "@/app/i18n-config" // Import Locale type
 
-type Locale = "he" | "en"
+const TemplatesIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <rect x="3" y="3" width="7" height="7" rx="1" />
+    <rect x="14" y="3" width="7" height="7" rx="1" />
+    <rect x="14" y="14" width="7" height="7" rx="1" />
+    <rect x="3" y="14" width="7" height="7" rx="1" />
+  </svg>
+)
 
 const CheckIcon = () => (
   <svg
@@ -198,6 +216,7 @@ const translations = {
       "הגדל את ההזמנות הישירות עם מנוע הזמנות מודרני, מהיר ומותאם אישית. הטמע בקלות באתר שלך והתחל לקבל הזמנות תוך דקות.",
     viewWidget: "מנוע הזמנות סטנדרטי",
     viewAiChat: "מנוע הזמנות AI",
+    viewTemplates: "גלריית טמפלטים",
     adminPanel: "פאנל ניהול",
     login: "כניסה למערכת",
     startFree: "התחל בחינם",
@@ -213,7 +232,7 @@ const translations = {
     feature4Desc: "אינטגרציה עם Stripe, PayPal ועוד ספקי תשלום",
     feature5Title: "ניתוח ודוחות",
     feature5Desc: "עקוב אחר הזמנות, הכנסות ותפוסה בזמן אמת",
-    feature6Title: "חווית משתמש מעולה",
+    feature6Title: " חוויית משתמש מעולה",
     feature6Desc: "עיצוב מודרני ומהיר שממיר מבקרים להזמנות",
     enginesTitle: "שני מנועי הזמנות לבחירתך",
     enginesDesc: "בחר את המנוע שמתאים לך או השתמש בשניהם",
@@ -272,6 +291,7 @@ const translations = {
       "Increase direct bookings with a modern, fast, and customizable booking engine. Embed easily on your website and start receiving bookings in minutes.",
     viewWidget: "Standard Booking Engine",
     viewAiChat: "AI Booking Engine",
+    viewTemplates: "Template Gallery",
     adminPanel: "Admin Panel",
     login: "Login",
     startFree: "Start Free",
@@ -357,6 +377,12 @@ export default function HomePage() {
             <span className="font-bold text-xl">{t.brand}</span>
           </div>
           <div className="flex items-center gap-4">
+            <Link href="/templates">
+              <Button variant="ghost" className="hidden sm:flex gap-2">
+                <TemplatesIcon />
+                {t.viewTemplates}
+              </Button>
+            </Link>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2">
@@ -409,9 +435,70 @@ export default function HomePage() {
                 {t.viewAiChat}
               </Button>
             </Link>
+            <Link href="/templates">
+              <Button
+                size="lg"
+                variant="outline"
+                className="text-lg px-8 bg-transparent border-amber-500 text-amber-600 hover:bg-amber-50"
+              >
+                <span className={dir === "rtl" ? "ml-2" : "mr-2"}>
+                  <TemplatesIcon />
+                </span>
+                {t.viewTemplates}
+              </Button>
+            </Link>
           </div>
         </div>
       </header>
+
+      {/* Templates Preview Section */}
+      <section className="py-16 px-6 bg-gradient-to-b from-background to-muted/30">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <Badge className="mb-4" variant="outline">
+              חדש!
+            </Badge>
+            <h2 className="text-3xl font-bold mb-4">{locale === "he" ? "גלריית טמפלטים" : "Template Gallery"}</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              {locale === "he"
+                ? "בחר מתוך מגוון עיצובים מקצועיים למנוע ההזמנות שלך"
+                : "Choose from a variety of professional designs for your booking engine"}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <Link href="/templates/nara" className="group">
+              <div className="aspect-video rounded-xl bg-gradient-to-br from-teal-500 to-teal-700 p-4 flex items-end shadow-lg hover:shadow-xl transition-shadow">
+                <span className="text-white font-bold">NARA Style</span>
+              </div>
+            </Link>
+            <Link href="/templates/modern-dark" className="group">
+              <div className="aspect-video rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 p-4 flex items-end shadow-lg hover:shadow-xl transition-shadow">
+                <span className="text-white font-bold">Modern Dark</span>
+              </div>
+            </Link>
+            <Link href="/templates/luxury" className="group">
+              <div className="aspect-video rounded-xl bg-gradient-to-br from-amber-600 to-amber-800 p-4 flex items-end shadow-lg hover:shadow-xl transition-shadow">
+                <span className="text-white font-bold">Luxury</span>
+              </div>
+            </Link>
+            <Link href="/templates/family" className="group">
+              <div className="aspect-video rounded-xl bg-gradient-to-br from-orange-400 to-pink-500 p-4 flex items-end shadow-lg hover:shadow-xl transition-shadow">
+                <span className="text-white font-bold">Family</span>
+              </div>
+            </Link>
+          </div>
+
+          <div className="text-center">
+            <Link href="/templates">
+              <Button size="lg" variant="outline">
+                {locale === "he" ? "צפה בכל הטמפלטים" : "View All Templates"}
+                <Arrow />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* Engines Section */}
       <section className="py-20 px-6 bg-muted/30">

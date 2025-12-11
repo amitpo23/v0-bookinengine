@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect } from "react"
+
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -181,7 +181,6 @@ const InfoIcon = ({ className }: { className?: string }) => (
 
 interface HotelSearchResultsProps {
   results: HotelSearchResult[]
-  onSelectRoom: () => void
 }
 
 function RoomImageGallery({
@@ -515,7 +514,7 @@ function HotelHeader({
   )
 }
 
-export function HotelSearchResults({ onSelectRoom }: HotelSearchResultsProps) {
+export function HotelSearchResults() {
   const {
     searchResults,
     search,
@@ -545,23 +544,6 @@ export function HotelSearchResults({ onSelectRoom }: HotelSearchResultsProps) {
       })),
     })
   }
-
-  useEffect(() => {
-    console.log("[v0] ========== SEARCH RESULTS DEBUG ==========")
-    console.log("[v0] searchResults count:", searchResults?.length)
-    if (searchResults && searchResults.length > 0) {
-      const firstHotel = searchResults[0]
-      console.log("[v0] First hotel full object:", JSON.stringify(firstHotel, null, 2))
-      console.log("[v0] First hotel hotelId:", firstHotel.hotelId, "type:", typeof firstHotel.hotelId)
-      if (firstHotel.rooms && firstHotel.rooms.length > 0) {
-        const firstRoom = firstHotel.rooms[0]
-        console.log("[v0] First room full object:", JSON.stringify(firstRoom, null, 2))
-        console.log("[v0] First room code:", firstRoom.code, "length:", firstRoom.code?.length)
-        console.log("[v0] First room buyPrice:", firstRoom.buyPrice)
-      }
-    }
-    console.log("[v0] ==========================================")
-  }, [searchResults])
 
   const formatPrice = (price: number, currency = "USD") => {
     return new Intl.NumberFormat(language === "he" ? "he-IL" : "en-US", {

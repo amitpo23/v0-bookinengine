@@ -485,15 +485,47 @@ class MediciApiClient {
     adults: number
     children?: number[]
   }): Promise<PreBookResult> {
+    // Build the inner request according to Medici API documentation
     const innerRequest = {
-      code: params.code,
-      dateFrom: params.dateFrom,
-      dateTo: params.dateTo,
-      hotelId: params.hotelId,
-      pax: [
+      services: [
         {
-          adults: params.adults,
-          children: params.children || [],
+          searchCodes: [
+            {
+              code: params.code,
+              pax: [
+                {
+                  adults: params.adults,
+                  children: params.children || [],
+                },
+              ],
+            },
+          ],
+          searchRequest: {
+            currencies: ["USD"],
+            customerCountry: "IL",
+            dates: {
+              from: params.dateFrom,
+              to: params.dateTo,
+            },
+            destinations: [
+              {
+                id: params.hotelId,
+                type: "hotel",
+              },
+            ],
+            filters: [
+              { name: "payAtTheHotel", value: true },
+              { name: "onRequest", value: false },
+              { name: "showSpecialDeals", value: true },
+            ],
+            pax: [
+              {
+                adults: params.adults,
+                children: params.children || [],
+              },
+            ],
+            service: "hotels",
+          },
         },
       ],
     }
@@ -503,40 +535,39 @@ class MediciApiClient {
     }
 
     console.log("[v0] PreBook inner request:", JSON.stringify(innerRequest, null, 2))
-    console.log("[v0] PreBook wrapped body:", JSON.stringify(preBookBody, null, 2))
 
     const response = await this.request<any>("/api/hotels/PreBook", "POST", preBookBody)
 
     console.log("[v0] PreBook raw response:", JSON.stringify(response, null, 2))
 
-    // Handle 204 No Content as success - generate a unique ID from the code
+    // Handle 204 No Content as success
     if (response._status === 204) {
       console.log("[v0] PreBook returned 204 - treating as success")
-      // Generate a unique preBookId from the code hash
       const generatedId = Math.abs(params.code.split("").reduce((a, b) => (a << 5) - a + b.charCodeAt(0), 0))
       return {
         preBookId: generatedId,
-        token: params.code, // Use the code as the token for the next step
+        token: params.code,
         status: "done",
-        priceConfirmed: 0, // Price will be confirmed from the original search
+        priceConfirmed: 0,
         currency: "USD",
       }
     }
 
+    // Extract token and price from response according to API documentation
+    const token = response?.token || response?.preBookToken || response?.Token || params.code
     const preBookId = response?.preBookId || response?.prebookId || response?.PreBookId || response?.id || 0
-    const token = response?.token || response?.preBookToken || response?.Token || ""
     const priceConfirmed =
-      response?.price?.amount || response?.totalPrice || response?.priceConfirmed || response?.Price || 0
+      response?.price?.amount || response?.netPrice?.amount || response?.totalPrice || response?.priceConfirmed || 0
+    const currency = response?.price?.currency || response?.netPrice?.currency || response?.currency || "USD"
 
-    // Check if we have a valid response
-    const isSuccess = preBookId > 0 || token || response?.success || response?.status === "done"
+    const isSuccess = token || preBookId > 0 || response?.success || response?.status === "done"
 
     return {
       preBookId,
       token,
       status: isSuccess ? "done" : "failed",
       priceConfirmed,
-      currency: response?.price?.currency || response?.currency || "USD",
+      currency,
     }
   }
 
@@ -566,32 +597,116 @@ class MediciApiClient {
     voucherEmail?: string
     agencyReference?: string
   }): Promise<BookingResult> {
-    const innerRequest = {
-      code: params.code,
-      token: params.token,
-      preBookId: params.preBookId,
-      dateFrom: params.dateFrom,
-      dateTo: params.dateTo,
-      hotelId: params.hotelId,
-      pax: [
-        {
-          adults: params.adults,
-          children: params.children || [],
+    // Build adults array with lead passenger
+    const adultsArray: any[] = [
+      {
+        lead: true,
+        title: params.customer.title || "MR",
+        name: {
+          first: params.customer.firstName,
+          last: params.customer.lastName,
         },
-      ],
+        contact: {
+          address: params.customer.address || "",
+          city: params.customer.city || "",
+          country: params.customer.country || "IL",
+          email: params.customer.email,
+          phone: params.customer.phone,
+          state: "IL",
+          zip: params.customer.zip || "",
+        },
+      },
+    ]
+
+    // Add additional adults if needed (params.adults - 1 more)
+    for (let i = 1; i < params.adults; i++) {
+      adultsArray.push({
+        lead: false,
+        title: "MR",
+        name: {
+          first: `Guest${i + 1}`,
+          last: params.customer.lastName,
+        },
+      })
+    }
+
+    // Build children array
+    const childrenArray = (params.children || []).map((age, index) => ({
+      age,
+      name: {
+        first: `Child${index + 1}`,
+        last: params.customer.lastName,
+      },
+    }))
+
+    // Build the inner request according to Medici API documentation
+    const innerRequest = {
       customer: {
         title: params.customer.title || "MR",
-        firstName: params.customer.firstName,
-        lastName: params.customer.lastName,
-        email: params.customer.email,
-        phone: params.customer.phone,
-        country: params.customer.country || "IL",
-        city: params.customer.city || "",
-        address: params.customer.address || "",
-        zip: params.customer.zip || "",
+        name: {
+          first: params.customer.firstName,
+          last: params.customer.lastName,
+        },
+        birthDate: "1990-01-01", // Default birthdate
+        contact: {
+          address: params.customer.address || "",
+          city: params.customer.city || "",
+          country: params.customer.country || "IL",
+          email: params.customer.email,
+          phone: params.customer.phone,
+          state: "IL",
+          zip: params.customer.zip || "",
+        },
       },
-      voucherEmail: params.voucherEmail || params.customer.email,
-      agencyReference: params.agencyReference || "Booking Engine",
+      paymentMethod: {
+        methodName: "account_credit",
+      },
+      reference: {
+        agency: params.agencyReference || "BookingEngine",
+        voucherEmail: params.voucherEmail || params.customer.email,
+      },
+      services: [
+        {
+          bookingRequest: [
+            {
+              code: params.code,
+              pax: [
+                {
+                  adults: adultsArray,
+                  children: childrenArray,
+                },
+              ],
+            },
+          ],
+          token: params.token,
+        },
+      ],
+      searchRequest: {
+        currencies: ["USD"],
+        customerCountry: "IL",
+        dates: {
+          from: params.dateFrom,
+          to: params.dateTo,
+        },
+        destinations: [
+          {
+            id: params.hotelId,
+            type: "hotel",
+          },
+        ],
+        filters: [
+          { name: "payAtTheHotel", value: true },
+          { name: "onRequest", value: false },
+          { name: "showSpecialDeals", value: true },
+        ],
+        pax: [
+          {
+            adults: params.adults,
+            children: params.children || [],
+          },
+        ],
+        service: "hotels",
+      },
     }
 
     const bookBody = {
@@ -599,21 +714,33 @@ class MediciApiClient {
     }
 
     console.log("[v0] Book inner request:", JSON.stringify(innerRequest, null, 2))
-    console.log("[v0] Book wrapped body:", JSON.stringify(bookBody, null, 2))
 
     try {
       const response = await this.request<any>("/api/hotels/Book", "POST", bookBody)
 
+      console.log("[v0] Book raw response:", JSON.stringify(response, null, 2))
+
+      // Check response according to API documentation
+      const isSuccess =
+        response?.status === "done" ||
+        response?.bookRes?.content?.status === "confirmed" ||
+        response?.bookingId ||
+        response?.bookingID ||
+        response?.success
+
       return {
-        success: response?.status === "confirmed" || response?.bookingId || response?.success,
-        bookingId: String(response?.bookingId || response?.bookingID || ""),
-        supplierReference: response?.supplierReference || response?.supplierRef || "",
-        status: response?.status || "confirmed",
+        success: isSuccess,
+        bookingId: String(response?.bookingId || response?.bookingID || response?.bookRes?.content?.bookingId || ""),
+        supplierReference:
+          response?.supplierReference || response?.supplierRef || response?.bookRes?.content?.supplierReference || "",
+        status: isSuccess ? "confirmed" : "failed",
       }
     } catch (error: any) {
+      console.error("[v0] Book error:", error)
       return {
         success: false,
-        error: error.message,
+        error: error.message || "Booking failed",
+        status: "failed",
       }
     }
   }

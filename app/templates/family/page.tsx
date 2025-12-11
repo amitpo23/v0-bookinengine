@@ -1,42 +1,65 @@
 "use client"
 
 import { FamilySearchBar, FamilyRoomCard } from "@/components/booking/templates/family"
+import { BookingSteps, GuestDetailsForm, PaymentForm, BookingConfirmation } from "@/components/booking/templates/shared"
+import { useBookingEngine } from "@/hooks/use-booking-engine"
+import { Loader2, AlertCircle, ArrowRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
 
-const mockRooms = [
-  {
-    id: "1",
-    name: "סוויטה משפחתית גדולה",
-    description: "סוויטה מרווחת עם 2 חדרי שינה, מטבחון, וגישה ישירה לבריכה - מושלם למשפחות!",
-    size: 65,
-    maxGuests: 6,
-    price: 750,
-    originalPrice: 950,
-    images: ["/family-suite-pool-kids-friendly.jpg"],
-    kidsFriendly: true,
-    amenities: ["2 חדרי שינה", "מטבחון", "גישה לבריכה", "ערוצי ילדים"],
-  },
-  {
-    id: "2",
-    name: "חדר קונקט למשפחות",
-    description: "2 חדרים מחוברים עם דלת פנימית, מושלם למשפחות עם ילדים גדולים יותר",
-    size: 50,
-    maxGuests: 4,
-    price: 580,
-    images: ["/connecting-rooms-family-hotel.jpg"],
-    kidsFriendly: true,
-    amenities: ["2 חדרים מחוברים", "2 חדרי רחצה", "מיניבר", "WiFi"],
-  },
+const STEPS = [
+  { id: "search", label: "חיפוש" },
+  { id: "results", label: "בחירת חדר" },
+  { id: "details", label: "פרטים" },
+  { id: "payment", label: "תשלום" },
+  { id: "confirmation", label: "סיום" },
 ]
 
 export default function FamilyTemplatePage() {
+  const booking = useBookingEngine()
+  const today = new Date()
+
+  const handleSearch = async (data: any) => {
+    await booking.searchHotels({
+      checkIn: data.checkIn,
+      checkOut: data.checkOut,
+      adults: data.adults,
+      children: data.childrenAges || [],
+      hotelName: "נארה",
+    })
+  }
+
+  // Transform API results to template format
+  const transformedRooms = booking.searchResults.flatMap((hotel) =>
+    hotel.rooms.map((room) => ({
+      id: room.roomId,
+      name: room.roomName,
+      description: `חדר מרווח ומשפחתי עם כל מה שצריך לחופשה מושלמת!`,
+      size: room.size || 45,
+      maxGuests: room.maxOccupancy,
+      price: room.buyPrice,
+      originalPrice: room.originalPrice || undefined,
+      images: room.images.length > 0 ? room.images : ["/family-friendly-hotel-room-kids.jpg"],
+      kidsFriendly: true,
+      amenities:
+        room.amenities.length > 0 ? room.amenities.slice(0, 4) : ["WiFi חינם", "מטבחון", "ערוצי ילדים", "מיזוג"],
+      hotelData: hotel,
+      roomData: room,
+    })),
+  )
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-100 to-cyan-50" dir="rtl">
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/templates" className="text-sky-600 hover:text-sky-800 transition-colors font-bold">
-            ← חזרה לטמפלטים
+          <Link
+            href="/templates"
+            className="text-sky-600 hover:text-sky-800 transition-colors font-bold flex items-center gap-2"
+          >
+            <ArrowRight className="w-4 h-4" />
+            חזרה לטמפלטים
           </Link>
           <div className="flex items-center gap-3">
             <span className="text-4xl">🏖️</span>
@@ -49,35 +72,148 @@ export default function FamilyTemplatePage() {
         </div>
       </header>
 
-      {/* Hero */}
-      <div className="relative py-16 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl font-bold text-gray-800 mb-4">🌈 ברוכים הבאים ל-SunKids! 🌈</h1>
-          <p className="text-xl text-gray-600 mb-8">המקום המושלם לחופשה משפחתית בלתי נשכחת!</p>
-          <div className="flex justify-center gap-4 text-4xl">
-            <span>🏊</span>
-            <span>🎢</span>
-            <span>🍦</span>
-            <span>🎮</span>
-            <span>🌴</span>
+      {/* Booking Steps */}
+      <div className="bg-white/80 backdrop-blur border-b">
+        <div className="max-w-5xl mx-auto px-6">
+          <BookingSteps steps={STEPS} currentStep={booking.step} variant="family" />
+        </div>
+      </div>
+
+      {/* Error Alert */}
+      {booking.error && (
+        <div className="max-w-5xl mx-auto px-6 py-4">
+          <Alert className="bg-red-50 border-red-200">
+            <AlertCircle className="h-4 w-4 text-red-500" />
+            <AlertDescription className="text-red-700">{booking.error}</AlertDescription>
+            <Button variant="ghost" size="sm" onClick={booking.clearError}>
+              סגור
+            </Button>
+          </Alert>
+        </div>
+      )}
+
+      {/* Loading */}
+      {booking.isLoading && (
+        <div className="fixed inset-0 bg-purple-900/20 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 flex flex-col items-center gap-4 shadow-xl">
+            <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+            <p className="text-gray-800 text-lg font-bold">טוען... 🎉</p>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Search */}
-      <div className="max-w-5xl mx-auto px-6 mb-16">
-        <FamilySearchBar onSearch={(data) => console.log(data)} />
-      </div>
+      {/* STEP: Search */}
+      {booking.step === "search" && (
+        <>
+          <div className="relative py-16 px-6">
+            <div className="max-w-4xl mx-auto text-center">
+              <h1 className="text-5xl font-bold text-gray-800 mb-4">🌈 ברוכים הבאים ל-SunKids! 🌈</h1>
+              <p className="text-xl text-gray-600 mb-8">המקום המושלם לחופשה משפחתית בלתי נשכחת!</p>
+              <div className="flex justify-center gap-4 text-4xl">
+                <span>🏊</span>
+                <span>🎢</span>
+                <span>🍦</span>
+                <span>🎮</span>
+                <span>🌴</span>
+              </div>
+            </div>
+          </div>
+          <div className="max-w-5xl mx-auto px-6 mb-16">
+            <FamilySearchBar onSearch={handleSearch} />
+          </div>
+        </>
+      )}
 
-      {/* Rooms */}
-      <div className="max-w-5xl mx-auto px-6 pb-16">
-        <h2 className="text-3xl font-bold text-gray-800 text-center mb-8">🛏️ החדרים שלנו 🛏️</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {mockRooms.map((room) => (
-            <FamilyRoomCard key={room.id} room={room} onSelect={(id) => console.log("Selected:", id)} />
-          ))}
+      {/* STEP: Results */}
+      {booking.step === "results" && (
+        <>
+          <div className="max-w-5xl mx-auto px-6 py-8">
+            <FamilySearchBar
+              onSearch={handleSearch}
+              initialData={{
+                checkIn: booking.searchParams?.checkIn,
+                checkOut: booking.searchParams?.checkOut,
+                adults: booking.searchParams?.adults,
+                children: booking.searchParams?.children.length || 0,
+              }}
+            />
+          </div>
+          <div className="max-w-5xl mx-auto px-6 pb-16">
+            <h2 className="text-3xl font-bold text-gray-800 text-center mb-8">🛏️ החדרים שלנו 🛏️</h2>
+            {transformedRooms.length > 0 ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {transformedRooms.map((room) => (
+                  <FamilyRoomCard
+                    key={room.id}
+                    room={room}
+                    onSelect={() => booking.selectRoom(room.hotelData, room.roomData)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-white rounded-2xl shadow">
+                <p className="text-gray-500 text-xl">😢 לא נמצאו חדרים זמינים</p>
+                <Button
+                  className="mt-4 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-xl"
+                  onClick={() => booking.goToStep("search")}
+                >
+                  🔍 חזרה לחיפוש
+                </Button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* STEP: Details */}
+      {booking.step === "details" && (
+        <div className="max-w-2xl mx-auto px-6 py-12">
+          <div className="bg-white rounded-2xl p-8 shadow-lg">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">👨‍👩‍👧‍👦 פרטי המשפחה</h2>
+            <GuestDetailsForm onSubmit={booking.setGuestInfo} isLoading={booking.isLoading} variant="family" />
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* STEP: Payment */}
+      {booking.step === "payment" && (
+        <div className="max-w-2xl mx-auto px-6 py-12">
+          <div className="bg-white rounded-2xl p-8 shadow-lg">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">💳 תשלום</h2>
+            <PaymentForm
+              totalPrice={booking.totalPrice}
+              currency={booking.selectedRoom?.currency || "ILS"}
+              onSubmit={booking.completeBooking}
+              isLoading={booking.isLoading}
+              variant="family"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* STEP: Confirmation */}
+      {booking.step === "confirmation" &&
+        booking.bookingConfirmation &&
+        booking.selectedHotel &&
+        booking.selectedRoom &&
+        booking.searchParams &&
+        booking.guestInfo && (
+          <div className="max-w-2xl mx-auto px-6 py-12">
+            <BookingConfirmation
+              bookingId={booking.bookingConfirmation.bookingId}
+              supplierReference={booking.bookingConfirmation.supplierReference}
+              hotel={booking.selectedHotel}
+              room={booking.selectedRoom}
+              searchParams={booking.searchParams}
+              totalPrice={booking.totalPrice}
+              currency={booking.selectedRoom.currency}
+              guestName={`${booking.guestInfo.firstName} ${booking.guestInfo.lastName}`}
+              guestEmail={booking.guestInfo.email}
+              onNewBooking={booking.reset}
+              variant="family"
+            />
+          </div>
+        )}
     </div>
   )
 }

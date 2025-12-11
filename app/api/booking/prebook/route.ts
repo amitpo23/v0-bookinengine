@@ -10,10 +10,38 @@ export async function POST(request: NextRequest) {
 
     const { code, dateFrom, dateTo, hotelId, adults, children } = body
 
-    if (!code || !dateFrom || !dateTo || !hotelId) {
-      console.log("[v0] Missing required fields")
-      return NextResponse.json({ error: "code, dateFrom, dateTo, and hotelId are required" }, { status: 400 })
+    if (!code || typeof code !== "string" || code.length < 5) {
+      console.log("[v0] Invalid code:", code)
+      return NextResponse.json(
+        {
+          error: "Invalid room code - must be a valid booking code from search results",
+          received: { code, type: typeof code, length: code?.length },
+        },
+        { status: 400 },
+      )
     }
+
+    if (!dateFrom || !dateTo) {
+      console.log("[v0] Missing dates")
+      return NextResponse.json({ error: "dateFrom and dateTo are required" }, { status: 400 })
+    }
+
+    if (!hotelId || hotelId === 0) {
+      console.log("[v0] Invalid hotelId:", hotelId)
+      return NextResponse.json(
+        {
+          error: "Invalid hotelId - must be a valid hotel ID from search results",
+          received: { hotelId },
+        },
+        { status: 400 },
+      )
+    }
+
+    console.log("[v0] Calling mediciApi.preBook with valid params:")
+    console.log("[v0] - code:", code.substring(0, 50) + "...")
+    console.log("[v0] - hotelId:", hotelId)
+    console.log("[v0] - dates:", dateFrom, "to", dateTo)
+    console.log("[v0] - adults:", adults)
 
     const result = await mediciApi.preBook({
       code,

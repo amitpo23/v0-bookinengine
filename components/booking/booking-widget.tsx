@@ -275,8 +275,7 @@ function BookingWidgetContent() {
               ) : (
                 <div className="space-y-6">
                   {mockRooms.map((room) => (
-                    <RoomCard key={room.id} room={room} />
-                  ))}
+              <RoomCard key={room.id} room={room} onBook={(roomId, rateId) => console.log('Book clicked:', roomId, rateId)} />                  ))}
                 </div>
               )}
             </div>

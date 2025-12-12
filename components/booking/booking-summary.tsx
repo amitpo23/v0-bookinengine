@@ -35,10 +35,50 @@ export function BookingSummary({ showContinue = true, onContinue, className }: B
   const clubPrice = totalPrice - clubDiscount
   const nightsText = nights === 1 ? (locale === "he" ? "לילה" : "night") : locale === "he" ? "לילות" : "nights"
 
-  const handleContinue = () => {
-    setCurrentStep(3)
-    onContinue?.()
-  }
+    const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleContinue = async () => {
+    if (!hotel || !search || selectedRooms.length === 0) return
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      // Get the first room's rate plan code
+      const roomCode = selectedRooms[0].ratePlan.id || selectedRooms[0].ratePlan.code
+      
+      const response = await fetch('/api/booking/prebook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: roomCode,
+          dateFrom: search.checkIn,
+          dateTo: search.checkOut,
+          hotelId: hotel.id,
+          adults: search.adults,
+          children: search.children || 0,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to validate booking')
+      }
+
+      // If successful, proceed to next step
+      setCurrentStep(3)
+      onContinue?.()
+    } catch (err) {
+      console.error('Prebook error:', err)
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setIsLoading(false)
+    }
+  }}
 
   const hotelImage = selectedRooms[0]?.room?.images?.[0] || "/luxury-hotel-pool.png"
 
@@ -133,12 +173,29 @@ export function BookingSummary({ showContinue = true, onContinue, className }: B
         </div>
       </div>
 
-      {showContinue && (
+            {showContinue && (
         <div className="p-4 pt-0">
-          <Button className="w-full bg-blue-600 hover:bg-blue-700" size="lg" onClick={handleContinue}>
-            {locale === "he" ? "המשך להזמנה" : "Continue to booking"}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+          <Button 
+            className="w-full bg-blue-600 hover:bg-blue-700" 
+            size="lg" 
+            onClick={handleContinue}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                {locale === "he" ? "בודק זמינות..." : "Checking availability..."}
+              </>
+            ) : (
+              locale === "he" ? "המשך להזמנה" : "Continue to booking"
+            )}
           </Button>
         </div>
+      )}  </div>
       )}
     </div>
   )

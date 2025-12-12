@@ -14,9 +14,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 interface RoomCardProps {
   room: Room
+    onBook?: (roomId: string, rateId: string) => void
 }
 
-export function RoomCard({ room }: RoomCardProps) {
+export function RoomCard({ room, onBook }: RoomCardProps) {
   const { addRoom, nights, hotel } = useBooking()
   const { t, locale, dir } = useI18n()
   const [expanded, setExpanded] = useState(true)
@@ -219,8 +220,7 @@ export function RoomCard({ room }: RoomCardProps) {
                           {t("forNights", { count: nights, nightsText })}
                         </div>
                       </div>
-                      <Button onClick={() => addRoom({ room, ratePlan, quantity: 1 })} className="min-w-[100px]">
-                        {t("select")}
+              <Button onClick={() => onBook?.(room.id, ratePlan.id)} className="min-w-[100px]">                        {t("select")}
                       </Button>
                     </div>
                   </div>

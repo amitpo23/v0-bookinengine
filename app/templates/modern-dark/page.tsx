@@ -26,7 +26,7 @@ export default function ModernDarkTemplatePage() {
       checkOut: data.checkOut,
       adults: data.guests,
       children: [],
-      hotelName: "נארה",
+      hotelName: "Dizengoff Inn",
     })
   }
 

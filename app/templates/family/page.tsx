@@ -26,7 +26,7 @@ export default function FamilyTemplatePage() {
       checkOut: data.checkOut,
       adults: data.adults,
       children: data.childrenAges || [],
-      hotelName: "נארה",
+      hotelName: "Dizengoff Inn", // שימוש בשם מלון אמיתי Dizengoff Inn במקום נארה
     })
   }
 

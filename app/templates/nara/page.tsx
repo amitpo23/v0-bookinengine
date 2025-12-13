@@ -37,7 +37,7 @@ const addons = [
   {
     id: "2",
     name: "ערכת מנגל",
-    description: "ערכה הכוללת מנגל + רשת + חבילת פחמים + מדליק פחמים",
+    description: "ערכה הכוללת מנגל + רשת + חבילת פחמים + מדlicer פחמים",
     price: 120,
     image: "/bbq-grill-kit.jpg",
   },
@@ -78,7 +78,7 @@ export default function NaraTemplatePage() {
       checkOut: data.checkOut,
       adults: data.guests,
       children: [],
-      hotelName: data.location || "נארה",
+      hotelName: "Dizengoff Inn", // שם מלון אמיתי במערכת Medici
     })
   }
 
@@ -100,7 +100,7 @@ export default function NaraTemplatePage() {
     const roomResult = {
       code: room.code || room.id || `${hotelResult.hotelId}:${room.categoryId || 1}:double:BB:${Date.now()}`,
       roomId: room.roomId || room.id || "1",
-      roomName: room.name || room.roomName || room.title || "יחידות סופיריור",
+      roomName: room.name || room.roomName || room.title || "יחידות סופيريור",
       roomCategory: room.roomCategory || "superior",
       categoryId: room.categoryId || 2,
       boardId: room.boardId || 2,

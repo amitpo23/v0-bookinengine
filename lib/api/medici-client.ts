@@ -287,7 +287,8 @@ class MediciApiClient {
     children?: number[]
     stars?: number
     limit?: number
-}): Promise<{ hotels: HotelSearchResult[], jsonRequest: any | null }> {    // IMPORTANT: adults must be a STRING per API documentation
+  }): Promise<HotelSearchResult[]> {
+    // IMPORTANT: adults must be a STRING per API documentation
     // Also: use hotelName OR city, NOT both
     const pax = [
       {
@@ -314,11 +315,7 @@ class MediciApiClient {
     }
 
     const response = await this.request<any>("/api/hotels/GetInnstantSearchPrice", "POST", searchBody)
-        // Return both transformed results AND the original jsonRequest for prebook/book
-    return {
-      hotels: this.transformSearchResults(response),
-      jsonRequest: response.jsonRequest || null
-    }
+    return this.transformSearchResults(response)
   }
 
   private transformSearchResults(response: any): HotelSearchResult[] {
@@ -487,7 +484,6 @@ class MediciApiClient {
     hotelId: number
     adults: number
     children?: number[]
-        requestJson?: any
   }): Promise<PreBookResult> {
     // Build the inner request according to Medici API documentation
     const innerRequest = {
@@ -535,8 +531,8 @@ class MediciApiClient {
     }
 
     const preBookBody = {
-      // Use provided requestJson if available, otherwise build from scratch
-      jsonRequest: params.requestJson ? JSON.stringify(params.requestJson) : JSON.stringify(innerRequest),    }
+      jsonRequest: JSON.stringify(innerRequest),
+    }
 
     console.log("[v0] PreBook inner request:", JSON.stringify(innerRequest, null, 2))
 

@@ -1,5 +1,4 @@
 "use client"
-// Fixed Button component structure
 
 import { useState } from "react"
 import Image from "next/image"
@@ -15,10 +14,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 interface RoomCardProps {
   room: Room
-    onBook: (roomId: string, rateId: string) => void
-  }
+}
 
-export function RoomCard({ room, onBook }: RoomCardProps) {
+export function RoomCard({ room }: RoomCardProps) {
   const { addRoom, nights, hotel } = useBooking()
   const { t, locale, dir } = useI18n()
   const [expanded, setExpanded] = useState(true)
@@ -221,18 +219,19 @@ export function RoomCard({ room, onBook }: RoomCardProps) {
                           {t("forNights", { count: nights, nightsText })}
                         </div>
                       </div>
-                
+                      <Button onClick={() => addRoom({ room, ratePlan, quantity: 1 })} className="min-w-[100px]">
+                        {t("select")}
+                      </Button>
+                    </div>
                   </div>
-                            <Button onClick={() => addRoom(room.id, ratePlan.id)} className="min-w-[100px]">
-                  {t("select")}
-                </Button>
-              </div>
+                </div>
+              ))}
             </div>
           </div>
-        ))}
+        )}
       </div>
-    )}
-  </div>
+
+      {/* Image Gallery Modal */}
       <Dialog open={showGallery} onOpenChange={setShowGallery}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>

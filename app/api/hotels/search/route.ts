@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { mediciApi } from "@/lib/api/medici-client"
-import { translateCityName } from "@/lib/city-mapping"
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,9 +10,6 @@ export async function POST(request: NextRequest) {
 
     const { dateFrom, dateTo, hotelName, city, adults, children, stars, limit } = body
 
-      // Translate Hebrew city names to English for Medici API
-      const translatedCity = city ? translateCityName(city) : undefined
-
     // Validate required fields
     if (!dateFrom || !dateTo) {
       return NextResponse.json({ error: "dateFrom and dateTo are required" }, { status: 400 })
@@ -23,35 +19,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Either hotelName or city is required" }, { status: 400 })
     }
 
-    const{ hotels, jsonRequest } = await mediciApi.searchHotels({
+    const results = await mediciApi.searchHotels({
       dateFrom,
       dateTo,
       hotelName: hotelName || undefined,
-      city: translatedCity || undefined,
+      city: city || undefined,
       adults: Number(adults) || 2,
       children: children || [],
       stars: stars ? Number(stars) : undefined,
       limit: limit ? Number(limit) : 20,
     })
 
-        // Ensure results is an array
-        if (!Array.isArray(hotels)) {
-                console.error("[v0] ERROR: searchHotels did not return an array", hotels)
-                return NextResponse.json({ error: "Invalid response from hotel search" }, { status: 500 })
-              }
+    console.log("[v0] Search returned", results.length, "hotel results")
 
-    console.log("[v0] Search returned", hotels.length, "hotel results")
-
-    const groupedResults = hotels.map((hotel: any) => {
+    const groupedResults = results.map((hotel: any) => {
       // Ensure hotelId is a valid number
       let hotelId = 0
-      // Try camelCase first (hotelId), then lowercase (hotelid)
-    const rawHotelId = hotel.hotelId || hotel.hotelid
-    if (typeof rawHotelId === "number" && rawHotelId > 0) {
-      hotelId = rawHotelId
-    } else if (typeof rawHotelId === "string" && rawHotelId) {
-      hotelId = Number.parseInt(rawHotelId, 10) || 0
-    }
+      if (typeof hotel.hotelId === "number" && hotel.hotelId > 0) {
+        hotelId = hotel.hotelId
+      } else if (typeof hotel.hotelId === "string" && hotel.hotelId) {
+        hotelId = Number.parseInt(hotel.hotelId, 10) || 0
+      }
 
       console.log(
         `[v0] Mapping hotel: ${hotel.hotelName}, hotelId: ${hotelId} (original: ${hotel.hotelId}, type: ${typeof hotel.hotelId})`,

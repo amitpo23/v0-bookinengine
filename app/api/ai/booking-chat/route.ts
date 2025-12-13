@@ -3,7 +3,7 @@ import type { HotelConfig } from "@/types/saas"
 import { getBookingAgentPrompt } from "@/lib/prompts/booking-agent-prompt"
 
 const MEDICI_API_BASE = "https://medici-backend.azurewebsites.net"
-const MEDICI_IMAGES_BASE = "https://cdn.medicihotels.com/images/" // Added image base URL
+const MEDICI_IMAGES_BASE = "https://cdn.medicihotels.com/images/"
 const MEDICI_TOKEN =
   "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIyNCIsIm5iZiI6MTc1MjQ3NTYwNCwiZXhwIjoyMDY4MDA4NDA0LCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.eA8EeHx6gGRtGBts4yXAWnK5P0Wl_LQLD1LKobYBV4U"
 
@@ -11,23 +11,16 @@ const DEFAULT_HOTEL_NAME = "Dizengoff Inn"
 
 function buildImageUrl(imageUrl: string | { url?: string } | null): string {
   if (!imageUrl) return ""
-
   const url = typeof imageUrl === "object" ? imageUrl.url : imageUrl
   if (!url) return ""
-
-  // If already a full URL, return as-is
   if (url.startsWith("http")) return url
-
-  // Build full URL from relative path
   return `${MEDICI_IMAGES_BASE}${url}`
 }
 
 function getMainImage(images: any[]): string {
   if (!images || images.length === 0) return ""
-
   const mainImage = images.find((img) => img.title === "mainimage")
   if (mainImage) return buildImageUrl(mainImage)
-
   return buildImageUrl(images[0])
 }
 
@@ -94,19 +87,131 @@ async function searchMediciHotels(params: {
 
     const data = await response.json()
     console.log("[v0] Response items count:", data?.items?.length || 0)
-    return data
+
+    return {
+      results: data,
+      jsonRequest: JSON.stringify(body),
+    }
   } catch (error) {
     console.error("[v0] Search error:", error)
     throw error
   }
 }
 
+async function prebookRoom(params: {
+  code: string
+  hotelId: number
+  dateFrom: string
+  dateTo: string
+  adults: number
+  children: number[]
+  requestJson: string
+}) {
+  console.log("[v0] PreBook with params:", params)
+
+  const url = `${MEDICI_API_BASE}/api/hotels/PreBook`
+
+  const body = {
+    jsonRequest: params.requestJson,
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${MEDICI_TOKEN}`,
+      },
+      body: JSON.stringify(body),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.log("[v0] PreBook error:", errorText)
+      throw new Error(`PreBook error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log("[v0] PreBook success:", data)
+    return data
+  } catch (error) {
+    console.error("[v0] PreBook error:", error)
+    throw error
+  }
+}
+
+async function bookRoom(params: {
+  token: string
+  preBookId: string
+  customer: {
+    firstName: string
+    lastName: string
+    email: string
+    phone: string
+  }
+}) {
+  console.log("[v0] Book with params:", params)
+
+  const url = `${MEDICI_API_BASE}/api/hotels/Book`
+
+  const body = {
+    jsonRequest: JSON.stringify({
+      customer: {
+        firstName: params.customer.firstName,
+        lastName: params.customer.lastName,
+        email: params.customer.email,
+        phone: params.customer.phone,
+      },
+      paymentMethod: "card",
+      services: [
+        {
+          token: params.token,
+          bookingRequest: {
+            preBookId: params.preBookId,
+          },
+        },
+      ],
+    }),
+  }
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${MEDICI_TOKEN}`,
+      },
+      body: JSON.stringify(body),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.log("[v0] Book error:", errorText)
+      throw new Error(`Book error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log("[v0] Book success:", data)
+    return data
+  } catch (error) {
+    console.error("[v0] Book error:", error)
+    throw error
+  }
+}
+
 export async function POST(req: Request) {
   try {
-    const { messages, hotelConfig, language } = (await req.json()) as {
+    const { messages, hotelConfig, language, bookingState } = (await req.json()) as {
       messages: { role: "user" | "assistant"; content: string }[]
       hotelConfig: HotelConfig
       language: "he" | "en"
+      bookingState?: {
+        step?: "search" | "select" | "prebook" | "details" | "book"
+        selectedRoom?: any
+        jsonRequest?: string
+        preBookData?: any
+        searchContext?: any
+      }
     }
 
     const isHebrew = language === "he"
@@ -115,6 +220,7 @@ export async function POST(req: Request) {
     const hotelCity = hotelConfig?.apiSettings?.mediciCity || hotelConfig?.city || "Tel Aviv"
 
     console.log("[v0] Chat request - Hotel:", hotelName, "API Name:", hotelApiName)
+    console.log("[v0] Booking state:", bookingState)
 
     const today = new Date().toISOString().split("T")[0]
 
@@ -134,7 +240,6 @@ export async function POST(req: Request) {
     console.log("[v0] AI response:", text.slice(0, 500))
 
     const searchMatch = text.match(/\[SEARCH\](.*?)\[\/SEARCH\]/s)
-
     if (searchMatch) {
       console.log("[v0] Found search request:", searchMatch[1])
 
@@ -142,7 +247,7 @@ export async function POST(req: Request) {
         const searchParams = JSON.parse(searchMatch[1])
         console.log("[v0] Parsed search params:", searchParams)
 
-        const searchResults = await searchMediciHotels({
+        const { results: searchResults, jsonRequest } = await searchMediciHotels({
           hotelName: hotelApiName,
           city: searchParams.city || hotelCity,
           dateFrom: searchParams.dateFrom,
@@ -153,37 +258,25 @@ export async function POST(req: Request) {
 
         let rooms: any[] = []
 
-        console.log("[v0] Processing search results")
-
         if (searchResults?.items && Array.isArray(searchResults.items)) {
           rooms = searchResults.items
-          console.log("[v0] Found", rooms.length, "room options in items")
         } else if (Array.isArray(searchResults)) {
           rooms = searchResults
         } else if (searchResults?.hotels) {
           rooms = searchResults.hotels
         }
 
-        console.log("[v0] Total rooms found:", rooms.length)
-
         if (rooms.length > 0) {
-          const formattedRooms = rooms.slice(0, 6).map((room: any) => {
+          const formattedRooms = rooms.slice(0, 6).map((room: any, index: number) => {
             const price = room.price?.amount || room.netPrice?.amount || room.price || 0
             const currency = room.price?.currency || room.netPrice?.currency || "USD"
-
-            // Get images from the room data
             const rawImages = room.images || []
             const mainImage = getMainImage(rawImages)
             const imageGallery = buildImageGallery(rawImages)
-
-            // Extract facilities
             const facilities = room.facilities?.tags || room.facilities?.list || []
 
-            // Get room options (different room types within the hotel)
-            const roomOptions = room.rooms || []
-
             return {
-              code: room.code || "",
+              code: room.code || `${room.hotelId || hotelName}:${index}:${Date.now()}`,
               hotelId: room.hotelId || 0,
               name: room.hotelName || room.name || "Hotel",
               hotelName: room.hotelName || hotelName,
@@ -200,27 +293,8 @@ export async function POST(req: Request) {
               location: room.city || searchParams.city || hotelCity,
               address: room.address || "",
               rating: room.stars || 4,
-              roomOptions: roomOptions.slice(0, 5).map((opt: any) => ({
-                roomId: opt.roomId,
-                categoryId: opt.categoryId,
-                boardId: opt.boardId,
-                price: opt.buyPrice || price,
-                currency: opt.currency || currency,
-                maxOccupancy: opt.maxOccupancy || 2,
-                cancellation: opt.cancellationPolicy || "non-refundable",
-              })),
             }
           })
-
-          console.log(
-            "[v0] Formatted rooms with images:",
-            formattedRooms.map((r) => ({
-              name: r.name,
-              image: r.image?.slice(0, 50),
-              imagesCount: r.images?.length,
-              facilities: r.facilities?.slice(0, 3),
-            })),
-          )
 
           const cleanText = text.replace(/\[SEARCH\].*?\[\/SEARCH\]/s, "").trim()
 
@@ -238,8 +312,8 @@ export async function POST(req: Request) {
                     : ""
 
               return isHebrew
-                ? `${i + 1}. ${r.hotelName} - ${r.roomType}${label}\n   מחיר: $${r.price} ${r.currency}\n   פנסיון: ${r.board === "RO" ? "ללא ארוחות" : r.board === "BB" ? "ארוחת בוקר" : r.board}\n   ביטול: ${r.cancellation === "fully-refundable" ? "ניתן לביטול חינם" : "לא ניתן לביטול"}`
-                : `${i + 1}. ${r.hotelName} - ${r.roomType}${label}\n   Price: $${r.price} ${r.currency}\n   Board: ${r.board === "RO" ? "Room Only" : r.board === "BB" ? "Breakfast" : r.board}\n   Cancellation: ${r.cancellation === "fully-refundable" ? "Free cancellation" : "Non-refundable"}`
+                ? `${i + 1}. ${r.hotelName} - ${r.roomType}${label}\n   מחיר: $${r.price} ${r.currency}\n   קוד חדר: ${r.code}\n   ביטול: ${r.cancellation === "fully-refundable" ? "ניתן לביטול חינם" : "לא ניתן לביטול"}`
+                : `${i + 1}. ${r.hotelName} - ${r.roomType}${label}\n   Price: $${r.price} ${r.currency}\n   Room code: ${r.code}\n   Cancellation: ${r.cancellation === "fully-refundable" ? "Free cancellation" : "Non-refundable"}`
             })
             .join("\n\n")
 
@@ -248,8 +322,8 @@ export async function POST(req: Request) {
               cleanText +
               "\n\n" +
               (isHebrew
-                ? `מצאתי ${formattedRooms.length} אפשרויות זמינות עבורך:\n\n${roomsList}\n\nאיזה חדר מעניין אותך? לחץ על "בחר והמשך" כדי להתחיל בתהליך ההזמנה.`
-                : `I found ${formattedRooms.length} available options for you:\n\n${roomsList}\n\nWhich room interests you? Click "Select & Continue" to start the booking process.`),
+                ? `מצאתי ${formattedRooms.length} אפשרויות זמינות:\n\n${roomsList}\n\nאיזה חדר מעניין אותך? כתוב את המספר או "אני רוצה את חדר מספר X"`
+                : `I found ${formattedRooms.length} available options:\n\n${roomsList}\n\nWhich room interests you? Write the number or "I want room number X"`),
             bookingData: {
               type: "search_results",
               data: {
@@ -261,45 +335,112 @@ export async function POST(req: Request) {
                   children: searchParams.children || [],
                   city: searchParams.city || hotelCity,
                 },
+                jsonRequest: jsonRequest,
               },
             },
-            searchContext: {
-              dateFrom: searchParams.dateFrom,
-              dateTo: searchParams.dateTo,
-              adults: searchParams.adults || 2,
-              children: searchParams.children || [],
-              city: searchParams.city || hotelCity,
-            },
-          })
-        } else {
-          const cleanText = text.replace(/\[SEARCH\].*?\[\/SEARCH\]/s, "").trim()
-
-          return Response.json({
-            message:
-              cleanText +
-              "\n\n" +
-              (isHebrew
-                ? "לצערי לא מצאתי חדרים זמינות בתאריכים אלה. אפשרויות:\n- לנסות תאריכים אחרים (±1-2 ימים)\n- לחפש באזור אחר\n- לשנות את מספר האורחים\n\nמה תרצה לנסות?"
-                : "Unfortunately, I couldn't find available rooms for these dates. Options:\n- Try different dates (±1-2 days)\n- Search in a different area\n- Change the number of guests\n\nWhat would you like to try?"),
           })
         }
       } catch (error) {
         console.error("[v0] Search error:", error)
-
         const cleanText = text.replace(/\[SEARCH\].*?\[\/SEARCH\]/s, "").trim()
+        return Response.json({
+          message:
+            cleanText +
+            "\n\n" +
+            (isHebrew
+              ? "הייתה בעיה ביצירת קשר עם מערכת ההזמנות. אנא נסה שוב."
+              : "There was an issue contacting the booking system. Please try again."),
+        })
+      }
+    }
+
+    const selectMatch = text.match(/\[SELECT_ROOM\](.*?)\[\/SELECT_ROOM\]/s)
+    if (selectMatch && bookingState?.jsonRequest) {
+      console.log("[v0] Room selected, calling PreBook...")
+
+      try {
+        const selection = JSON.parse(selectMatch[1])
+        const preBookData = await prebookRoom({
+          code: selection.code,
+          hotelId: selection.hotelId,
+          dateFrom: bookingState.searchContext.dateFrom,
+          dateTo: bookingState.searchContext.dateTo,
+          adults: bookingState.searchContext.adults,
+          children: bookingState.searchContext.children,
+          requestJson: bookingState.jsonRequest,
+        })
+
+        const cleanText = text.replace(/\[SELECT_ROOM\].*?\[\/SELECT_ROOM\]/s, "").trim()
 
         return Response.json({
           message:
             cleanText +
             "\n\n" +
             (isHebrew
-              ? "הייתה בעיה ביצירת קשר עם מערכת ההזמנות. אנא נסה שוב בעוד מספר רגעים או נסה תאריכים/יעד אחרים."
-              : "There was an issue contacting the booking system. Please try again in a few moments or try different dates/destination."),
+              ? `מעולה! שמרתי את החדר עבורך.\nעכשיו אני צריך כמה פרטים:\n- שם מלא\n- דוא"ל\n- מספר טלפון`
+              : `Great! I've reserved the room for you.\nNow I need some details:\n- Full name\n- Email\n- Phone number`),
+          bookingData: {
+            type: "prebook_complete",
+            data: {
+              preBookData: preBookData,
+              selectedRoom: selection,
+            },
+          },
+        })
+      } catch (error) {
+        console.error("[v0] PreBook error:", error)
+        return Response.json({
+          message: isHebrew
+            ? "הייתה בעיה בשמירת החדר. אנא נסה שוב או בחר חדר אחר."
+            : "There was an issue reserving the room. Please try again or select another room.",
         })
       }
     }
 
-    const cleanText = text.replace(/\[SEARCH\].*?\[\/SEARCH\]/s, "").trim()
+    const bookMatch = text.match(/\[BOOK\](.*?)\[\/BOOK\]/s)
+    if (bookMatch && bookingState?.preBookData) {
+      console.log("[v0] Completing booking...")
+
+      try {
+        const customerDetails = JSON.parse(bookMatch[1])
+        const bookingResult = await bookRoom({
+          token: bookingState.preBookData.token,
+          preBookId: bookingState.preBookData.preBookId,
+          customer: customerDetails,
+        })
+
+        const cleanText = text.replace(/\[BOOK\].*?\[\/BOOK\]/s, "").trim()
+
+        return Response.json({
+          message:
+            cleanText +
+            "\n\n" +
+            (isHebrew
+              ? `🎉 ההזמנה הושלמה בהצלחה!\n\nמספר הזמנה: ${bookingResult.bookingId}\nאסמכתא: ${bookingResult.supplierReference}\n\nקיבלת אישור במייל ${customerDetails.email}`
+              : `🎉 Booking completed successfully!\n\nBooking ID: ${bookingResult.bookingId}\nReference: ${bookingResult.supplierReference}\n\nYou've received confirmation at ${customerDetails.email}`),
+          bookingData: {
+            type: "booking_complete",
+            data: {
+              bookingId: bookingResult.bookingId,
+              supplierReference: bookingResult.supplierReference,
+            },
+          },
+        })
+      } catch (error) {
+        console.error("[v0] Book error:", error)
+        return Response.json({
+          message: isHebrew
+            ? "הייתה בעיה בסיום ההזמנה. אנא נסה שוב או צור קשר עם התמיכה."
+            : "There was an issue completing the booking. Please try again or contact support.",
+        })
+      }
+    }
+
+    const cleanText = text
+      .replace(/\[SEARCH\].*?\[\/SEARCH\]/s, "")
+      .replace(/\[SELECT_ROOM\].*?\[\/SELECT_ROOM\]/s, "")
+      .replace(/\[BOOK\].*?\[\/BOOK\]/s, "")
+      .trim()
 
     return Response.json({ message: cleanText })
   } catch (error) {

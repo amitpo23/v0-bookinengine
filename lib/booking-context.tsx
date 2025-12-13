@@ -84,7 +84,6 @@ export function BookingProvider({ children, initialHotel }: { children: ReactNod
     confirmationCode: string
     bookingId: string
   } | null>(null)
-    const [searchRequestJson, setSearchRequestJson] = useState<any | null>(null)
 
   const nights = Math.ceil(
     (new Date(search.checkOut).getTime() - new Date(search.checkIn).getTime()) / (1000 * 60 * 60 * 24),
@@ -157,8 +156,6 @@ export function BookingProvider({ children, initialHotel }: { children: ReactNod
         setPreBookError,
         bookingConfirmation,
         setBookingConfirmation,
-              searchRequestJson,
-              setSearchRequestJson,
       }}
     >
       {children}

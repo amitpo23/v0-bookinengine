@@ -26,7 +26,7 @@ export default function LuxuryTemplatePage() {
       checkOut: data.checkOut,
       adults: data.guests,
       children: [],
-      hotelName: "נארה",
+      hotelName: "Dizengoff Inn",
     })
   }
 

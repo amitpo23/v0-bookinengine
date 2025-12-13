@@ -1,4 +1,5 @@
 "use client"
+// Fixed Button component structure
 
 import { useState } from "react"
 import Image from "next/image"

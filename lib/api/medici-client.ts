@@ -287,8 +287,7 @@ class MediciApiClient {
     children?: number[]
     stars?: number
     limit?: number
-  }): Promise<HotelSearchResult[]> {
-    // IMPORTANT: adults must be a STRING per API documentation
+}): Promise<{ hotels: HotelSearchResult[], jsonRequest: any | null }> {    // IMPORTANT: adults must be a STRING per API documentation
     // Also: use hotelName OR city, NOT both
     const pax = [
       {
@@ -315,7 +314,11 @@ class MediciApiClient {
     }
 
     const response = await this.request<any>("/api/hotels/GetInnstantSearchPrice", "POST", searchBody)
-    return this.transformSearchResults(response)
+        // Return both transformed results AND the original jsonRequest for prebook/book
+    return {
+      hotels: this.transformSearchResults(response),
+      jsonRequest: response.jsonRequest || null
+    }
   }
 
   private transformSearchResults(response: any): HotelSearchResult[] {

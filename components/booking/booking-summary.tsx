@@ -78,7 +78,7 @@ export function BookingSummary({ showContinue = true, onContinue, className }: B
     } finally {
       setIsLoading(false)
     }
-  }}
+    }
 
   const hotelImage = selectedRooms[0]?.room?.images?.[0] || "/luxury-hotel-pool.png"
 

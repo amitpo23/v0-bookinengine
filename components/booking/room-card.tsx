@@ -223,8 +223,7 @@ export function RoomCard({ room, onBook }: RoomCardProps) {
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+            <Button onClick={() => { if (onBook) { onBook(room.id, ratePlan.id, hotel?.id || 0) } else { addRoom(room.id, ratePlan.id) } }} className="min-w-[100px]">            </div>
           </div>
         )}
       </div>

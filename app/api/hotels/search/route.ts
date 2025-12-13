@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Either hotelName or city is required" }, { status: 400 })
     }
 
-    const results = await mediciApi.searchHotels({
+    con{ hotels, jsonRequest } = await mediciApi.searchHotels({
       dateFrom,
       dateTo,
       hotelName: hotelName || undefined,
@@ -31,14 +31,14 @@ export async function POST(request: NextRequest) {
     })
 
         // Ensure results is an array
-        if (!Array.isArray(results)) {
-                console.error("[v0] ERROR: searchHotels did not return an array", results)
+        if (!Array.isArray(hotels)) {
+                console.error("[v0] ERROR: searchHotels did not return an array", hotels)
                 return NextResponse.json({ error: "Invalid response from hotel search" }, { status: 500 })
               }
 
-    console.log("[v0] Search returned", results.length, "hotel results")
+    console.log("[v0] Search returned", hotels.length, "hotel results")
 
-    const groupedResults = results.map((hotel: any) => {
+    const groupedResults = hotels.map((hotel: any) => {
       // Ensure hotelId is a valid number
       let hotelId = 0
       if (typeof hotel.hotelId === "number" && hotel.hotelId > 0) {

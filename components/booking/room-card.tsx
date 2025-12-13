@@ -106,7 +106,7 @@ export function RoomCard({ room, onBook }: RoomCardProps) {
             {room.images.length > 1 && (
               <div className="absolute bottom-2 left-2 flex gap-1">
                 {room.images.map((_, idx) => (
-                  222
+                  <button
                     key={idx}
                     className={cn(
                       "w-2 h-2 rounded-full transition-colors",
@@ -223,7 +223,7 @@ export function RoomCard({ room, onBook }: RoomCardProps) {
                                   </Button>
                   </div>
                 </div>
-            <Button onClick={() => addRoom(room.id, ratePlan.id)} className="min-w-[100px]"> {t("select")}            <Button /* Image Gallery Modal */}
+            <Button onClick={() => addRoom(room.id, ratePlan.id)} className="min-w-[100px]"> {t("select")}            </Button>           </div>         </div>       </div>     ))}   </div> )} </div>  {/* Image Gallery Modal */}
       <Dialog open={showGallery} onOpenChange={setShowGallery}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>

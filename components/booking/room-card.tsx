@@ -14,7 +14,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 interface RoomCardProps {
   room: Room
-  onBook?: (roomId: string, rateId: string, hotelId: number) => void}
 
 export function RoomCard({ room, onBook }: RoomCardProps) {
   const { addRoom, nights, hotel } = useBooking()
@@ -219,13 +218,10 @@ export function RoomCard({ room, onBook }: RoomCardProps) {
                           {t("forNights", { count: nights, nightsText })}
                         </div>
                       </div>
-            <Button onClick={() => { if (onBook) { onBook(room.id, ratePlan.id, hotel?.id || 0); } else { addRoom(room.id, ratePlan.id); } }} className="min-w-[100px]">                                                                                                                                                                                                                     {t("select")}                    </div>
                                   </Button>
                   </div>
                 </div>
-        )}
-      </div>
-            <Button /* Image Gallery Modal */}
+            <Button onClick={() => addRoom(room.id, ratePlan.id)} className="min-w-[100px]"> {t("select")}            <Button /* Image Gallery Modal */}
       <Dialog open={showGallery} onOpenChange={setShowGallery}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>

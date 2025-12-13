@@ -487,6 +487,7 @@ class MediciApiClient {
     hotelId: number
     adults: number
     children?: number[]
+        requestJson?: any
   }): Promise<PreBookResult> {
     // Build the inner request according to Medici API documentation
     const innerRequest = {
@@ -534,8 +535,8 @@ class MediciApiClient {
     }
 
     const preBookBody = {
-      jsonRequest: JSON.stringify(innerRequest),
-    }
+      // Use provided requestJson if available, otherwise build from scratch
+      jsonRequest: params.requestJson ? JSON.stringify(params.requestJson) : JSON.stringify(innerRequest),    }
 
     console.log("[v0] PreBook inner request:", JSON.stringify(innerRequest, null, 2))
 

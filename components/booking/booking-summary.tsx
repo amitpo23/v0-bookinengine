@@ -196,5 +196,6 @@ export function BookingSummary({ showContinue = true, onContinue, className }: B
           </Button>
         </div>
             )}
+            </div>
   )
 }

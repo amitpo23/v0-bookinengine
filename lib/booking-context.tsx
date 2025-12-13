@@ -156,6 +156,8 @@ export function BookingProvider({ children, initialHotel }: { children: ReactNod
         setPreBookError,
         bookingConfirmation,
         setBookingConfirmation,
+              searchRequestJson,
+              setSearchRequestJson,
       }}
     >
       {children}

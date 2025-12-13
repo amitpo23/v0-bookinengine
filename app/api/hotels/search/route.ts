@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Either hotelName or city is required" }, { status: 400 })
     }
 
-    con{ hotels, jsonRequest } = await mediciApi.searchHotels({
+    const{ hotels, jsonRequest } = await mediciApi.searchHotels({
       dateFrom,
       dateTo,
       hotelName: hotelName || undefined,

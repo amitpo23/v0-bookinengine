@@ -223,7 +223,6 @@ export function RoomCard({ room, onBook }: RoomCardProps) {
                       </div>
                 
                   </div>
-                </div>
                             <Button onClick={() => addRoom(room.id, ratePlan.id)} className="min-w-[100px]">
                   {t("select")}
                 </Button>

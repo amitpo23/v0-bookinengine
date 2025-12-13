@@ -591,6 +591,9 @@ export function HotelSearchResults() {
     console.log("[v0] room.code:", room.code, "length:", room.code?.length)
     console.log("[v0] room.roomName:", room.roomName)
     console.log("[v0] room.buyPrice:", room.buyPrice)
+    
+    // Ensure buyPrice is never 0 - use fallback if needed
+    const validPrice = room.buyPrice > 0 ? room.buyPrice : generateFallbackPrice(room, hotel)
 
     const hotelId = typeof hotel.hotelId === "number" ? hotel.hotelId : Number.parseInt(String(hotel.hotelId), 10)
   // If no code exists, generate a temporary identifier from room data
@@ -645,7 +648,7 @@ export function HotelSearchResults() {
         roomName: room.roomName || getCategoryName(room.categoryId),
         roomId: room.roomId,
         boardId: room.boardId,
-        price: room.buyPrice,
+        price: validPrice,
         currency: room.currency || "USD",
         dateFrom,
         dateTo,
@@ -667,7 +670,7 @@ export function HotelSearchResults() {
         bedType: getCategoryName(room.categoryId),
         size: 30,
         amenities: [],
-        basePrice: data.priceConfirmed || room.buyPrice,
+        basePrice: data.priceConfirmed || room.validPrice,
         available: 5,
       }
 

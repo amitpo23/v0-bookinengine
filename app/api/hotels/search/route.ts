@@ -41,11 +41,13 @@ export async function POST(request: NextRequest) {
     const groupedResults = hotels.map((hotel: any) => {
       // Ensure hotelId is a valid number
       let hotelId = 0
-      if (typeof hotel.hotelId === "number" && hotel.hotelId > 0) {
-        hotelId = hotel.hotelId
-      } else if (typeof hotel.hotelId === "string" && hotel.hotelId) {
-        hotelId = Number.parseInt(hotel.hotelId, 10) || 0
-      }
+      // Try camelCase first (hotelId), then lowercase (hotelid)
+    const rawHotelId = hotel.hotelId || hotel.hotelid
+    if (typeof rawHotelId === "number" && rawHotelId > 0) {
+      hotelId = rawHotelId
+    } else if (typeof rawHotelId === "string" && rawHotelId) {
+      hotelId = Number.parseInt(rawHotelId, 10) || 0
+    }
 
       console.log(
         `[v0] Mapping hotel: ${hotel.hotelName}, hotelId: ${hotelId} (original: ${hotel.hotelId}, type: ${typeof hotel.hotelId})`,

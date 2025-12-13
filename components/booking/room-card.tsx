@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 interface RoomCardProps {
   room: Room
-    onBook?: (roomId: string, rateId: string) => void
+    onBook?: (roomId: string, rateId: string) => , hotelId: number) => void
 }
 
 export function RoomCard({ room, onBook }: RoomCardProps) {
@@ -220,8 +220,7 @@ export function RoomCard({ room, onBook }: RoomCardProps) {
                           {t("forNights", { count: nights, nightsText })}
                         </div>
                       </div>
-              <Button onClick={() => onBook?.(room.id, ratePlan.id)} className="min-w-[100px]">                        {t("select")}
-                      </Button>
+            <Button onClick={() => onBook?.(room.id, ratePlan.id, hotel?.id || 0)} className="min-w-[100px]">                      </Button>
                     </div>
                   </div>
                 </div>

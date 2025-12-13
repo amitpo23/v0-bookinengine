@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { mediciApi } from "@/lib/api/medici-client"
+import { translateCityName } from "@/lib/city-mapping"
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,6 +10,9 @@ export async function POST(request: NextRequest) {
     console.log("[v0] Request body:", JSON.stringify(body, null, 2))
 
     const { dateFrom, dateTo, hotelName, city, adults, children, stars, limit } = body
+
+      // Translate Hebrew city names to English for Medici API
+      const translatedCity = city ? translateCityName(city) : undefined
 
     // Validate required fields
     if (!dateFrom || !dateTo) {
@@ -23,7 +27,7 @@ export async function POST(request: NextRequest) {
       dateFrom,
       dateTo,
       hotelName: hotelName || undefined,
-      city: city || undefined,
+      city: translatedCity || undefined,
       adults: Number(adults) || 2,
       children: children || [],
       stars: stars ? Number(stars) : undefined,

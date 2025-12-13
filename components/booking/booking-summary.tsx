@@ -36,7 +36,7 @@ export function BookingSummary({ showContinue = true, onContinue, className }: B
   const nightsText = nights === 1 ? (locale === "he" ? "לילה" : "night") : locale === "he" ? "לילות" : "nights"
 
     const [isLoading, setIsLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
+    const [error, setError] =   const [error, setError] = useState(null as string | null)
 
   const handleContinue = async () => {
     if (!hotel || !search || selectedRooms.length === 0) return

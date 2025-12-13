@@ -55,8 +55,8 @@ export function BookingSummary({ showContinue = true, onContinue, className }: B
         },
         body: JSON.stringify({
           code: roomCode,
-          dateFrom: search.checkIn,
-          dateTo: search.checkOut,
+        dateFrom: search.checkIn.toISOString().split('T')[0],
+        dateTo: search.checkOut.toISOString().split('T')[0],
           hotelId: hotel.id,
           adults: search.adults,
           children: search.children || 0,

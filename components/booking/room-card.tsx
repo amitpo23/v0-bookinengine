@@ -223,12 +223,18 @@ export function RoomCard({ room, onBook }: RoomCardProps) {
                     </div>
                   </div>
                 </div>
-            <Button onClick={() => { if (onBook) { onBook(room.id, ratePlan.id, hotel?.id || 0) } else { addRoom(room.id, ratePlan.id) } }} className="min-w-[100px]">            </div>
-          </div>
         )}
       </div>
-
-      {/* Image Gallery Modal */}
+            <Button 
+              onClick={() => {
+                if (onBook) {
+                  onBook(room.id, ratePlan.id, hotel?.id || 0)
+                } else {
+                  addRoom(room.id, ratePlan.id)
+                }
+              }} 
+              className="min-w-[100px]"
+            >      {/* Image Gallery Modal */}
       <Dialog open={showGallery} onOpenChange={setShowGallery}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>

@@ -30,6 +30,12 @@ export async function POST(request: NextRequest) {
       limit: limit ? Number(limit) : 20,
     })
 
+        // Ensure results is an array
+        if (!Array.isArray(results)) {
+                console.error("[v0] ERROR: searchHotels did not return an array", results)
+                return NextResponse.json({ error: "Invalid response from hotel search" }, { status: 500 })
+              }
+
     console.log("[v0] Search returned", results.length, "hotel results")
 
     const groupedResults = results.map((hotel: any) => {

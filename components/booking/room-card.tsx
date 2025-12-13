@@ -14,8 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 interface RoomCardProps {
   room: Room
-    onBook?: (roomId: string, rateId: string) => , hotelId: number) => void
-}
+  onBook?: (roomId: string, rateId: string, hotelId: number) => void}
 
 export function RoomCard({ room, onBook }: RoomCardProps) {
   const { addRoom, nights, hotel } = useBooking()

@@ -8,8 +8,7 @@ export async function POST(request: NextRequest) {
     console.log("[v0] ====== PREBOOK API ROUTE ======")
     console.log("[v0] Request body:", JSON.stringify(body, null, 2))
 
-    const { code, dateFrom, dateTo, hotelId, adults, children } = body
-
+    const { code, dateFrom, dateTo, hotelId, adults, children, requestJson } = body
     if (!code || typeof code !== "string" || code.length < 5) {
       console.log("[v0] Invalid code:", code)
       return NextResponse.json(
@@ -50,6 +49,7 @@ export async function POST(request: NextRequest) {
       hotelId: Number(hotelId),
       adults: Number(adults) || 2,
       children: children || [],
+            requestJson,
     })
 
     console.log("[v0] PreBook result:", JSON.stringify(result, null, 2))

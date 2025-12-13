@@ -220,7 +220,7 @@ export function RoomCard({ room, onBook }: RoomCardProps) {
                           {t("forNights", { count: nights, nightsText })}
                         </div>
                       </div>
-                                  </Button>
+                
                   </div>
                 </div>
             <Button onClick={() => addRoom(room.id, ratePlan.id)} className="min-w-[100px]"> {t("select")}            </Button>           </div>         </div>       </div>     ))}   </div> )} </div>  {/* Image Gallery Modal */}

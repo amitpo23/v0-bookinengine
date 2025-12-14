@@ -595,8 +595,7 @@ export function HotelSearchResults() {
     const hotelId = typeof hotel.hotelId === "number" ? hotel.hotelId : Number.parseInt(String(hotel.hotelId), 10)
     const roomCode = room.code
 
-    if (!roomCode || roomCode.length < 5) {
-      console.error("[v0] Invalid room code:", roomCode)
+    if (roomCode && roomCode.length < 5) {      console.error("[v0] Invalid room code:", roomCode)
       setPreBookError("קוד חדר לא תקין - נא לנסות שוב")
       return
     }

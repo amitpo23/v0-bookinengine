@@ -2,7 +2,6 @@
 
 import { useI18n } from "@/lib/i18n/context"
 import { cn } from "@/lib/utils"
-import { Hotel, User, CreditCard, CheckCircle2 } from "lucide-react"
 
 const CheckIcon = ({ className }: { className?: string }) => (
   <svg
@@ -25,79 +24,66 @@ interface BookingStepsProps {
   currentStep: number
 }
 
-export default function BookingSteps({ currentStep }: BookingStepsProps) {
+export function BookingSteps({ currentStep }: BookingStepsProps) {
   const { locale, dir } = useI18n()
 
   const steps =
     locale === "he"
       ? [
-          { id: 1, name: "בחירת חדרים", icon: Hotel },
-          { id: 2, name: "פרטים אישיים", icon: User },
-          { id: 3, name: "תשלום ואישור", icon: CreditCard },
+          { id: 1, name: "פרטים אישיים" },
+          { id: 2, name: "פרטי אשראי" },
+          { id: 3, name: "חופשה נעימה" },
         ]
       : [
-          { id: 1, name: "Select Rooms", icon: Hotel },
-          { id: 2, name: "Personal Details", icon: User },
-          { id: 3, name: "Payment", icon: CreditCard },
+          { id: 1, name: "Personal Details" },
+          { id: 2, name: "Payment" },
+          { id: 3, name: "Confirmation" },
         ]
 
-  // Map currentStep to display step (1->2 to 1, 3->1 to 1, 4->2 to 2, 5->3 to 3)
+  // Map currentStep to display step (1-2 -> 1, 3 -> 1, 4 -> 2, 5 -> 3)
   const displayStep = currentStep <= 2 ? 1 : currentStep === 3 ? 1 : currentStep === 4 ? 2 : 3
 
   return (
-    <nav aria-label="Progress" className="mb-8 w-full">
-      {/* Progress bar background */}
-      <div className="relative">
-        <div className="overflow-hidden h-2 mb-8 text-xs flex rounded-full bg-gray-200">
-          <div
-            style={{ width: `${((displayStep - 1) / (steps.length - 1)) * 100}%` }}
-            className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500 ease-out"
-          />
-        </div>
-      </div>
-
-      {/* Steps */}
-      <ol className="flex items-center justify-between gap-0 relative -mt-10">
+    <nav aria-label="Progress" className="mb-8" dir={dir}>
+      <ol className="flex items-center justify-center gap-0">
         {steps.map((step, stepIdx) => (
-          <li key={step.id} className="relative flex flex-col items-center flex-1">
+          <li key={step.id} className="relative flex flex-col items-center">
             {/* Connector line - before circle */}
             {stepIdx > 0 && (
               <div
-                className="absolute top-5 h-0.5 w-full"
-                style={{
-                  [dir === "rtl" ? "right" : "left"]: "50%",
-                  ...(step.id <= displayStep
-                    ? { backgroundColor: "rgb(59 130 246)" }
-                    : { backgroundColor: "rgb(229 231 235)" }),
-                }}
+                className={cn(
+                  "absolute top-5 h-0.5 w-16 sm:w-24 md:w-32",
+                  dir === "rtl" ? "right-1/2 translate-x-1/2 mr-8" : "left-1/2 -translate-x-full -ml-8",
+                  step.id <= displayStep ? "bg-blue-600" : "bg-gray-300",
+                )}
               />
             )}
 
-            <div className="relative flex items-center justify-center w-full">
-              {/* Step circle */}
-              <div
-                className={cn(
-                  "relative w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 z-10",
-                  step.id < displayStep
-                    ? "bg-blue-600 text-white shadow-lg scale-110"
-                    : step.id === displayStep
-                    ? "bg-blue-600 text-white shadow-xl ring-4 ring-blue-200 scale-110 animate-pulse"
-                    : "bg-gray-200 text-gray-500"
-                )}
-              >
-                {step.id < displayStep ? (
-                  <CheckIcon className="w-5 h-5" />
-                ) : (
-                  <step.icon className="w-5 h-5" />
-                )}
-              </div>
+            {/* Circle */}
+            <div className="relative z-10">
+              {step.id < displayStep ? (
+                // Completed step
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white font-bold">
+                  <CheckIcon className="h-5 w-5" />
+                </span>
+              ) : step.id === displayStep ? (
+                // Current step
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-900 text-white font-bold text-lg">
+                  {step.id}
+                </span>
+              ) : (
+                // Future step
+                <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-gray-300 bg-white text-gray-400 font-bold text-lg">
+                  {step.id}
+                </span>
+              )}
             </div>
 
-            {/* Step name */}
+            {/* Step name below circle */}
             <span
               className={cn(
-                "mt-3 text-sm font-medium text-center transition-colors duration-300",
-                step.id <= displayStep ? "text-blue-600" : "text-gray-500"
+                "mt-2 text-sm font-medium text-center whitespace-nowrap",
+                step.id === displayStep ? "text-blue-900" : step.id < displayStep ? "text-blue-600" : "text-gray-400",
               )}
             >
               {step.name}

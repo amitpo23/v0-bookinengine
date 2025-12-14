@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       code,
       dateFrom,
       dateTo,
-      hotelId: hotelId
+      hotelId: Number(hotelId),
       adults: adults || 2,
       children: children || [],
     })

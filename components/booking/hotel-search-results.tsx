@@ -311,7 +311,8 @@ function RoomCard({
   }
 
   return (
-    <Card className="overflow-hidden border-2 border-blue-100 shadow-lg hover:shadow-2xl hover:scale-[1.01] transition-all duration-300 ease-in-out bg-gradient-to-br from-white to-blue-50/30">      <div className="flex flex-col lg:flex-row">
+    <Card className="overflow-hidden border-2 border-blue-100 shadow-lg hover:shadow-xl transition-shadow">
+      <div className="flex flex-col lg:flex-row">
         {/* Room Image Gallery - Right side */}
         <div className="relative w-full lg:w-[380px] h-[280px] flex-shrink-0">
           <RoomImageGallery images={hotel.images} roomName={roomName} optionNumber={optionNumber} />
@@ -452,7 +453,7 @@ function RoomCard({
             <Button
               onClick={onSelect}
               disabled={isSelecting || isPreBooking}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-bold rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200">
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-bold rounded-lg shadow-md"
             >
               {isSelecting ? (
                 <>
@@ -591,15 +592,17 @@ export function HotelSearchResults() {
     console.log("[v0] room.roomName:", room.roomName)
     console.log("[v0] room.buyPrice:", room.buyPrice)
 
-    const hotelId = hotel.hotelId
+    const hotelId = typeof hotel.hotelId === "number" ? hotel.hotelId : Number.parseInt(String(hotel.hotelId), 10)
     const roomCode = room.code
 
-    if (roomCode && roomCode.length < 5) {      console.error("[v0] Invalid room code:", roomCode)
+    if (!roomCode || roomCode.length < 5) {
+      console.error("[v0] Invalid room code:", roomCode)
       setPreBookError("קוד חדר לא תקין - נא לנסות שוב")
       return
     }
 
-    if (!hotelId) {      console.error("[v0] Invalid hotelId:", hotelId)
+    if (!hotelId || hotelId === 0) {
+      console.error("[v0] Invalid hotelId:", hotelId)
       setPreBookError("מזהה מלון לא תקין - נא לנסות שוב")
       return
     }

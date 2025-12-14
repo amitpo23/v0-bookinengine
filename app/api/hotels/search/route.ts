@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       dateTo,
       hotelName: hotelName || undefined,
       city: city || undefined,
-      adults: Number(adults) || 2,
+      adults: adults || 2,
       children: children || [],
       stars: stars ? Number(stars) : undefined,
       limit: limit ? Number(limit) : 20,

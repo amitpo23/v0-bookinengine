@@ -451,51 +451,227 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Templates Preview Section */}
-      <section className="py-16 px-6 bg-gradient-to-b from-background to-muted/30">
+      {/* Templates Preview Section - Enhanced */}
+      <section className="py-20 px-6 bg-gradient-to-b from-background via-muted/20 to-background">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <Badge className="mb-4" variant="outline">
-              חדש!
+          <div className="text-center mb-16">
+            <Badge className="mb-4 text-lg px-4 py-1" variant="outline">
+              {locale === "he" ? "טמפלטים למנוע הזמנות" : "Booking Engine Templates"}
             </Badge>
-            <h2 className="text-3xl font-bold mb-4">{locale === "he" ? "גלריית טמפלטים" : "Template Gallery"}</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              {locale === "he" ? "גלריית עיצובים מקצועיים" : "Professional Design Gallery"}
+            </h2>
+            <p className="text-muted-foreground text-xl max-w-3xl mx-auto leading-relaxed">
               {locale === "he"
-                ? "בחר מתוך מגוון עיצובים מקצועיים למנוע ההזמנות שלך"
-                : "Choose from a variety of professional designs for your booking engine"}
+                ? "בחרו מתוך 4 עיצובים מקצועיים שונים למנוע ההזמנות שלכם. כל טמפלט מחובר ל-API ומוכן לשימוש מיידי"
+                : "Choose from 4 different professional designs for your booking engine. All templates are API-connected and ready to use"}
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {/* Template Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            {/* NARA Style Template */}
             <Link href="/templates/nara" className="group">
-              <div className="aspect-video rounded-xl bg-gradient-to-br from-teal-500 to-teal-700 p-4 flex items-end shadow-lg hover:shadow-xl transition-shadow">
-                <span className="text-white font-bold">NARA Style</span>
-              </div>
+              <Card className="overflow-hidden border-2 hover:border-teal-500 transition-all duration-300 hover:shadow-2xl">
+                <div className="relative h-64 bg-gradient-to-br from-teal-50 to-teal-100 overflow-hidden">
+                  <div className="absolute inset-0 bg-[url('/nara-hotel-booking-modern.jpg')] bg-cover bg-center opacity-90 group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-teal-900/80 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <Badge className="mb-2 bg-teal-500 text-white border-none">מקצועי</Badge>
+                    <h3 className="text-2xl font-bold text-white mb-1">NARA Style</h3>
+                    <p className="text-teal-100 text-sm">עיצוב מקצועי עם השוואת מחירים</p>
+                  </div>
+                </div>
+                <CardContent className="p-6">
+                  <div className="space-y-3 mb-4">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckIcon />
+                      <span>Price comparison from Booking.com and Priceline</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckIcon />
+                      <span>Price calendar for every day</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckIcon />
+                      <span>Carousel of add-ons and discounts</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckIcon />
+                      <span>Side panel with booking summary</span>
+                    </div>
+                  </div>
+                  <Button className="w-full bg-teal-500 hover:bg-teal-600 text-white group-hover:translate-x-1 transition-transform">
+                    {locale === "he" ? "צפה ב демо" : "View Demo"}
+                    <Arrow />
+                  </Button>
+                </CardContent>
+              </Card>
             </Link>
+
+            {/* Modern Dark Template */}
             <Link href="/templates/modern-dark" className="group">
-              <div className="aspect-video rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 p-4 flex items-end shadow-lg hover:shadow-xl transition-shadow">
-                <span className="text-white font-bold">Modern Dark</span>
-              </div>
+              <Card className="overflow-hidden border-2 hover:border-cyan-500 transition-all duration-300 hover:shadow-2xl">
+                <div className="relative h-64 bg-gradient-to-br from-zinc-900 to-zinc-950 overflow-hidden">
+                  <div className="absolute inset-0 bg-[url('/dark-modern-hotel-luxury.jpg')] bg-cover bg-center opacity-80 group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <Badge className="mb-2 bg-cyan-500 text-zinc-950 border-none">מודרני</Badge>
+                    <h3 className="text-2xl font-bold text-white mb-1">Modern Dark</h3>
+                    <p className="text-zinc-300 text-sm">Dark and minimalist design</p>
+                  </div>
+                </div>
+                <CardContent className="p-6">
+                  <div className="space-y-3 mb-4">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckIcon />
+                      <span>Dark color scheme with accents in cyan</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckIcon />
+                      <span>Smooth and modern animations</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckIcon />
+                      <span>Minimalist and clean design</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckIcon />
+                      <span>Suitable for premium brands</span>
+                    </div>
+                  </div>
+                  <Button className="w-full bg-cyan-500 hover:bg-cyan-600 text-zinc-950 group-hover:translate-x-1 transition-transform">
+                    {locale === "he" ? "צפה ב демо" : "View Demo"}
+                    <Arrow />
+                  </Button>
+                </CardContent>
+              </Card>
             </Link>
+
+            {/* Luxury Template */}
             <Link href="/templates/luxury" className="group">
-              <div className="aspect-video rounded-xl bg-gradient-to-br from-amber-600 to-amber-800 p-4 flex items-end shadow-lg hover:shadow-xl transition-shadow">
-                <span className="text-white font-bold">Luxury</span>
-              </div>
+              <Card className="overflow-hidden border-2 hover:border-amber-500 transition-all duration-300 hover:shadow-2xl">
+                <div className="relative h-64 bg-gradient-to-br from-stone-100 to-stone-200 overflow-hidden">
+                  <div className="absolute inset-0 bg-[url('/luxury-boutique-hotel-elegant.jpg')] bg-cover bg-center opacity-90 group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <Badge className="mb-2 bg-amber-600 text-white border-none">יוקרתי</Badge>
+                    <h3 className="text-2xl font-bold text-white mb-1 font-serif">Luxury Boutique</h3>
+                    <p className="text-stone-100 text-sm">Elegant and luxurious design</p>
+                  </div>
+                </div>
+                <CardContent className="p-6">
+                  <div className="space-y-3 mb-4">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckIcon />
+                      <span>Elegant serif typography</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckIcon />
+                      <span>Gold and stone accents</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckIcon />
+                      <span>Suitable for luxury boutique hotels</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckIcon />
+                      <span>Rich user experience</span>
+                    </div>
+                  </div>
+                  <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white group-hover:translate-x-1 transition-transform">
+                    {locale === "he" ? "צפה ב демо" : "View Demo"}
+                    <Arrow />
+                  </Button>
+                </CardContent>
+              </Card>
             </Link>
+
+            {/* Family Resort Template */}
             <Link href="/templates/family" className="group">
-              <div className="aspect-video rounded-xl bg-gradient-to-br from-orange-400 to-pink-500 p-4 flex items-end shadow-lg hover:shadow-xl transition-shadow">
-                <span className="text-white font-bold">Family</span>
-              </div>
+              <Card className="overflow-hidden border-2 hover:border-orange-500 transition-all duration-300 hover:shadow-2xl">
+                <div className="relative h-64 bg-gradient-to-br from-orange-50 to-pink-50 overflow-hidden">
+                  <div className="absolute inset-0 bg-[url('/family-resort-pool-kids-colorful.jpg')] bg-cover bg-center opacity-90 group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-orange-900/80 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <Badge className="mb-2 bg-orange-500 text-white border-none">משפחתי</Badge>
+                    <h3 className="text-2xl font-bold text-white mb-1">Family Resort</h3>
+                    <p className="text-orange-100 text-sm">Colorful and cheerful design</p>
+                  </div>
+                </div>
+                <CardContent className="p-6">
+                  <div className="space-y-3 mb-4">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckIcon />
+                      <span>Colorful and cheerful gradients</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckIcon />
+                      <span>Cute and friendly icons</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckIcon />
+                      <span>Suitable for families with children</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckIcon />
+                      <span>Simple and easy-to-use interface</span>
+                    </div>
+                  </div>
+                  <Button className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white group-hover:translate-x-1 transition-transform">
+                    {locale === "he" ? "צפה ב демо" : "View Demo"}
+                    <Arrow />
+                  </Button>
+                </CardContent>
+              </Card>
             </Link>
           </div>
 
+          {/* View All Templates CTA */}
           <div className="text-center">
             <Link href="/templates">
-              <Button size="lg" variant="outline">
-                {locale === "he" ? "צפה בכל הטמפלטים" : "View All Templates"}
-                <Arrow />
+              <Button size="lg" variant="outline" className="text-lg px-8 py-6 group bg-transparent">
+                {locale === "he" ? "צפה בכל הטמפלטים בגלריה" : "View Full Template Gallery"}
+                <Arrow className="group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
+          </div>
+
+          {/* Template Features Info */}
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="text-center p-6 border-none bg-gradient-to-br from-primary/5 to-primary/10">
+              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                <ZapIcon />
+              </div>
+              <h3 className="font-bold text-lg mb-2">{locale === "he" ? "מחובר ל-API" : "API Connected"}</h3>
+              <p className="text-muted-foreground text-sm">
+                {locale === "he"
+                  ? "כל הטמפלטים מחוברים ל-Medici API עם תהליך הזמנה מלא"
+                  : "All templates connected to Medici API with full booking flow"}
+              </p>
+            </Card>
+            <Card className="text-center p-6 border-none bg-gradient-to-br from-primary/5 to-primary/10">
+              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                <StarIcon />
+              </div>
+              <h3 className="font-bold text-lg mb-2">{locale === "he" ? "מותאם אישית" : "Customizable"}</h3>
+              <p className="text-muted-foreground text-sm">
+                {locale === "he"
+                  ? "התאם צבעים, גופנים ועיצוב למותג שלך"
+                  : "Customize colors, fonts and design for your brand"}
+              </p>
+            </Card>
+            <Card className="text-center p-6 border-none bg-gradient-to-br from-primary/5 to-primary/10">
+              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                <TemplatesIcon />
+              </div>
+              <h3 className="font-bold text-lg mb-2">{locale === "he" ? "מוכן לשימוש" : "Ready to Use"}</h3>
+              <p className="text-muted-foreground text-sm">
+                {locale === "he"
+                  ? "כל טמפלט כולל חיפוש, בחירת חדר, פרטי אורח ותשלום"
+                  : "Each template includes search, room selection, guest details and payment"}
+              </p>
+            </Card>
           </div>
         </div>
       </section>

@@ -453,7 +453,7 @@ function RoomCard({
             <Button
               onClick={onSelect}
               disabled={isSelecting || isPreBooking}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-bold rounded-lg shadow- hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200">
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-bold rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200">
             >
               {isSelecting ? (
                 <>

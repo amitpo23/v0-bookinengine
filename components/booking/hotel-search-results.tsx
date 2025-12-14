@@ -311,8 +311,7 @@ function RoomCard({
   }
 
   return (
-    <Card className="overflow-hidden border-2 border-blue-100overflow-hidden border-2 border-blue-100 shadow-lg hover:shadow-2xl hover:scale-[1.01] transition-all duration-300 ease-in-out bg-gradient-to-br from-white to-blue-50/30">
-      <div className="flex flex-col lg:flex-row">
+    <Card className="overflow-hidden border-2 border-blue-100 shadow-lg hover:shadow-2xl hover:scale-[1.01] transition-all duration-300 ease-in-out bg-gradient-to-br from-white to-blue-50/30">      <div className="flex flex-col lg:flex-row">
         {/* Room Image Gallery - Right side */}
         <div className="relative w-full lg:w-[380px] h-[280px] flex-shrink-0">
           <RoomImageGallery images={hotel.images} roomName={roomName} optionNumber={optionNumber} />

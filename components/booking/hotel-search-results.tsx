@@ -311,7 +311,7 @@ function RoomCard({
   }
 
   return (
-    <Card className="overflow-hidden border-2 border-blue-100 shadow-lg hover:shadow-xl transition-shadow">
+    <Card className="overflow-hidden border-2 border-blue-100overflow-hidden border-2 border-blue-100 shadow-lg hover:shadow-2xl hover:scale-[1.01] transition-all duration-300 ease-in-out bg-gradient-to-br from-white to-blue-50/30">
       <div className="flex flex-col lg:flex-row">
         {/* Room Image Gallery - Right side */}
         <div className="relative w-full lg:w-[380px] h-[280px] flex-shrink-0">
@@ -453,7 +453,7 @@ function RoomCard({
             <Button
               onClick={onSelect}
               disabled={isSelecting || isPreBooking}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-bold rounded-lg shadow-md"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-bold rounded-lg shadow- hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200">
             >
               {isSelecting ? (
                 <>

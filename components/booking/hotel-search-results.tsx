@@ -591,7 +591,7 @@ export function HotelSearchResults() {
     console.log("[v0] room.roomName:", room.roomName)
     console.log("[v0] room.buyPrice:", room.buyPrice)
 
-    const hotelId = typeof hotel.hotelId === "number" ? hotel.hotelId : Number.parseInt(String(hotel.hotelId), 10)
+    const hotelId = hotel.hotelId
     const roomCode = room.code
 
     if (roomCode && roomCode.length < 5) {      console.error("[v0] Invalid room code:", roomCode)
@@ -599,8 +599,7 @@ export function HotelSearchResults() {
       return
     }
 
-    if (!hotelId || hotelId === 0) {
-      console.error("[v0] Invalid hotelId:", hotelId)
+    if (!hotelId) {      console.error("[v0] Invalid hotelId:", hotelId)
       setPreBookError("מזהה מלון לא תקין - נא לנסות שוב")
       return
     }

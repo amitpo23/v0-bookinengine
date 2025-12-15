@@ -181,7 +181,6 @@ function BookingWidgetContent() {
   const privacyText = locale === "he" ? "מדיניות פרטיות" : "Privacy Policy"
   const contactText = locale === "he" ? "צור קשר" : "Contact Us"
   const rightsText = locale === "he" ? "כל הזכויות שמורות" : "All rights reserved"
-  const poweredByText = locale === "he" ? "מופעל על ידי" : "Powered by"
 
   return (
     <div className="min-h-screen bg-background" dir={dir}>
@@ -196,7 +195,6 @@ function BookingWidgetContent() {
                 <h1 className="font-bold text-xl text-foreground">
                   {locale === "he" ? "מנוע הזמנות" : "Booking Engine"}
                 </h1>
-                <span className="text-sm text-muted-foreground">{poweredByText} Medici Hotels</span>
               </div>
             </div>
             <div className="flex items-center gap-3">

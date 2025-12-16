@@ -596,12 +596,7 @@ export function HotelSearchResults() {
   // Generate room code from available data since room.code may be invalid
   const roomCode = room.code && room.code.length > 5 ? room.code : `${hotel.hotelId}-${room.roomId}-${room.boardId}-${search.checkIn}-${search.checkOut}`
     
-    if (!hotelId || hotelId === 0) {
-      console.error("[v0] Invalid hotelId:", hotelId)
-      setPreBookError("מזהה מלון לא תקין - נא לנסות שוב")
-      return
-    }
-
+    
     setLoadingRoomId(`${room.roomId}-${room.boardId}`)
     setIsPreBooking(true)
     setPreBookError(null)
@@ -614,8 +609,7 @@ export function HotelSearchResults() {
         code: roomCode,
         dateFrom,
         dateTo,
-        hotelId: hotelId,
-        adults: search.adults,
+      hotelId: hotel.hotelId,        adults: search.adults,
         children: search.childrenAges || [],
       }
 

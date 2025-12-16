@@ -593,9 +593,13 @@ export function HotelSearchResults() {
     console.log("[v0] room.buyPrice:", room.buyPrice)
 
     const hotelId = typeof hotel.hotelId === "number" ? hotel.hotelId : Number.parseInt(String(hotel.hotelId), 10)
-  // Generate room code from available data since room.code may be invalid
-  const roomCode = room.code && room.code.length > 5 ? room.code : `${hotel.hotelId}-${room.roomId}-${room.boardId}-${search.checkIn}-${search.checkOut}`
-    
+    // Use the booking code directly from the search API - it contains all search parameters
+    if (!room.code) {
+      console.error("[v0] room.code is missing:", room)
+      setPreBookError("שגיאה: קוד חדר חסר - נא לנסות שוב")
+      return
+    }
+    const roomCode = room.code
     
     setLoadingRoomId(`${room.roomId}-${room.boardId}`)
     setIsPreBooking(true)

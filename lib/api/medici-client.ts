@@ -414,7 +414,7 @@ class MediciApiClient {
         for (const codeField of possibleCodeFields) {
           if (codeField && typeof codeField === "string" && codeField.length > 5) {
             roomCode = codeField
-            console.log(`[v0] Found valid room code: ${roomCode.substring(0, 50)}...`)
+            console.log(`[v0] ✅ Found valid room code: ${roomCode.substring(0, 50)}...`)
             break
           }
         }
@@ -427,13 +427,26 @@ class MediciApiClient {
           else if (roomItem.booking?.code) roomCode = roomItem.booking.code
         }
 
-        console.log(`[v0] Final room code for ${roomItem.name || "unnamed"}: ${roomCode}`)
+        if (!roomCode) {
+          console.error(`[v0] ❌ WARNING: No room code found for room ${roomItem.name || "unnamed"}!`)
+          console.error(`[v0] This room will not be bookable. Check API response format.`)
+          console.log(`[v0] Available room data keys:`, Object.keys(roomItem))
+
+          // As a last resort, try to use the entire roomItem as JSON if it contains the data
+          // This is a fallback and may not work with all providers
+          if (roomItem.code === undefined && Object.keys(roomItem).length > 0) {
+            console.log(`[v0] Attempting to use roomItem data as fallback code`)
+            // Don't set roomCode here - we want to leave it empty to catch this in booking
+          }
+        } else {
+          console.log(`[v0] ✅ Final room code for ${roomItem.name || "unnamed"}: ${roomCode.substring(0, 50)}...`)
+        }
 
         const price = extractPriceFromRoom(roomItem)
         console.log(`[v0] Extracted price: ${price}`)
 
         hotel.rooms.push({
-          code: roomCode,
+          code: roomCode || "", // Store empty string if no code found - will be caught in booking validation
           roomId: String(roomItem.id || roomItem.roomId || `${hotel.hotelId}-${hotel.rooms.length + 1}`),
           roomName: roomItem.name || roomItem.roomName || "Standard Room",
           roomType: roomItem.category || roomItem.roomType || "standard",

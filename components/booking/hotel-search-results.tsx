@@ -450,20 +450,26 @@ function RoomCard({
           {/* Book Now Button */}
           <div className="p-4 flex items-center justify-between bg-white">
             <div className="text-xs text-gray-500">{texts.priceAfterDiscount}</div>
-            <Button
-              onClick={onSelect}
-              disabled={isSelecting || isPreBooking}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-bold rounded-lg shadow-md"
-            >
-              {isSelecting ? (
-                <>
-                  <LoaderIcon className="h-5 w-5 mr-2 animate-spin" />
-                  {texts.booking}
-                </>
-              ) : (
-                texts.bookNow
-              )}
-            </Button>
+            {!room.code || room.code.length < 5 ? (
+              <div className="text-red-600 text-sm font-medium">
+                {locale === "he" ? "חדר זה אינו זמין כרגע" : "Room currently unavailable"}
+              </div>
+            ) : (
+              <Button
+                onClick={onSelect}
+                disabled={isSelecting || isPreBooking}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-bold rounded-lg shadow-md"
+              >
+                {isSelecting ? (
+                  <>
+                    <LoaderIcon className="h-5 w-5 mr-2 animate-spin" />
+                    {texts.booking}
+                  </>
+                ) : (
+                  texts.bookNow
+                )}
+              </Button>
+            )}
           </div>
 
           {/* More Info Link */}
@@ -591,15 +597,26 @@ export function HotelSearchResults() {
     console.log("[v0] room.code:", room.code, "length:", room.code?.length)
     console.log("[v0] room.roomName:", room.roomName)
     console.log("[v0] room.buyPrice:", room.buyPrice)
+    console.log("[v0] Full room object:", JSON.stringify(room, null, 2))
+    console.log("[v0] Search params:", {
+      checkIn: search.checkIn,
+      checkOut: search.checkOut,
+      adults: search.adults,
+      children: search.childrenAges,
+    })
 
     const hotelId = typeof hotel.hotelId === "number" ? hotel.hotelId : Number.parseInt(String(hotel.hotelId), 10)
+
     // Use the booking code directly from the search API - it contains all search parameters
-    if (!room.code) {
-      console.error("[v0] room.code is missing:", room)
-      setPreBookError("שגיאה: קוד חדר חסר - נא לנסות שוב")
+    if (!room.code || room.code.length < 5) {
+      console.error("[v0] ❌ room.code is missing or invalid!")
+      console.error("[v0] Full room object:", room)
+      console.error("[v0] This means the search API didn't return a valid booking code")
+      setPreBookError("שגיאה: קוד הזמנה חסר מהשרת. נא לבצע חיפוש מחדש ולנסות שוב.")
       return
     }
     const roomCode = room.code
+    console.log("[v0] ✅ Using room code:", roomCode.substring(0, 50) + "...")
     
     setLoadingRoomId(`${room.roomId}-${room.boardId}`)
     setIsPreBooking(true)

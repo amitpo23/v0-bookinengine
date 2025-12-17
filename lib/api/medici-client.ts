@@ -5,13 +5,17 @@
 const MEDICI_BASE_URL = process.env.MEDICI_BASE_URL || "https://medici-backend.azurewebsites.net"
 const MEDICI_IMAGES_BASE = "https://medici-images.azurewebsites.net/images/"
 
-// CRITICAL: Token must be set in environment variables (.env.local)
+// CRITICAL: Token must be set in environment variables
+// In production (Vercel), add MEDICI_TOKEN to Environment Variables
 const MEDICI_TOKEN = process.env.MEDICI_TOKEN
 
-if (!MEDICI_TOKEN) {
-  throw new Error(
-    "❌ MEDICI_TOKEN environment variable is not set. Please add it to your .env.local file."
-  )
+// Warn if not set (but don't throw during build time)
+if (!MEDICI_TOKEN && typeof window === "undefined") {
+  if (process.env.NODE_ENV === "production") {
+    console.error("⚠️  MEDICI_TOKEN not set in production! Add it to Vercel Environment Variables.")
+  } else {
+    console.warn("⚠️  MEDICI_TOKEN not set. Add it to .env.local for local development.")
+  }
 }
 
 // =====================

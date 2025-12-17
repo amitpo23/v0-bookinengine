@@ -6,8 +6,11 @@ const MEDICI_API_BASE = process.env.MEDICI_BASE_URL || "https://medici-backend.a
 const MEDICI_IMAGES_BASE = "https://cdn.medicihotels.com/images/"
 const MEDICI_TOKEN = process.env.MEDICI_TOKEN
 
-if (!MEDICI_TOKEN) {
-  throw new Error("❌ MEDICI_TOKEN environment variable is not set")
+// Warn if not set but don't throw during build
+if (!MEDICI_TOKEN && typeof window === "undefined") {
+  if (process.env.NODE_ENV === "production") {
+    console.error("⚠️  MEDICI_TOKEN not set! Add to Vercel Environment Variables.")
+  }
 }
 
 const DEFAULT_HOTEL_NAME = "Dizengoff Inn"

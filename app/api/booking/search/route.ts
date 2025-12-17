@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { mediciApi } from "@/lib/api/medici-client"
+import { apiClient } from "@/lib/api/api-client"
 import { BookingSearchSchema } from "@/lib/validation/schemas"
 import { logger } from "@/lib/logger"
 import { z } from "zod"
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     const results = await cache.getOrSet(
       cacheKey,
       () =>
-        mediciApi.searchHotels({
+        apiClient.searchHotels({
           dateFrom: validated.dateFrom,
           dateTo: validated.dateTo,
           hotelName: validated.hotelName,

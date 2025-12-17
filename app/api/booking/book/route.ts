@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { mediciApi } from "@/lib/api/medici-client"
+import { apiClient } from "@/lib/api/api-client"
 import { BookingSchema } from "@/lib/validation/schemas"
 import { logger } from "@/lib/logger"
 import { z } from "zod"
@@ -30,13 +30,13 @@ export async function POST(request: NextRequest) {
     // Validate input with Zod
     const validated = BookingSchema.parse(body)
 
-    logger.debug("Calling mediciApi.book", {
+    logger.debug("Calling apiClient.book", {
       hotelId: validated.hotelId,
       preBookId: validated.preBookId,
       customerName: `${validated.customer.firstName} ${validated.customer.lastName}`,
     })
 
-    const result = await mediciApi.book({
+    const result = await apiClient.book({
       code: validated.code,
       token: validated.token,
       preBookId: validated.preBookId,

@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { mediciApi } from "@/lib/api/medici-client"
+import { apiClient } from "@/lib/api/api-client"
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "bookingId is required" }, { status: 400 })
     }
 
-    const result = await mediciApi.cancelBooking(Number(bookingId), reason)
+    const result = await apiClient.cancelRoom({ prebookId: Number(bookingId) })
 
     if (!result.success) {
       return NextResponse.json({ error: result.error || "Cancellation failed" }, { status: 400 })

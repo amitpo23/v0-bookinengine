@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { mediciApi } from "@/lib/api/medici-client"
+import { apiClient } from "@/lib/api/api-client"
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "prebookId is required" }, { status: 400 })
     }
 
-    const result = await mediciApi.cancelRoom(Number.parseInt(prebookId))
+    const result = await apiClient.cancelRoom({ prebookId: Number.parseInt(prebookId) })
 
     if (!result.success) {
       return NextResponse.json({ error: result.error || "Failed to cancel room" }, { status: 400 })

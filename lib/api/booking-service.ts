@@ -1,5 +1,6 @@
 // Booking Service - Handles the complete 4-step booking workflow
-import { mediciApi, type SearchRoomResult, type BookingResult } from "./medici-client"
+import { apiClient } from "./api-client"
+import type { SearchRoomResult, BookingResult } from "./medici-client"
 
 export interface BookingFlowState {
   step: "search" | "prebook" | "book" | "confirmed" | "error"
@@ -38,7 +39,7 @@ export interface BookingRequest {
 class BookingService {
   // Step 1: Search for available rooms
   async search(params: BookingRequest): Promise<SearchRoomResult[]> {
-    return await mediciApi.searchHotels({
+    return await apiClient.searchHotels({
       dateFrom: params.dateFrom,
       dateTo: params.dateTo,
       hotelName: params.hotelName,
@@ -57,7 +58,7 @@ class BookingService {
     adults: number,
     children?: number[],
   ): Promise<{ token: string; priceConfirmed: number } | { error: string }> {
-    const result = await mediciApi.preBook({
+    const result = await apiClient.preBook({
       code: room.code,
       dateFrom,
       dateTo,
@@ -86,7 +87,7 @@ class BookingService {
     children: number[],
     guest: GuestDetails,
   ): Promise<BookingResult> {
-    return await mediciApi.book({
+    return await apiClient.book({
       code: room.code,
       token,
       searchRequest: {
@@ -102,7 +103,7 @@ class BookingService {
 
   // Step 4: Cancel booking (if needed)
   async cancel(bookingId: number, reason?: string): Promise<{ success: boolean; error?: string }> {
-    return await mediciApi.cancelBooking(bookingId, reason)
+    return await apiClient.cancelRoom({ prebookId: bookingId })
   }
 
   // Full booking flow in one call

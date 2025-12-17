@@ -3,9 +3,19 @@ import { mediciApi } from "@/lib/api/medici-client"
 import { PreBookSchema } from "@/lib/validation/schemas"
 import { logger } from "@/lib/logger"
 import { z } from "zod"
+import { applyRateLimit, RateLimitConfig } from "@/lib/rate-limit"
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
+
+  // Apply rate limiting
+  const rateLimitResult = await applyRateLimit(request, RateLimitConfig.prebook)
+  if (!rateLimitResult.success) {
+    logger.warn("Rate limit exceeded for prebook", {
+      path: "/api/booking/prebook",
+    })
+    return rateLimitResult.response
+  }
 
   try {
     const body = await request.json()

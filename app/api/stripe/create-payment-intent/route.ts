@@ -3,6 +3,7 @@ import Stripe from "stripe"
 import { PaymentIntentSchema } from "@/lib/validation/schemas"
 import { logger } from "@/lib/logger"
 import { z } from "zod"
+import { applyRateLimit, RateLimitConfig } from "@/lib/rate-limit"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-04-30.basil",
@@ -10,6 +11,15 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: Request) {
   const startTime = Date.now()
+
+  // Apply rate limiting - strict for payments
+  const rateLimitResult = await applyRateLimit(request, RateLimitConfig.payment)
+  if (!rateLimitResult.success) {
+    logger.warn("Rate limit exceeded for payment", {
+      path: "/api/stripe/create-payment-intent",
+    })
+    return rateLimitResult.response
+  }
 
   try {
     const body = await request.json()

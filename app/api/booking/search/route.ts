@@ -3,9 +3,20 @@ import { mediciApi } from "@/lib/api/medici-client"
 import { BookingSearchSchema } from "@/lib/validation/schemas"
 import { logger } from "@/lib/logger"
 import { z } from "zod"
+import { applyRateLimit, RateLimitConfig } from "@/lib/rate-limit"
+import { cache, createSearchCacheKey, CacheConfig } from "@/lib/cache"
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
+
+  // Apply rate limiting
+  const rateLimitResult = await applyRateLimit(request, RateLimitConfig.search)
+  if (!rateLimitResult.success) {
+    logger.warn("Rate limit exceeded for search", {
+      path: "/api/booking/search",
+    })
+    return rateLimitResult.response
+  }
 
   try {
     const body = await request.json()
@@ -20,16 +31,32 @@ export async function POST(request: NextRequest) {
     // Validate input with Zod
     const validated = BookingSearchSchema.parse(body)
 
-    const results = await mediciApi.searchHotels({
+    // Create cache key from search parameters
+    const cacheKey = createSearchCacheKey({
       dateFrom: validated.dateFrom,
       dateTo: validated.dateTo,
-      hotelName: validated.hotelName,
       city: validated.city,
+      hotelName: validated.hotelName,
       adults: validated.adults,
       children: validated.children,
-      stars: validated.stars || undefined,
-      limit: validated.limit || 50,
     })
+
+    // Try to get from cache or fetch and cache
+    const results = await cache.getOrSet(
+      cacheKey,
+      () =>
+        mediciApi.searchHotels({
+          dateFrom: validated.dateFrom,
+          dateTo: validated.dateTo,
+          hotelName: validated.hotelName,
+          city: validated.city,
+          adults: validated.adults,
+          children: validated.children,
+          stars: validated.stars || undefined,
+          limit: validated.limit || 50,
+        }),
+      CacheConfig.search.ttl
+    )
 
     const duration = Date.now() - startTime
     logger.apiResponse("POST", "/api/booking/search", 200, duration)

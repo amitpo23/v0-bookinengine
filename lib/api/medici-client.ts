@@ -398,8 +398,7 @@ class MediciApiClient {
       for (let roomIdx = 0; roomIdx < roomItems.length; roomIdx++) {
         const roomItem = roomItems[roomIdx]
 
-        const possibleCodeFields = [
-          roomItem.code,
+      const possibleCodeFields          = [            
           roomItem.Code,
           roomItem.roomCode,
           roomItem.RoomCode,

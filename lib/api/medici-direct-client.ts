@@ -9,6 +9,21 @@ import { logger } from "@/lib/logger"
 const MEDICI_DIRECT_BASE_URL = "https://medici-backend.azurewebsites.net"
 const MEDICI_BEARER_TOKEN = process.env.MEDICI_BEARER_TOKEN
 
+/**
+ * Custom error class for Medici Direct API errors
+ */
+export class MediciDirectAPIError extends Error {
+  public status: number
+  public response?: any
+
+  constructor(message: string, status: number, response?: any) {
+    super(message)
+    this.name = "MediciDirectAPIError"
+    this.status = status
+    this.response = response
+  }
+}
+
 // Warn if not set but don't throw during build
 if (!MEDICI_BEARER_TOKEN && typeof window === "undefined") {
   if (process.env.NODE_ENV === "production") {
@@ -110,7 +125,11 @@ class MediciDirectClient {
       if (!response.ok) {
         const errorText = await response.text()
         logger.error(`[Medici Direct] API Error: ${response.status}`, new Error(errorText))
-        throw new Error(`Medici Direct API error: ${response.status} - ${errorText}`)
+        throw new MediciDirectAPIError(
+          `Medici Direct API error: ${response.status} - ${errorText}`,
+          response.status,
+          errorText
+        )
       }
 
       const data = await response.json()

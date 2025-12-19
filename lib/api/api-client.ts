@@ -1,14 +1,14 @@
 /**
  * Dual-Layer API Client
- * Primary: MANUS API (if configured)
- * Fallback: Medici Direct API
+ * Primary: Medici Direct API (always used for pricing and bookings)
+ * Fallback: MANUS API (backup if Medici Direct fails)
  *
- * Automatically falls back to Medici Direct on 401, 403, 500 errors from MANUS
+ * Automatically falls back to MANUS on 401, 403, 500 errors from Medici Direct
  */
 
 import { logger } from "@/lib/logger"
 import { manusClient, ManusAPIError } from "./manus-client"
-import { mediciDirectClient } from "./medici-direct-client"
+import { mediciDirectClient, MediciDirectAPIError } from "./medici-direct-client"
 import type { HotelSearchResult } from "./medici-client"
 
 export interface APISearchParams {
@@ -60,10 +60,10 @@ export interface APICancelParams {
 }
 
 /**
- * Check if error should trigger fallback
+ * Check if error should trigger fallback from Medici Direct to MANUS
  */
 function shouldFallback(error: any): boolean {
-  if (error instanceof ManusAPIError) {
+  if (error instanceof MediciDirectAPIError) {
     const status = error.status
     // Fallback on authentication, authorization, or server errors
     return status === 401 || status === 403 || status === 500 || status === 501 || status === 503
@@ -77,64 +77,63 @@ class DualLayerAPIClient {
    */
   async searchHotels(params: APISearchParams): Promise<HotelSearchResult[]> {
     logger.debug("[API Client] Starting search", {
-      primary: manusClient.isConfigured() ? "MANUS" : "None",
-      fallback: mediciDirectClient.isConfigured() ? "Medici Direct" : "None",
+      primary: mediciDirectClient.isConfigured() ? "Medici Direct" : "None",
+      fallback: manusClient.isConfigured() ? "MANUS" : "None",
     })
 
-    // Try MANUS first if configured
-    if (manusClient.isConfigured()) {
+    // Try Medici Direct first (primary)
+    if (mediciDirectClient.isConfigured()) {
       try {
-        logger.info("[API Client] Attempting search via MANUS (primary)")
+        logger.info("[API Client] Attempting search via Medici Direct (primary)")
 
-        const result = await manusClient.searchHotels(params)
+        const pax = [
+          {
+            adults: params.adults || 2,
+            children: params.children || [],
+          },
+        ]
 
-        logger.info("[API Client] ✅ Search successful via MANUS")
+        const result = await mediciDirectClient.searchHotels({
+          dateFrom: params.dateFrom,
+          dateTo: params.dateTo,
+          hotelName: params.hotelName,
+          city: params.city,
+          pax,
+          stars: params.stars,
+          limit: params.limit,
+        })
 
-        // Transform MANUS response to expected format if needed
+        logger.info("[API Client] ✅ Search successful via Medici Direct")
+
         return this.transformSearchResults(result)
       } catch (error) {
         if (shouldFallback(error)) {
-          logger.warn("[API Client] ⚠️  MANUS failed, falling back to Medici Direct", {
+          logger.warn("[API Client] ⚠️  Medici Direct failed, falling back to MANUS", {
             error: error instanceof Error ? error.message : String(error),
-            status: error instanceof ManusAPIError ? error.status : "unknown",
+            status: error instanceof MediciDirectAPIError ? error.status : "unknown",
           })
         } else {
           // Don't fallback for other errors (validation, etc.)
-          logger.error("[API Client] ❌ MANUS search failed (no fallback)", error)
+          logger.error("[API Client] ❌ Medici Direct search failed (no fallback)", error)
           throw error
         }
       }
     }
 
-    // Fallback to Medici Direct
-    if (mediciDirectClient.isConfigured()) {
-      logger.info("[API Client] Using Medici Direct API (fallback)")
+    // Fallback to MANUS
+    if (manusClient.isConfigured()) {
+      logger.info("[API Client] Using MANUS API (fallback)")
 
-      const pax = [
-        {
-          adults: params.adults || 2,
-          children: params.children || [],
-        },
-      ]
+      const result = await manusClient.searchHotels(params)
 
-      const result = await mediciDirectClient.searchHotels({
-        dateFrom: params.dateFrom,
-        dateTo: params.dateTo,
-        hotelName: params.hotelName,
-        city: params.city,
-        pax,
-        stars: params.stars,
-        limit: params.limit,
-      })
-
-      logger.info("[API Client] ✅ Search successful via Medici Direct")
+      logger.info("[API Client] ✅ Search successful via MANUS")
 
       return this.transformSearchResults(result)
     }
 
     // Neither API is configured
     throw new Error(
-      "No API configured. Please set either MANUS_API_KEY or MEDICI_BEARER_TOKEN in environment variables."
+      "No API configured. Please set either MEDICI_BEARER_TOKEN or MANUS_API_KEY in environment variables."
     )
   }
 
@@ -146,35 +145,35 @@ class DualLayerAPIClient {
       hotelId: params.hotelId,
     })
 
-    // Try MANUS first if configured
-    if (manusClient.isConfigured()) {
+    // Try Medici Direct first (primary)
+    if (mediciDirectClient.isConfigured()) {
       try {
-        logger.info("[API Client] Attempting preBook via MANUS (primary)")
+        logger.info("[API Client] Attempting preBook via Medici Direct (primary)")
 
-        const result = await manusClient.preBook(params)
+        const result = await mediciDirectClient.preBook(params)
 
-        logger.info("[API Client] ✅ PreBook successful via MANUS")
+        logger.info("[API Client] ✅ PreBook successful via Medici Direct")
 
         return result
       } catch (error) {
         if (shouldFallback(error)) {
-          logger.warn("[API Client] ⚠️  MANUS preBook failed, falling back to Medici Direct", {
+          logger.warn("[API Client] ⚠️  Medici Direct preBook failed, falling back to MANUS", {
             error: error instanceof Error ? error.message : String(error),
           })
         } else {
-          logger.error("[API Client] ❌ MANUS preBook failed (no fallback)", error)
+          logger.error("[API Client] ❌ Medici Direct preBook failed (no fallback)", error)
           throw error
         }
       }
     }
 
-    // Fallback to Medici Direct
-    if (mediciDirectClient.isConfigured()) {
-      logger.info("[API Client] Using Medici Direct API for preBook (fallback)")
+    // Fallback to MANUS
+    if (manusClient.isConfigured()) {
+      logger.info("[API Client] Using MANUS API for preBook (fallback)")
 
-      const result = await mediciDirectClient.preBook(params)
+      const result = await manusClient.preBook(params)
 
-      logger.info("[API Client] ✅ PreBook successful via Medici Direct")
+      logger.info("[API Client] ✅ PreBook successful via MANUS")
 
       return result
     }
@@ -191,35 +190,35 @@ class DualLayerAPIClient {
       customerEmail: params.customer.email,
     })
 
-    // Try MANUS first if configured
-    if (manusClient.isConfigured()) {
+    // Try Medici Direct first (primary)
+    if (mediciDirectClient.isConfigured()) {
       try {
-        logger.info("[API Client] Attempting booking via MANUS (primary)")
+        logger.info("[API Client] Attempting booking via Medici Direct (primary)")
 
-        const result = await manusClient.book(params)
+        const result = await mediciDirectClient.book(params)
 
-        logger.info("[API Client] ✅ Booking successful via MANUS")
+        logger.info("[API Client] ✅ Booking successful via Medici Direct")
 
         return result
       } catch (error) {
         if (shouldFallback(error)) {
-          logger.warn("[API Client] ⚠️  MANUS booking failed, falling back to Medici Direct", {
+          logger.warn("[API Client] ⚠️  Medici Direct booking failed, falling back to MANUS", {
             error: error instanceof Error ? error.message : String(error),
           })
         } else {
-          logger.error("[API Client] ❌ MANUS booking failed (no fallback)", error)
+          logger.error("[API Client] ❌ Medici Direct booking failed (no fallback)", error)
           throw error
         }
       }
     }
 
-    // Fallback to Medici Direct
-    if (mediciDirectClient.isConfigured()) {
-      logger.info("[API Client] Using Medici Direct API for booking (fallback)")
+    // Fallback to MANUS
+    if (manusClient.isConfigured()) {
+      logger.info("[API Client] Using MANUS API for booking (fallback)")
 
-      const result = await mediciDirectClient.book(params)
+      const result = await manusClient.book(params)
 
-      logger.info("[API Client] ✅ Booking successful via Medici Direct")
+      logger.info("[API Client] ✅ Booking successful via MANUS")
 
       return result
     }
@@ -235,35 +234,35 @@ class DualLayerAPIClient {
       prebookId: params.prebookId,
     })
 
-    // Try MANUS first if configured
-    if (manusClient.isConfigured()) {
+    // Try Medici Direct first (primary)
+    if (mediciDirectClient.isConfigured()) {
       try {
-        logger.info("[API Client] Attempting cancel via MANUS (primary)")
+        logger.info("[API Client] Attempting cancel via Medici Direct (primary)")
 
-        const result = await manusClient.cancelRoom(params.prebookId)
+        const result = await mediciDirectClient.cancelRoom(params)
 
-        logger.info("[API Client] ✅ Cancel successful via MANUS")
+        logger.info("[API Client] ✅ Cancel successful via Medici Direct")
 
         return result
       } catch (error) {
         if (shouldFallback(error)) {
-          logger.warn("[API Client] ⚠️  MANUS cancel failed, falling back to Medici Direct", {
+          logger.warn("[API Client] ⚠️  Medici Direct cancel failed, falling back to MANUS", {
             error: error instanceof Error ? error.message : String(error),
           })
         } else {
-          logger.error("[API Client] ❌ MANUS cancel failed (no fallback)", error)
+          logger.error("[API Client] ❌ Medici Direct cancel failed (no fallback)", error)
           throw error
         }
       }
     }
 
-    // Fallback to Medici Direct
-    if (mediciDirectClient.isConfigured()) {
-      logger.info("[API Client] Using Medici Direct API for cancel (fallback)")
+    // Fallback to MANUS
+    if (manusClient.isConfigured()) {
+      logger.info("[API Client] Using MANUS API for cancel (fallback)")
 
-      const result = await mediciDirectClient.cancelRoom(params)
+      const result = await manusClient.cancelRoom(params.prebookId)
 
-      logger.info("[API Client] ✅ Cancel successful via Medici Direct")
+      logger.info("[API Client] ✅ Cancel successful via MANUS")
 
       return result
     }
@@ -319,12 +318,12 @@ class DualLayerAPIClient {
   } {
     return {
       primary: {
-        name: "MANUS",
-        configured: manusClient.isConfigured(),
-      },
-      fallback: {
         name: "Medici Direct",
         configured: mediciDirectClient.isConfigured(),
+      },
+      fallback: {
+        name: "MANUS",
+        configured: manusClient.isConfigured(),
       },
     }
   }

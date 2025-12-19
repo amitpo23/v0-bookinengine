@@ -2,16 +2,10 @@ import { generateText } from "ai"
 import type { HotelConfig } from "@/types/saas"
 import { getBookingAgentPrompt } from "@/lib/prompts/booking-agent-prompt"
 
-const MEDICI_API_BASE = process.env.MEDICI_BASE_URL || "https://medici-backend.azurewebsites.net"
+const MEDICI_API_BASE = "https://medici-backend.azurewebsites.net"
 const MEDICI_IMAGES_BASE = "https://cdn.medicihotels.com/images/"
-const MEDICI_TOKEN = process.env.MEDICI_TOKEN
-
-// Warn if not set but don't throw during build
-if (!MEDICI_TOKEN && typeof window === "undefined") {
-  if (process.env.NODE_ENV === "production") {
-    console.error("⚠️  MEDICI_TOKEN not set! Add to Vercel Environment Variables.")
-  }
-}
+const MEDICI_TOKEN =
+  "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIyNCIsIm5iZiI6MTc1MjQ3NTYwNCwiZXhwIjoyMDY4MDA4NDA0LCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.eA8EeHx6gGRtGBts4yXAWnK5P0Wl_LQLD1LKobYBV4U"
 
 const DEFAULT_HOTEL_NAME = "Dizengoff Inn"
 

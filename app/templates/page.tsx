@@ -36,7 +36,7 @@ const templates = [
     tags: ["יוקרתי", "בוטיק", "אלגנטי"],
     color: "bg-amber-700",
     href: "/templates/luxury",
-    features: ["טיפוגרפיה Serif יוקרתית", "צבעי זהב ושנהב", "כרטיסי סוויטות מפוארים", "אווירה פרימיום"],
+    features: ["טיפוגרפיה Serif יוקרתית", "צבעי זהב ושנהב", "כרטיסי סוויטות מפוארים", "סביבה פרימיום"],
   },
   {
     id: "family",
@@ -81,14 +81,14 @@ export default function TemplatesPage() {
         <div className="max-w-4xl mx-auto text-center">
           <Badge className="mb-4 gap-1" variant="secondary">
             <Zap className="w-3 h-3" />
-            מחובר ל-Medici API
+            זמין כעת
           </Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
             בחר את הסגנון
             <span className="text-primary"> שמתאים למלון שלך</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            מגוון טמפלטים מעוצבים מראש למנוע ההזמנות שלך. כל טמפלט מחובר ל-API ומוכן לשימוש עם תהליך הזמנה מלא.
+            מגוון טמפלטים מעוצבים מראש למנוע ההזמנות שלך. כל טמפלט מוכן לשימוש עם תהליך הזמנה מלא.
           </p>
           <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
@@ -129,7 +129,7 @@ export default function TemplatesPage() {
                   <div className="absolute top-4 left-4">
                     <Badge className="bg-green-500 text-white border-0">
                       <Zap className="w-3 h-3 ml-1" />
-                      API מחובר
+                      מוכן לשימוש
                     </Badge>
                   </div>
                   <div className="absolute bottom-4 right-4">

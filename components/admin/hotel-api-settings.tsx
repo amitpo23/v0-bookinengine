@@ -49,7 +49,7 @@ export function HotelApiSettings() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <span>חיבור ל-Medici API</span>
+                <span>הגדרות חיבור API</span>
                 <Badge variant={currentHotel.apiSettings.mediciHotelId ? "default" : "secondary"}>
                   {currentHotel.apiSettings.mediciHotelId ? "מחובר" : "לא מחובר"}
                 </Badge>

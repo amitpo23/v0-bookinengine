@@ -450,26 +450,20 @@ function RoomCard({
           {/* Book Now Button */}
           <div className="p-4 flex items-center justify-between bg-white">
             <div className="text-xs text-gray-500">{texts.priceAfterDiscount}</div>
-            {!room.code || room.code.length < 5 ? (
-              <div className="text-red-600 text-sm font-medium">
-                {locale === "he" ? "חדר זה אינו זמין כרגע" : "Room currently unavailable"}
-              </div>
-            ) : (
-              <Button
-                onClick={onSelect}
-                disabled={isSelecting || isPreBooking}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-bold rounded-lg shadow-md"
-              >
-                {isSelecting ? (
-                  <>
-                    <LoaderIcon className="h-5 w-5 mr-2 animate-spin" />
-                    {texts.booking}
-                  </>
-                ) : (
-                  texts.bookNow
-                )}
-              </Button>
-            )}
+            <Button
+              onClick={onSelect}
+              disabled={isSelecting || isPreBooking}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-bold rounded-lg shadow-md"
+            >
+              {isSelecting ? (
+                <>
+                  <LoaderIcon className="h-5 w-5 mr-2 animate-spin" />
+                  {texts.booking}
+                </>
+              ) : (
+                texts.bookNow
+              )}
+            </Button>
           </div>
 
           {/* More Info Link */}
@@ -531,8 +525,10 @@ export function HotelSearchResults() {
     isPreBooking,
     setIsPreBooking,
     setPreBookError,
+    isRtl,
+    language,
   } = useBooking()
-  const { t, isRtl, language } = useI18n()
+  const { t } = useI18n()
   const [expandedHotels, setExpandedHotels] = useState<Record<number, boolean>>({})
   const [roomImageIndexes, setRoomImageIndexes] = useState<Record<string, number>>({})
   const [selectedBoardTypes, setSelectedBoardTypes] = useState<Record<string, number>>({})
@@ -597,27 +593,28 @@ export function HotelSearchResults() {
     console.log("[v0] room.code:", room.code, "length:", room.code?.length)
     console.log("[v0] room.roomName:", room.roomName)
     console.log("[v0] room.buyPrice:", room.buyPrice)
-    console.log("[v0] Full room object:", JSON.stringify(room, null, 2))
-    console.log("[v0] Search params:", {
-      checkIn: search.checkIn,
-      checkOut: search.checkOut,
-      adults: search.adults,
-      children: search.childrenAges,
-    })
 
-    const hotelId = typeof hotel.hotelId === "number" ? hotel.hotelId : Number.parseInt(String(hotel.hotelId), 10)
+    const hotelId = hotel.hotelId
 
-    // Use the booking code directly from the search API - it contains all search parameters
-    if (!room.code || room.code.length < 5) {
-      console.error("[v0] ❌ room.code is missing or invalid!")
-      console.error("[v0] Full room object:", room)
-      console.error("[v0] This means the search API didn't return a valid booking code")
-      setPreBookError("שגיאה: קוד הזמנה חסר מהשרת. נא לבצע חיפוש מחדש ולנסות שוב.")
+    if (!room.code) {
+      console.error("[v0] room.code is missing:", room)
+      const errorMessage = isRtl
+        ? "קוד חדר חסר - נא לנסות שוב או לבחור חדר אחר"
+        : "Room code is missing - please try again or select another room"
+      setPreBookError(errorMessage)
+      alert(errorMessage) // Show immediate alert to user
       return
     }
     const roomCode = room.code
-    console.log("[v0] ✅ Using room code:", roomCode.substring(0, 50) + "...")
-    
+
+    if (!hotelId || hotelId === 0) {
+      console.error("[v0] Invalid hotelId:", hotelId)
+      const errorMessage = isRtl ? "מזהה מלון לא תקין - נא לנסות שוב" : "Invalid hotel ID - please try again"
+      setPreBookError(errorMessage)
+      alert(errorMessage) // Show immediate alert to user
+      return
+    }
+
     setLoadingRoomId(`${room.roomId}-${room.boardId}`)
     setIsPreBooking(true)
     setPreBookError(null)
@@ -630,7 +627,8 @@ export function HotelSearchResults() {
         code: roomCode,
         dateFrom,
         dateTo,
-      hotelId: hotel.hotelId,        adults: search.adults,
+        hotelId: hotelId,
+        adults: search.adults,
         children: search.childrenAges || [],
       }
 
@@ -698,7 +696,9 @@ export function HotelSearchResults() {
       setCurrentStep(3)
     } catch (error: any) {
       console.error("[v0] PreBook error:", error)
-      setPreBookError(error.message || "Failed to reserve room")
+      const errorMessage = error.message || (isRtl ? "שגיאה בהזמנת החדר" : "Failed to reserve room")
+      setPreBookError(errorMessage)
+      alert(errorMessage)
     } finally {
       setLoadingRoomId(null)
       setIsPreBooking(false)

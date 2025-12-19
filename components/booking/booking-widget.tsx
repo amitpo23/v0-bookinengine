@@ -126,36 +126,48 @@ function BookingWidgetContent() {
 
     try {
       if (apiBookingData?.prebookToken) {
-        // Complete booking via Medici API
+        console.log("[v0] Starting Book with data:", apiBookingData)
+
         const response = await fetch("/api/booking/book", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            token: apiBookingData.prebookToken,
             code: apiBookingData.code,
+            token: apiBookingData.prebookToken,
+            preBookId: apiBookingData.preBookId,
+            dateFrom: apiBookingData.dateFrom,
+            dateTo: apiBookingData.dateTo,
             hotelId: apiBookingData.hotelId,
-            dateFrom: apiBookingData.searchContext?.dateFrom,
-            dateTo: apiBookingData.searchContext?.dateTo,
-            adults: apiBookingData.searchContext?.adults || 2,
-            guestFirstName: guestDetails?.firstName || "Guest",
-            guestLastName: guestDetails?.lastName || "User",
-            guestEmail: guestDetails?.email || "guest@example.com",
-            guestPhone: guestDetails?.phone || "",
-            paymentId,
+            adults: apiBookingData.adults || 2,
+            children: apiBookingData.children || [],
+            customer: {
+              title: guestDetails?.title || "MR",
+              firstName: guestDetails?.firstName || "Guest",
+              lastName: guestDetails?.lastName || "User",
+              email: guestDetails?.email || "guest@example.com",
+              phone: guestDetails?.phone || "",
+              country: "IL",
+              city: "",
+              address: "",
+              zip: "",
+            },
+            voucherEmail: guestDetails?.email || "guest@example.com",
+            agencyReference: paymentId,
           }),
         })
 
         const data = await response.json()
+        console.log("[v0] Book response:", data)
 
         if (!response.ok) {
           throw new Error(data.error || "Booking failed")
         }
 
         setBookingConfirmation({
-          confirmationCode: data.confirmationCode || `BK${Date.now().toString(36).toUpperCase()}`,
+          confirmationCode: data.bookingId || `BK${Date.now().toString(36).toUpperCase()}`,
           bookingId: data.bookingId || paymentId,
         })
-        setConfirmationNumber(data.confirmationCode || `BK${Date.now().toString(36).toUpperCase()}`)
+        setConfirmationNumber(data.bookingId || `BK${Date.now().toString(36).toUpperCase()}`)
       } else {
         // Fallback for non-API bookings
         setConfirmationNumber(`BK${Date.now().toString(36).toUpperCase()}`)
@@ -165,6 +177,7 @@ function BookingWidgetContent() {
     } catch (error: any) {
       console.error("[v0] Booking error:", error)
       setBookingError(error.message || "Failed to complete booking")
+      alert(error.message || "Failed to complete booking")
     } finally {
       setIsBooking(false)
     }
@@ -181,6 +194,7 @@ function BookingWidgetContent() {
   const privacyText = locale === "he" ? "מדיניות פרטיות" : "Privacy Policy"
   const contactText = locale === "he" ? "צור קשר" : "Contact Us"
   const rightsText = locale === "he" ? "כל הזכויות שמורות" : "All rights reserved"
+  const poweredByText = locale === "he" ? "מופעל על ידי" : "Powered by"
 
   return (
     <div className="min-h-screen bg-background" dir={dir}>
@@ -195,6 +209,7 @@ function BookingWidgetContent() {
                 <h1 className="font-bold text-xl text-foreground">
                   {locale === "he" ? "מנוע הזמנות" : "Booking Engine"}
                 </h1>
+                <span className="text-sm text-muted-foreground">{poweredByText} BookingEngine</span>
               </div>
             </div>
             <div className="flex items-center gap-3">

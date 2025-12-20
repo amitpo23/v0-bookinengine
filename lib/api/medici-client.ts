@@ -10,13 +10,14 @@ const MEDICI_BASE_URL = process.env.MEDICI_BASE_URL || "https://medici-backend.a
 const BOOK_BASE_URL = process.env.BOOK_BASE_URL || "https://book.mishor5.innstant-servers.com"
 const MEDICI_IMAGES_BASE = "https://medici-images.azurewebsites.net/images/"
 
-const AETHER_ACCESS_TOKEN =
-  process.env.MEDICI_TOKEN ||
-  "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczpcL1wvbWVkaWNpLWJhY2tlbmQuYXp1cmV3ZWJzaXRlcy5uZXRcL2FwaVwvYXV0aFwvT25seU5pZ2h0VXNlcnNUb2tlbkFQSSIsImlhdCI6MTczNDA5NDE3MiwiZXhwIjozMTAzMDk0MTcyLCJuYmYiOjE3MzQwOTQxNzIsImp0aSI6IlVwTldOT0F3MFNDOTFBMjQiLCJzdWIiOjIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.O4_LxCpfb8TFIBz9_sfcHuNGz38YRa3JlC6xEJbN98M"
-const AETHER_APPLICATION_KEY =
-  process.env.MEDICI_APP_KEY || "$2y$10$zmUK0OGNeeTtiGcV/cpWsOrZY7VXbt0Bzp16VwPPQ8z46DNV6esum"
+const MEDICI_ACCESS_TOKEN =
+  process.env.AETHER_ACCESS_TOKEN || "$2y$10$QcGPkHG9Rk1VRTClz0HIsO3qQpm3JEU84QqfZadIVIoVHn5M7Tpnu"
 
-const CLIENT_SECRET = process.env.MEDICI_CLIENT_SECRET || "$2y$10$QcGPkHG9Rk1VRTClz0HIsO3qQpm3JEU84QqfZadIVIoVHn5M7Tpnu"
+const MEDICI_APP_KEY =
+  process.env.AETHER_APPLICATION_KEY || "$2y$10$zmUK0OGNeeTtiGcV/cpWsOrZY7VXbt0Bzp16VwPPQ8z46DNV6esum"
+
+const CLIENT_SECRET =
+  process.env.MEDICI_CLIENT_SECRET || "zlbgGGxz~|l3.Q?XXAT)uT!Lty,kJC>R?`:k?oQH$I=P7rL<R:Em:qDaM1G(jFU7"
 
 // =====================
 // TYPES
@@ -59,8 +60,8 @@ export class MediciApiClient {
   constructor(baseUrl?: string, token?: string, appKey?: string) {
     this.baseUrl = baseUrl || MEDICI_BASE_URL
     this.bookUrl = BOOK_BASE_URL
-    this.accessToken = token || AETHER_ACCESS_TOKEN
-    this.appKey = appKey || AETHER_APPLICATION_KEY
+    this.accessToken = token || MEDICI_ACCESS_TOKEN
+    this.appKey = appKey || MEDICI_APP_KEY
     this.clientSecret = CLIENT_SECRET
   }
 
@@ -69,6 +70,7 @@ export class MediciApiClient {
     method: "GET" | "POST" = "GET",
     body?: any,
     useBookUrl = false,
+    retryCount = 0,
   ): Promise<T> {
     const baseUrl = useBookUrl ? this.bookUrl : this.baseUrl
     const url = `${baseUrl}${endpoint}`
@@ -78,12 +80,8 @@ export class MediciApiClient {
       "cache-control": "no-cache",
     }
 
-    if (useBookUrl) {
-      headers["aether-access-token"] = this.accessToken
-      headers["aether-application-key"] = this.appKey
-    } else {
-      headers["Authorization"] = `Bearer ${this.accessToken}`
-    }
+    headers["aether-access-token"] = this.accessToken
+    headers["aether-application-key"] = this.appKey
 
     const options: RequestInit = {
       method,
@@ -96,6 +94,12 @@ export class MediciApiClient {
 
     try {
       const response = await fetch(url, options)
+
+      if (response.status === 401 && retryCount < 1) {
+        console.log("[v0] Got 401, attempting token refresh...")
+        await this.refreshToken()
+        return this.request<T>(endpoint, method, body, useBookUrl, retryCount + 1)
+      }
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -426,26 +430,27 @@ export class MediciApiClient {
 
   async refreshToken(): Promise<string> {
     try {
+      const formData = new URLSearchParams()
+      formData.append("client_secret", this.clientSecret)
+
       const response = await fetch(`${this.baseUrl}/api/auth/OnlyNightUsersTokenAPI`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: JSON.stringify({
-          client_secret: this.clientSecret,
-          application_key: this.appKey,
-        }),
+        body: formData.toString(),
       })
 
       if (!response.ok) {
-        throw new Error(`Token refresh failed: ${response.status}`)
+        const errorText = await response.text()
+        throw new Error(`Token refresh failed: ${response.status} - ${errorText}`)
       }
 
       const data = await response.json()
-      this.accessToken = data.token || data.access_token || data.bearer_token
+      this.accessToken = data.token || data.access_token || data.aether_access_token
       return this.accessToken
-    } catch (error) {
-      console.error("Failed to refresh token:", error)
+    } catch (error: any) {
+      console.error("Failed to refresh token:", error.message)
       throw error
     }
   }

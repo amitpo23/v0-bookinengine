@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card"
 import { useBooking } from "@/lib/booking-context"
 import { useI18n } from "@/lib/i18n/context"
 import { cn } from "@/lib/utils"
-import { BOARD_TYPES, ROOM_CATEGORIES, type HotelSearchResult, type RoomResult } from "@/lib/api/medici-client"
+import { BOARD_TYPES, ROOM_CATEGORIES, type HotelSearchResult, type RoomResult } from "@/lib/api/medici-types"
 import { useState } from "react"
 import { formatDateForApi } from "@/lib/date-utils"
 import { StarIcon, MapPinIcon, LoaderIcon } from "@/components/icons"
@@ -588,30 +588,22 @@ export function HotelSearchResults() {
   }
 
   const handleBookRoom = async (hotel: HotelSearchResult, room: RoomResult) => {
-    console.log("[v0] ========== HANDLE BOOK ROOM ==========")
-    console.log("[v0] hotel.hotelId:", hotel.hotelId, "type:", typeof hotel.hotelId)
-    console.log("[v0] room.code:", room.code, "length:", room.code?.length)
-    console.log("[v0] room.roomName:", room.roomName)
-    console.log("[v0] room.buyPrice:", room.buyPrice)
-
     const hotelId = hotel.hotelId
 
     if (!room.code) {
-      console.error("[v0] room.code is missing:", room)
       const errorMessage = isRtl
         ? "קוד חדר חסר - נא לנסות שוב או לבחור חדר אחר"
         : "Room code is missing - please try again or select another room"
       setPreBookError(errorMessage)
-      alert(errorMessage) // Show immediate alert to user
+      alert(errorMessage)
       return
     }
     const roomCode = room.code
 
     if (!hotelId || hotelId === 0) {
-      console.error("[v0] Invalid hotelId:", hotelId)
       const errorMessage = isRtl ? "מזהה מלון לא תקין - נא לנסות שוב" : "Invalid hotel ID - please try again"
       setPreBookError(errorMessage)
-      alert(errorMessage) // Show immediate alert to user
+      alert(errorMessage)
       return
     }
 
@@ -632,8 +624,6 @@ export function HotelSearchResults() {
         children: search.childrenAges || [],
       }
 
-      console.log("[v0] Prebook request:", JSON.stringify(prebookData, null, 2))
-
       const response = await fetch("/api/booking/prebook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -641,7 +631,6 @@ export function HotelSearchResults() {
       })
 
       const data = await response.json()
-      console.log("[v0] Prebook response:", data)
 
       if (!response.ok) {
         throw new Error(data.error || "PreBook failed")

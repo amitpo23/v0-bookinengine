@@ -126,8 +126,6 @@ function BookingWidgetContent() {
 
     try {
       if (apiBookingData?.prebookToken) {
-        console.log("[v0] Starting Book with data:", apiBookingData)
-
         const response = await fetch("/api/booking/book", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -157,7 +155,6 @@ function BookingWidgetContent() {
         })
 
         const data = await response.json()
-        console.log("[v0] Book response:", data)
 
         if (!response.ok) {
           throw new Error(data.error || "Booking failed")
@@ -175,7 +172,7 @@ function BookingWidgetContent() {
 
       setCurrentStep(5)
     } catch (error: any) {
-      console.error("[v0] Booking error:", error)
+      console.error("Booking error:", error)
       setBookingError(error.message || "Failed to complete booking")
       alert(error.message || "Failed to complete booking")
     } finally {

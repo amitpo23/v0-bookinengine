@@ -3,14 +3,14 @@ import { mediciApi } from "@/lib/api/medici-client"
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    console.log("[v0] Search API called")
+    console.log("[v0] MEDICI_TOKEN exists:", !!process.env.MEDICI_TOKEN)
+    console.log("[v0] MEDICI_BASE_URL exists:", !!process.env.MEDICI_BASE_URL)
 
-    console.log("[v0] ====== SEARCH API ROUTE ======")
-    console.log("[v0] Request body:", JSON.stringify(body, null, 2))
+    const body = await request.json()
 
     const { dateFrom, dateTo, hotelName, city, adults, children, stars, limit } = body
 
-    // Validate required fields
     if (!dateFrom || !dateTo) {
       return NextResponse.json({ error: "dateFrom and dateTo are required" }, { status: 400 })
     }
@@ -30,10 +30,7 @@ export async function POST(request: NextRequest) {
       limit: limit ? Number(limit) : 20,
     })
 
-    console.log("[v0] Search returned", results.length, "hotel results")
-
     const groupedResults = results.map((hotel: any) => {
-      // Ensure hotelId is a valid number
       let hotelId = 0
       if (typeof hotel.hotelId === "number" && hotel.hotelId > 0) {
         hotelId = hotel.hotelId
@@ -41,16 +38,8 @@ export async function POST(request: NextRequest) {
         hotelId = Number.parseInt(hotel.hotelId, 10) || 0
       }
 
-      console.log(
-        `[v0] Mapping hotel: ${hotel.hotelName}, hotelId: ${hotelId} (original: ${hotel.hotelId}, type: ${typeof hotel.hotelId})`,
-      )
-
       const mappedRooms = (hotel.rooms || []).map((room: any, index: number) => {
         const roomCode = room.code || room.rateKey || room.roomCode || ""
-
-        console.log(
-          `[v0] Room ${index + 1}: name=${room.roomName}, code="${roomCode}", price=${room.buyPrice || room.price}`,
-        )
 
         return {
           code: roomCode,
@@ -75,7 +64,7 @@ export async function POST(request: NextRequest) {
       })
 
       return {
-        hotelId, // Number
+        hotelId,
         hotelName: hotel.hotelName || hotel.name || "Unknown Hotel",
         city: hotel.city || "",
         stars: hotel.stars || hotel.rating || 0,
@@ -85,26 +74,10 @@ export async function POST(request: NextRequest) {
         description: hotel.description || "",
         facilities: hotel.facilities || hotel.amenities || [],
         rooms: mappedRooms,
+        requestJson: hotel.requestJson,
+        responseJson: hotel.responseJson,
       }
     })
-
-    console.log("[v0] Returning", groupedResults.length, "hotels")
-    if (groupedResults.length > 0) {
-      console.log("[v0] First hotel:", {
-        hotelId: groupedResults[0].hotelId,
-        hotelName: groupedResults[0].hotelName,
-        roomsCount: groupedResults[0].rooms.length,
-      })
-      if (groupedResults[0].rooms.length > 0) {
-        const firstRoom = groupedResults[0].rooms[0]
-        console.log("[v0] First room:", {
-          code: firstRoom.code,
-          codeLength: firstRoom.code?.length,
-          buyPrice: firstRoom.buyPrice,
-          roomName: firstRoom.roomName,
-        })
-      }
-    }
 
     return NextResponse.json({
       success: true,
@@ -112,7 +85,7 @@ export async function POST(request: NextRequest) {
       count: groupedResults.length,
     })
   } catch (error: any) {
-    console.error("[v0] Search API Error:", error.message)
+    console.error("Search API Error:", error.message)
     return NextResponse.json({ error: error.message || "Failed to search hotels" }, { status: 500 })
   }
 }

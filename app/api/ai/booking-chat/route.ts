@@ -1,10 +1,17 @@
 import { generateText } from "ai"
 import type { HotelConfig } from "@/types/saas"
 import { getBookingAgentPrompt } from "@/lib/prompts/booking-agent-prompt"
+import { groqClient, GROQ_MODELS } from "@/lib/ai/groq-client"
+import { langsmithTracer } from "@/lib/ai/langsmith-tracer"
+import { logger } from "@/lib/logger"
 
 const MEDICI_API_BASE = process.env.MEDICI_BASE_URL || "https://medici-backend.azurewebsites.net"
 const MEDICI_IMAGES_BASE = "https://cdn.medicihotels.com/images/"
 const MEDICI_TOKEN = process.env.MEDICI_TOKEN
+
+// AI Provider Selection: "groq" (faster, cheaper) or "claude" (smarter)
+const AI_PROVIDER = process.env.AI_PROVIDER || "groq"
+const USE_GROQ = AI_PROVIDER === "groq" && groqClient.isConfigured()
 
 // Warn if not set but don't throw during build
 if (!MEDICI_TOKEN && typeof window === "undefined") {
@@ -12,6 +19,11 @@ if (!MEDICI_TOKEN && typeof window === "undefined") {
     console.error("⚠️  MEDICI_TOKEN not set! Add to Vercel Environment Variables.")
   }
 }
+
+logger.info("[Booking AI] Provider configured", {
+  provider: USE_GROQ ? "GROQ" : "Claude",
+  langsmith: langsmithTracer.isEnabled(),
+})
 
 const DEFAULT_HOTEL_NAME = "Dizengoff Inn"
 
@@ -232,22 +244,71 @@ export async function POST(req: Request) {
 
     const systemPrompt = getBookingAgentPrompt(language, hotelName, hotelCity, today)
 
-    console.log("[v0] Calling AI model...")
+    const conversationId = `booking_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
+    const userMessage = messages[messages.length - 1]?.content || ""
 
-    const { text } = await generateText({
-      model: "anthropic/claude-sonnet-4-20250514",
-      system: systemPrompt,
-      messages: messages.map((m) => ({
-        role: m.role as "user" | "assistant",
-        content: m.content,
-      })),
-    })
+    console.log("[v0] Calling AI model...", { provider: USE_GROQ ? "GROQ" : "Claude" })
+
+    let text: string
+    let aiDuration: number
+    const startAI = Date.now()
+
+    if (USE_GROQ) {
+      // Use GROQ - Faster and cheaper (best for Hebrew with Mixtral)
+      logger.info("[Booking AI] Using GROQ for ultra-fast inference")
+      const response = await groqClient.chat({
+        model: GROQ_MODELS.MIXTRAL_8X7B, // Excellent for Hebrew + English
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...messages.map((m) => ({
+            role: m.role as "user" | "assistant",
+            content: m.content,
+          })),
+        ],
+        temperature: 0.7,
+        maxTokens: 2048,
+      })
+      text = response.content
+      aiDuration = response.duration
+    } else {
+      // Use Claude - Smarter but slower/more expensive
+      logger.info("[Booking AI] Using Claude for enhanced intelligence")
+      const response = await generateText({
+        model: "anthropic/claude-sonnet-4-20250514",
+        system: systemPrompt,
+        messages: messages.map((m) => ({
+          role: m.role as "user" | "assistant",
+          content: m.content,
+        })),
+      })
+      text = response.text
+      aiDuration = Date.now() - startAI
+    }
 
     console.log("[v0] AI response:", text.slice(0, 500))
+
+    // LangSmith: Trace AI interaction
+    await langsmithTracer.traceChat({
+      conversationId,
+      userMessage,
+      aiResponse: text,
+      model: USE_GROQ ? GROQ_MODELS.MIXTRAL_8X7B : "claude-sonnet-4",
+      duration: aiDuration,
+      metadata: {
+        hotelName,
+        language,
+        bookingStep: bookingState?.step || "conversation",
+      },
+      tags: ["booking-ai", language, USE_GROQ ? "groq" : "claude"],
+    })
 
     const searchMatch = text.match(/\[SEARCH\](.*?)\[\/SEARCH\]/s)
     if (searchMatch) {
       console.log("[v0] Found search request:", searchMatch[1])
+
+      const searchStartTime = Date.now()
+      let searchSuccess = false
+      let searchError: string | undefined
 
       try {
         const searchParams = JSON.parse(searchMatch[1])
@@ -261,6 +322,8 @@ export async function POST(req: Request) {
           adults: searchParams.adults || 2,
           children: searchParams.children || [],
         })
+
+        searchSuccess = true
 
         let rooms: any[] = []
 
@@ -323,6 +386,23 @@ export async function POST(req: Request) {
             })
             .join("\n\n")
 
+          // LangSmith: Trace successful search
+          await langsmithTracer.traceBookingSearch({
+            searchId: conversationId,
+            query: {
+              dateFrom: searchParams.dateFrom,
+              dateTo: searchParams.dateTo,
+              hotelName: hotelApiName,
+              city: searchParams.city || hotelCity,
+              adults: searchParams.adults || 2,
+              children: searchParams.children || [],
+            },
+            results: formattedRooms,
+            duration: Date.now() - searchStartTime,
+            apiUsed: "medici-direct",
+            success: true,
+          })
+
           return Response.json({
             message:
               cleanText +
@@ -348,6 +428,26 @@ export async function POST(req: Request) {
         }
       } catch (error) {
         console.error("[v0] Search error:", error)
+        searchError = error instanceof Error ? error.message : String(error)
+
+        // LangSmith: Trace failed search
+        await langsmithTracer.traceBookingSearch({
+          searchId: conversationId,
+          query: {
+            dateFrom: "",
+            dateTo: "",
+            hotelName: hotelApiName,
+            city: hotelCity,
+            adults: 2,
+            children: [],
+          },
+          results: [],
+          duration: Date.now() - searchStartTime,
+          apiUsed: "medici-direct",
+          success: false,
+          error: searchError,
+        })
+
         const cleanText = text.replace(/\[SEARCH\].*?\[\/SEARCH\]/s, "").trim()
         return Response.json({
           message:
@@ -407,6 +507,8 @@ export async function POST(req: Request) {
     if (bookMatch && bookingState?.preBookData) {
       console.log("[v0] Completing booking...")
 
+      const bookStartTime = Date.now()
+
       try {
         const customerDetails = JSON.parse(bookMatch[1])
         const bookingResult = await bookRoom({
@@ -416,6 +518,19 @@ export async function POST(req: Request) {
         })
 
         const cleanText = text.replace(/\[BOOK\].*?\[\/BOOK\]/s, "").trim()
+
+        // LangSmith: Trace successful booking completion
+        await langsmithTracer.traceBooking({
+          bookingId: bookingResult.bookingId,
+          hotelName: bookingState.selectedRoom?.hotelName || hotelName,
+          dateFrom: bookingState.searchContext?.dateFrom || "",
+          dateTo: bookingState.searchContext?.dateTo || "",
+          totalPrice: bookingState.selectedRoom?.price || 0,
+          currency: bookingState.selectedRoom?.currency || "USD",
+          duration: Date.now() - bookStartTime,
+          apiUsed: "medici-direct",
+          success: true,
+        })
 
         return Response.json({
           message:
@@ -434,6 +549,22 @@ export async function POST(req: Request) {
         })
       } catch (error) {
         console.error("[v0] Book error:", error)
+        const bookError = error instanceof Error ? error.message : String(error)
+
+        // LangSmith: Trace failed booking
+        await langsmithTracer.traceBooking({
+          bookingId: "",
+          hotelName: bookingState.selectedRoom?.hotelName || hotelName,
+          dateFrom: bookingState.searchContext?.dateFrom || "",
+          dateTo: bookingState.searchContext?.dateTo || "",
+          totalPrice: bookingState.selectedRoom?.price || 0,
+          currency: bookingState.selectedRoom?.currency || "USD",
+          duration: Date.now() - bookStartTime,
+          apiUsed: "medici-direct",
+          success: false,
+          error: bookError,
+        })
+
         return Response.json({
           message: isHebrew
             ? "הייתה בעיה בסיום ההזמנה. אנא נסה שוב או צור קשר עם התמיכה."

@@ -8,10 +8,10 @@ import { logger } from "@/lib/logger"
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const experimentId = params.id
+    const { id: experimentId } = await params
 
     logger.info("[Experiments API] Getting analytics", { experimentId })
 

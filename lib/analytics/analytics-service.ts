@@ -10,6 +10,7 @@ import { subDays, startOfDay, endOfDay, startOfMonth, endOfMonth, format } from 
 export interface AnalyticsParams {
   dateFrom?: Date
   dateTo?: Date
+  days?: number // Number of days to look back from today
 }
 
 export interface BookingStats {
@@ -36,7 +37,7 @@ export interface ConversionData {
 
 export interface SourceBreakdown {
   source: string
-  count: number
+  bookings: number // Total bookings from this source
   revenue: number
   percentage: number
 }
@@ -46,7 +47,7 @@ class AnalyticsService {
    * Get overall booking statistics
    */
   async getBookingStats(params: AnalyticsParams = {}): Promise<BookingStats> {
-    const dateFrom = params.dateFrom || subDays(new Date(), 30)
+    const dateFrom = params.dateFrom || (params.days ? subDays(new Date(), params.days) : subDays(new Date(), 30))
     const dateTo = params.dateTo || new Date()
 
     try {
@@ -293,7 +294,7 @@ class AnalyticsService {
 
       const result: SourceBreakdown[] = bookings.map((item) => ({
         source: item.apiSource,
-        count: item._count,
+        bookings: item._count,
         revenue: Number(item._sum.totalPrice || 0),
         percentage: totalCount > 0 ? (item._count / totalCount) * 100 : 0,
       }))

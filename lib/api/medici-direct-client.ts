@@ -38,7 +38,8 @@ export interface MediciSearchParams {
   dateTo: string // YYYY-MM-DD
   hotelName?: string
   city?: string
-  pax?: Array<{ adults: number; children: number[] }>
+  adults?: number
+  paxChildren?: number[]
   stars?: number | null
   limit?: number | null
   showExtendedData?: boolean
@@ -155,17 +156,11 @@ class MediciDirectClient {
       hotelName: params.hotelName,
     })
 
-    const pax = params.pax || [
-      {
-        adults: 2,
-        children: [],
-      },
-    ]
-
     const requestBody = {
       dateFrom: params.dateFrom,
       dateTo: params.dateTo,
-      pax,
+      adults: params.adults || 2,
+      paxChildren: params.paxChildren || [],
       showExtendedData: params.showExtendedData !== false,
       stars: params.stars || null,
       limit: params.limit || null,

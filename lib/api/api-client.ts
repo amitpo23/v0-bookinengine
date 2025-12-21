@@ -87,19 +87,13 @@ class DualLayerAPIClient {
       try {
         logger.info("[API Client] Attempting search via Medici Direct (primary)")
 
-        const pax = [
-          {
-            adults: params.adults || 2,
-            children: params.children || [],
-          },
-        ]
-
         const result = await mediciDirectClient.searchHotels({
           dateFrom: params.dateFrom,
           dateTo: params.dateTo,
           hotelName: params.hotelName,
           city: params.city,
-          pax,
+          adults: params.adults || 2,
+          paxChildren: params.children || [],
           stars: params.stars,
           limit: params.limit,
         })

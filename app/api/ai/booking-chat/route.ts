@@ -65,13 +65,10 @@ async function searchMediciHotels(params: {
   const body: Record<string, any> = {
     dateFrom: params.dateFrom,
     dateTo: params.dateTo,
-    pax: [
-      {
-        adults: params.adults || 2,
-        children: params.children || [],
-      },
-    ],
+    adults: params.adults || 2,
+    paxChildren: params.children || [],
     ShowExtendedData: true,
+    stars: null,
     limit: 10,
   }
 

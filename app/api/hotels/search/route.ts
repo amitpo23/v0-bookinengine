@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { mediciApi } from "@/lib/api/medici-client"
+import { apiClient } from "@/lib/api/api-client"
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Either hotelName or city is required" }, { status: 400 })
     }
 
-    const results = await mediciApi.searchHotels({
+    const results = await apiClient.searchHotels({
       dateFrom,
       dateTo,
       hotelName: hotelName || undefined,

@@ -1,24 +1,39 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { mediciApi } from "@/lib/api/medici-client"
+import { apiClient } from "@/lib/api/api-client"
+import { PreBookSchema } from "@/lib/validation/schemas"
+import { logger } from "@/lib/logger"
+import { z } from "zod"
+import { applyRateLimit, RateLimitConfig } from "@/lib/rate-limit"
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
-    const { jsonRequest } = body
+    // Validate input with Zod
+    const validated = PreBookSchema.parse(body)
 
-    if (!jsonRequest || typeof jsonRequest !== "string") {
-      return NextResponse.json(
-        {
-          error: "jsonRequest is required - must be the requestJson from search results",
-          received: { jsonRequest: typeof jsonRequest },
-        },
-        { status: 400 },
-      )
-    }
+    logger.debug("Calling apiClient.preBook", {
+      hotelId: validated.hotelId,
+      dateFrom: validated.dateFrom,
+      dateTo: validated.dateTo,
+      adults: validated.adults,
+      hasRequestJson: !!validated.requestJson,
+    })
 
-    const result = await mediciApi.preBook({
-      jsonRequest,
+    const result = await apiClient.preBook({
+      code: validated.code,
+      dateFrom: validated.dateFrom,
+      dateTo: validated.dateTo,
+      hotelId: validated.hotelId,
+      adults: validated.adults,
+      children: validated.children,
+      requestJson: validated.requestJson,
+    })
+
+    logger.debug("PreBook result received", {
+      preBookId: result.preBookId,
+      status: result.status,
+      priceConfirmed: result.priceConfirmed,
     })
 
     const hasValidResponse = result.token || result.preBookId || result.status === "done" || result.priceConfirmed > 0
@@ -41,7 +56,7 @@ export async function POST(request: NextRequest) {
       priceConfirmed: result.priceConfirmed,
       currency: result.currency,
       status: result.status,
-      requestJson: result.requestJson,
+      requestJson: result.requestJson || validated.requestJson,
       responseJson: result.responseJson,
     })
   } catch (error: any) {

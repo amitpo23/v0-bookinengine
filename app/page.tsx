@@ -463,8 +463,8 @@ export default function HomePage() {
             </h2>
             <p className="text-muted-foreground text-xl max-w-3xl mx-auto leading-relaxed">
               {locale === "he"
-                ? "בחרו מתוך 4 עיצובים מקצועיים שונים למנוע ההזמנות שלכם. כל טמפלט מחובר ל-API ומוכן לשימוש מיידי"
-                : "Choose from 4 different professional designs for your booking engine. All templates are API-connected and ready to use"}
+                ? "בחרו מתוך 4 עיצובים מקצועיים שונים למנוע ההזמנות שלכם. כל טמפלט מוכן לשימוש מיידי"
+                : "Choose from 4 different professional designs for your booking engine. All templates are ready to use"}
             </p>
           </div>
 
@@ -643,11 +643,11 @@ export default function HomePage() {
               <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
                 <ZapIcon />
               </div>
-              <h3 className="font-bold text-lg mb-2">{locale === "he" ? "מחובר ל-API" : "API Connected"}</h3>
+              <h3 className="font-bold text-lg mb-2">{locale === "he" ? "מוכן לשימוש" : "Ready to Use"}</h3>
               <p className="text-muted-foreground text-sm">
                 {locale === "he"
-                  ? "כל הטמפלטים מחוברים ל-Medici API עם תהליך הזמנה מלא"
-                  : "All templates connected to Medici API with full booking flow"}
+                  ? "כל הטמפלטים מוכנים עם תהליך הזמנה מלא"
+                  : "All templates ready with full booking flow"}
               </p>
             </Card>
             <Card className="text-center p-6 border-none bg-gradient-to-br from-primary/5 to-primary/10">

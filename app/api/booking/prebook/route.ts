@@ -6,25 +6,8 @@ import { z } from "zod"
 import { applyRateLimit, RateLimitConfig } from "@/lib/rate-limit"
 
 export async function POST(request: NextRequest) {
-  const startTime = Date.now()
-
-  // Apply rate limiting
-  const rateLimitResult = await applyRateLimit(request, RateLimitConfig.prebook)
-  if (!rateLimitResult.success) {
-    logger.warn("Rate limit exceeded for prebook", {
-      path: "/api/booking/prebook",
-    })
-    return rateLimitResult.response
-  }
-
   try {
     const body = await request.json()
-
-    logger.apiRequest("POST", "/api/booking/prebook", {
-      hotelId: body.hotelId,
-      dateFrom: body.dateFrom,
-      dateTo: body.dateTo,
-    })
 
     // Validate input with Zod
     const validated = PreBookSchema.parse(body)
@@ -34,6 +17,7 @@ export async function POST(request: NextRequest) {
       dateFrom: validated.dateFrom,
       dateTo: validated.dateTo,
       adults: validated.adults,
+      hasRequestJson: !!validated.requestJson,
     })
 
     const result = await apiClient.preBook({
@@ -43,6 +27,7 @@ export async function POST(request: NextRequest) {
       hotelId: validated.hotelId,
       adults: validated.adults,
       children: validated.children,
+      requestJson: validated.requestJson,
     })
 
     logger.debug("PreBook result received", {
@@ -54,22 +39,15 @@ export async function POST(request: NextRequest) {
     const hasValidResponse = result.token || result.preBookId || result.status === "done" || result.priceConfirmed > 0
 
     if (!hasValidResponse) {
-      logger.warn("PreBook failed - no valid response indicators", { result })
-
-      const duration = Date.now() - startTime
-      logger.apiResponse("POST", "/api/booking/prebook", 400, duration)
-
       return NextResponse.json(
         {
           success: false,
           error: "PreBook failed - room may no longer be available",
+          debug: result,
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
-
-    const duration = Date.now() - startTime
-    logger.apiResponse("POST", "/api/booking/prebook", 200, duration)
 
     return NextResponse.json({
       success: true,
@@ -78,33 +56,17 @@ export async function POST(request: NextRequest) {
       priceConfirmed: result.priceConfirmed,
       currency: result.currency,
       status: result.status,
+      requestJson: result.requestJson || validated.requestJson,
+      responseJson: result.responseJson,
     })
-  } catch (error) {
-    const duration = Date.now() - startTime
-
-    if (error instanceof z.ZodError) {
-      logger.warn("PreBook validation failed", { errors: error.errors })
-      logger.apiResponse("POST", "/api/booking/prebook", 400, duration)
-
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Invalid prebook parameters",
-          details: error.errors,
-        },
-        { status: 400 }
-      )
-    }
-
-    logger.error("PreBook API error", error)
-    logger.apiResponse("POST", "/api/booking/prebook", 500, duration)
-
+  } catch (error: any) {
+    console.error("PreBook API Error:", error.message)
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "PreBook failed",
+        error: error.message || "PreBook failed",
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

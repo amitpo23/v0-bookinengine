@@ -9,24 +9,8 @@ import { cache, createSearchCacheKey, CacheConfig } from "@/lib/cache"
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
 
-  // Apply rate limiting
-  const rateLimitResult = await applyRateLimit(request, RateLimitConfig.search)
-  if (!rateLimitResult.success) {
-    logger.warn("Rate limit exceeded for search", {
-      path: "/api/booking/search",
-    })
-    return rateLimitResult.response
-  }
-
   try {
     const body = await request.json()
-
-    logger.apiRequest("POST", "/api/booking/search", {
-      hotelName: body.hotelName,
-      city: body.city,
-      dateFrom: body.dateFrom,
-      dateTo: body.dateTo,
-    })
 
     // Validate input with Zod
     const validated = BookingSearchSchema.parse(body)
@@ -66,30 +50,8 @@ export async function POST(request: NextRequest) {
       results,
       count: results.length,
     })
-  } catch (error) {
-    const duration = Date.now() - startTime
-
-    if (error instanceof z.ZodError) {
-      logger.warn("Search validation failed", { errors: error.errors })
-      logger.apiResponse("POST", "/api/booking/search", 400, duration)
-
-      return NextResponse.json(
-        {
-          error: "Invalid search parameters",
-          details: error.errors,
-        },
-        { status: 400 }
-      )
-    }
-
-    logger.error("Search API error", error)
-    logger.apiResponse("POST", "/api/booking/search", 500, duration)
-
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Search failed",
-      },
-      { status: 500 }
-    )
+  } catch (error: any) {
+    console.error("Search API Error:", error)
+    return NextResponse.json({ error: error.message || "Search failed" }, { status: 500 })
   }
 }

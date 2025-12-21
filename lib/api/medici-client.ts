@@ -2,206 +2,22 @@
 // Complete AI-Executable Integration
 // Base URL: https://medici-backend.azurewebsites.net
 
+import type { HotelSearchResult, PreBookResponse, BookResponse } from "./medici-types"
+import "server-only"
+export * from "./medici-types"
+
 const MEDICI_BASE_URL = process.env.MEDICI_BASE_URL || "https://medici-backend.azurewebsites.net"
 const MEDICI_IMAGES_BASE = "https://medici-images.azurewebsites.net/images/"
 
-// CRITICAL: Token must be set in environment variables
-// In production (Vercel), add MEDICI_TOKEN to Environment Variables
-const MEDICI_TOKEN = process.env.MEDICI_TOKEN
-
-// Warn if not set (but don't throw during build time)
-if (!MEDICI_TOKEN && typeof window === "undefined") {
-  if (process.env.NODE_ENV === "production") {
-    console.error("⚠️  MEDICI_TOKEN not set in production! Add it to Vercel Environment Variables.")
-  } else {
-    console.warn("⚠️  MEDICI_TOKEN not set. Add it to .env.local for local development.")
-  }
-}
+const MEDICI_TOKEN =
+  process.env.MEDICI_TOKEN ||
+  "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiNmIxZDYzZDkyNTRhODI5YzE2MzQ2ZmRkZDI3MTNmMzc4ZGZiMTg0MmU0NDM1MDFjMzU3NGU0M2U5NGIzNGYwNmJhZjg0NzA1M2MzZGVkMTIiLCJpYXQiOjE3MzI5MDQxNDQuMDg1NjQ5LCJuYmYiOjE3MzI5MDQxNDQuMDg1NjU0LCJleHAiOjMxNTYyODU4NzQ0LjA2ODc0Niwic3ViIjoiMjE3Iiwic2NvcGVzIjpbXX0.iWYVbWOu_N4Ir7n33h9E1o0mfW7GBcTvEIWgR-kz_OgPp5GKlhiI-leFV8ZLykxlPZ7YxjQ3wR1JA94vj0LtZ2UtqZ7_SZqjN8lx-N-wgfRUJ_e29F2XU-V88hfRZUNE6JeJbN9nNd-G1WJ75w1_81VT6yQFGSMXb4lUkSB2ydvJ17hWL7x04tLT0kqbH6WZ-pQXd5eHGa-eiN1y-h_B5lWwJ3aXrE4Jz5bWmTqWF1nQOZzDJUxBpb2s0o0vX_PpOZ2N1QJ3ZT-Z8yyHD7qHxW4dT-6B3T5g3Y8JdT5qfU8dJ1Y4N5wF_Q3vJ8Z2T1qW5Y3F8xQ1N7dT4Z0vJ1W2"
 
 // =====================
 // TYPES
 // =====================
 
-export interface SearchParams {
-  dateFrom: string // YYYY-MM-DD
-  dateTo: string // YYYY-MM-DD
-  hotelName?: string
-  city?: string
-  pax?: { adults: number; children: number[] }[]
-  stars?: number | null
-  limit?: number | null
-  showExtendedData?: boolean
-}
-
-export interface SearchRoomResult {
-  code: string // CRITICAL: Save this for booking
-  hotelId: number
-  hotelName: string
-  city: string
-  stars: number
-  address?: string
-  imageUrl?: string
-  images?: string[]
-  description?: string
-  facilities?: string[]
-  roomName: string
-  roomCategory: string
-  boardType: string
-  boardCode: string
-  price: {
-    amount: number
-    currency: string
-  }
-  cancellation: {
-    type: "fully-refundable" | "non-refundable" | "partial"
-    deadline?: string
-    penalty?: number
-  }
-  maxOccupancy: number
-}
-
-export interface RoomResult {
-  code: string // This is the critical booking code from API
-  roomId: string // Changed to string for consistency
-  roomName: string
-  roomCategory: string
-  categoryId: number
-  boardId: number
-  boardType: string
-  buyPrice: number
-  currency: string
-  maxOccupancy: number
-  cancellationPolicy: string
-  // Additional fields
-  size?: number
-  view?: string
-  bedding?: string
-  amenities?: string[]
-  images?: string[]
-  available?: number
-  originalPrice?: number
-}
-
-export interface HotelSearchResult {
-  hotelId: number // Must be number for API calls
-  hotelName: string
-  city: string
-  stars: number
-  address: string
-  imageUrl: string
-  images: string[]
-  description: string
-  facilities: string[]
-  rooms: RoomResult[]
-}
-
-export interface PreBookResult {
-  preBookId: number
-  token: string
-  status: "done" | "failed"
-  priceConfirmed: number
-  currency: string
-}
-
-export interface BookingParams {
-  code: string // From search
-  token: string // From prebook
-  preBookId?: number
-  dateFrom: string
-  dateTo: string
-  hotelId: number
-  adults: number
-  children: number[] // From search
-  customer: {
-    title: string
-    firstName: string
-    lastName: string
-    email: string
-    phone: string
-    country?: string
-    city?: string
-    address?: string
-    zip?: string
-  }
-  voucherEmail?: string
-  agencyReference?: string
-}
-
-export interface BookingResult {
-  success: boolean
-  bookingId?: string
-  supplierReference?: string
-  status?: "confirmed" | "pending" | "failed"
-  error?: string
-}
-
-export interface ActiveRoom {
-  prebookId: number
-  hotelName: string
-  hotelId: number
-  city: string
-  stars: number
-  roomCategory: string
-  boardType: string
-  checkIn: string
-  checkOut: string
-  buyPrice: number
-  pushPrice: number
-  profit: number
-  guestName?: string
-  status: string
-  provider?: string
-}
-
-export interface SoldRoom extends ActiveRoom {
-  saleDate: string
-  salePrice: number
-}
-
-export interface CancelledRoom extends ActiveRoom {
-  cancelDate: string
-  refundAmount?: number
-}
-
-export interface Opportunity {
-  opportunityId: number
-  hotelId?: number
-  hotelName?: string
-  destinationId?: number
-  city?: string
-  startDate: string
-  endDate: string
-  boardId: number
-  categoryId: number
-  buyPrice: number
-  pushPrice: number
-  maxRooms: number
-  status: string
-  createdAt: string
-}
-
-export interface InsertOpportunityParams {
-  hotelId?: number
-  startDateStr: string
-  endDateStr: string
-  boardId: number
-  categoryId: number
-  buyPrice: number
-  pushPrice: number
-  maxRooms: number
-  paxAdults?: number
-  paxChildren?: number[]
-}
-
-export interface DashboardInfo {
-  opportunities: number
-  rooms: number
-  totalInvestments: number
-  profit: number
-  cancellations: number
-  topProfitableRooms: ActiveRoom[]
-  topNonProfitableRooms: ActiveRoom[]
-}
+// Types are imported from medici-types.ts
 
 // =====================
 // REFERENCE TABLES
@@ -228,60 +44,51 @@ export const ROOM_CATEGORIES: Record<number, { name: string; nameHe: string }> =
 // API CLIENT CLASS
 // =====================
 
-class MediciApiClient {
+export class MediciApiClient {
   private baseUrl: string
   private token: string
+  private retries: number
+  private maxRetries: number
 
-  constructor(baseUrl?: string, token?: string) {
-    this.baseUrl = baseUrl || MEDICI_BASE_URL
+  constructor(token?: string) {
     this.token = token || MEDICI_TOKEN
+    this.baseUrl = MEDICI_BASE_URL
+    this.retries = 0
+    this.maxRetries = 2
   }
 
-  private async request<T>(endpoint: string, method = "POST", body?: object): Promise<T & { _status?: number }> {
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`
-
-    const headers: HeadersInit = {
+    const headers = {
       "Content-Type": "application/json",
       Authorization: `Bearer ${this.token}`,
+      ...options.headers,
     }
 
-    const options: RequestInit = {
-      method,
+    const fetchOptions = {
+      ...options,
       headers,
     }
 
-    if (body && method !== "GET") {
-      options.body = JSON.stringify(body)
+    const response = await fetch(url, fetchOptions)
+
+    if (!response.ok) {
+      if (response.status === 401 && this.retries < this.maxRetries) {
+        this.retries++
+        await this.refreshToken()
+        return this.request<T>(endpoint, options)
+      } else if (response.status === 401) {
+        this.retries = 0
+        throw new Error(`Authentication failed: ${response.statusText}`)
+      }
+      throw new Error(`API Error ${response.status}: ${response.statusText}`)
     }
 
-    console.log(`[v0] Medici API Request: ${method} ${endpoint}`)
-    console.log(`[v0] Request body:`, JSON.stringify(body, null, 2))
-
-    try {
-      const response = await fetch(url, options)
-
-      console.log(`[v0] Response status: ${response.status}`)
-
-      if (!response.ok && response.status !== 204) {
-        const errorText = await response.text()
-        console.log(`[v0] Error response:`, errorText)
-        throw new Error(`API Error ${response.status}: ${errorText}`)
-      }
-
-      // Handle 204 No Content as success with empty object
-      if (response.status === 204) {
-        console.log(`[v0] Response 204 No Content - treating as success`)
-        return { _status: 204 } as T & { _status: number }
-      }
-
-      const text = await response.text()
-      const result = text ? JSON.parse(text) : ({} as T)
-      console.log(`[v0] Response data (first 1000 chars):`, JSON.stringify(result, null, 2).substring(0, 1000))
-      return { ...result, _status: response.status }
-    } catch (error) {
-      console.error(`[v0] Medici API Error [${endpoint}]:`, error)
-      throw error
+    if (response.status === 204) {
+      return {} as T
     }
+
+    return response.json()
   }
 
   // =====================
@@ -292,53 +99,381 @@ class MediciApiClient {
     dateTo: string
     hotelName?: string
     city?: string
-    adults?: number
-    children?: number[]
+    rooms?: Array<{ adults: number; children: number[] }> // Array of rooms
+    adults?: number // Fallback for single room
+    children?: number[] // Fallback for single room
     stars?: number
     limit?: number
   }): Promise<HotelSearchResult[]> {
-    // IMPORTANT: adults must be a STRING per API documentation
-    // Also: use hotelName OR city, NOT both
-    const pax = [
+    const pax = params.rooms || [
       {
         adults: params.adults || 2,
         children: params.children || [],
       },
     ]
 
-    // Build request - only include hotelName OR city, not both
     const searchBody: any = {
       dateFrom: params.dateFrom,
       dateTo: params.dateTo,
       pax,
-      showExtendedData: params.showExtendedData || true,
       stars: params.stars || null,
       limit: params.limit || null,
     }
 
-    // Add either hotelName or city (not both)
     if (params.hotelName) {
       searchBody.hotelName = params.hotelName
     } else if (params.city) {
       searchBody.city = params.city
     }
 
-    const response = await this.request<any>("/api/hotels/GetInnstantSearchPrice", "POST", searchBody)
-    return this.transformSearchResults(response)
+    const response = await this.request<any>("/api/hotels/GetInnstantSearchPrice", {
+      method: "POST",
+      body: JSON.stringify(searchBody),
+    })
+
+    const requestJson = response?.requestJson || null
+    const responseJson = response?.responseJson || JSON.stringify(response)
+
+    const hotels = this.transformSearchResults(response)
+
+    return hotels.map((hotel) => ({
+      ...hotel,
+      requestJson,
+      responseJson,
+    }))
+  }
+
+  // =====================
+  // STEP 2: PRE-BOOK
+  // =====================
+  async preBook(params: {
+    jsonRequest: string
+  }): Promise<PreBookResponse> {
+    const preBookBody = {
+      jsonRequest: params.jsonRequest,
+    }
+
+    const response = await this.request<any>("/pre-book", {
+      method: "POST",
+      body: JSON.stringify(preBookBody),
+    })
+
+    if (response._status === 204) {
+      return {
+        success: true,
+        preBookId: 0,
+        token: "",
+        status: "done",
+        priceConfirmed: 0,
+        currency: "USD",
+        requestJson: params.jsonRequest,
+        responseJson: "",
+      }
+    }
+
+    const token = response?.content?.services?.hotels?.[0]?.token || response?.token || response?.preBookToken || ""
+
+    const preBookId = response?.opportunityId || response?.preBookId || response?.id || 0
+
+    const priceConfirmed =
+      response?.content?.services?.hotels?.[0]?.netPrice?.amount ||
+      response?.content?.services?.hotels?.[0]?.price?.amount ||
+      response?.price?.amount ||
+      0
+
+    const currency =
+      response?.content?.services?.hotels?.[0]?.netPrice?.currency ||
+      response?.content?.services?.hotels?.[0]?.price?.currency ||
+      "USD"
+
+    const isSuccess = token || response?.status === "done"
+
+    return {
+      success: isSuccess,
+      preBookId,
+      token,
+      status: response?.status || (isSuccess ? "done" : "failed"),
+      priceConfirmed,
+      currency,
+      requestJson: response?.requestJson || params.jsonRequest,
+      responseJson: response?.responseJson || JSON.stringify(response),
+    }
+  }
+
+  // =====================
+  // STEP 3: BOOK
+  // =====================
+  async book(params: {
+    jsonRequest: string
+  }): Promise<BookResponse> {
+    const bookBody = {
+      jsonRequest: params.jsonRequest,
+    }
+
+    try {
+      const response = await this.request<any>("/book", {
+        method: "POST",
+        body: JSON.stringify(bookBody),
+      })
+
+      const bookingID =
+        response?.bookRes?.content?.bookingID ||
+        response?.content?.bookingID ||
+        response?.bookingId ||
+        response?.bookingID ||
+        ""
+
+      const supplierReference =
+        response?.bookRes?.content?.services?.[0]?.supplier?.reference ||
+        response?.content?.services?.[0]?.supplier?.reference ||
+        response?.supplierReference ||
+        ""
+
+      const status = response?.bookRes?.content?.status || response?.content?.status || response?.status || ""
+
+      const isSuccess = status === "confirmed"
+
+      return {
+        success: isSuccess,
+        bookingId: String(bookingID),
+        supplierReference,
+        status,
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        bookingId: "",
+        supplierReference: "",
+        status: "failed",
+        error: error.message,
+      }
+    }
+  }
+
+  // =====================
+  // MANUAL BOOK (by code)
+  // =====================
+  async manualBook(params: { opportunityId: number; code: string }): Promise<BookResponse> {
+    try {
+      const response = await this.request<any>("/api/hotels/ManualBook", {
+        method: "POST",
+        body: JSON.stringify({
+          opportunityId: params.opportunityId,
+          code: params.code,
+        }),
+      })
+
+      return {
+        success: response?.success || response?.bookingId,
+        bookingId: String(response?.bookingId || ""),
+        status: "confirmed",
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message,
+      }
+    }
+  }
+
+  // =====================
+  // CANCEL BOOKING
+  // =====================
+  async cancelBooking(preBookId: number): Promise<{ success: boolean; error?: string }> {
+    try {
+      await this.request(`/api/hotels/CancelRoomActive?prebookId=${preBookId}`, {
+        method: "DELETE",
+      })
+      return { success: true }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }
+
+  // =====================
+  // ROOM MANAGEMENT
+  // =====================
+
+  async getActiveRooms(params?: {
+    startDate?: string
+    endDate?: string
+    hotelName?: string
+    hotelStars?: number
+    city?: string
+    roomBoard?: string
+    roomCategory?: string
+    provider?: string
+  }): Promise<any[]> {
+    const response = await this.request<any>("/api/hotels/GetRoomsActive", {
+      method: "POST",
+      body: JSON.stringify(params || {}),
+    })
+    return Array.isArray(response) ? response : []
+  }
+
+  async getSoldRooms(params?: {
+    startDate?: string
+    endDate?: string
+    hotelName?: string
+  }): Promise<any[]> {
+    const response = await this.request<any>("/api/hotels/GetRoomsSales", {
+      method: "POST",
+      body: JSON.stringify(params || {}),
+    })
+    return Array.isArray(response) ? response : []
+  }
+
+  async getCancelledRooms(params?: {
+    startDate?: string
+    endDate?: string
+    hotelName?: string
+  }): Promise<any[]> {
+    const response = await this.request<any>("/api/hotels/GetRoomsCancel", {
+      method: "POST",
+      body: JSON.stringify(params || {}),
+    })
+    return Array.isArray(response) ? response : []
+  }
+
+  // =====================
+  // DASHBOARD
+  // =====================
+  async getDashboardInfo(params?: {
+    hotelStars?: number
+    city?: string
+    hotelName?: string
+    reservationMonthDate?: string
+    checkInMonthDate?: string
+    provider?: string
+  }): Promise<any> {
+    const response = await this.request<any>("/api/hotels/GetDashboardInfo", {
+      method: "POST",
+      body: JSON.stringify(params || {}),
+    })
+    return response || {}
+  }
+
+  // =====================
+  // OPPORTUNITIES
+  // =====================
+
+  async getOpportunities(params?: {
+    startDate?: string
+    endDate?: string
+  }): Promise<any[]> {
+    const response = await this.request<any>("/api/hotels/GetOpportunities", {
+      method: "POST",
+      body: JSON.stringify(params || {}),
+    })
+    return Array.isArray(response) ? response : []
+  }
+
+  async insertOpportunity(params: {
+    hotelId?: number
+    startDateStr: string
+    endDateStr: string
+    boardId: number
+    categoryId: number
+    buyPrice: number
+    pushPrice: number
+    maxRooms: number
+    paxAdults?: number
+    paxChildren?: number[]
+  }): Promise<{ success: boolean; opportunityId?: number; error?: string }> {
+    try {
+      const response = await this.request<any>("/api/hotels/InsertOpportunity", {
+        method: "POST",
+        body: JSON.stringify(params),
+      })
+      return { success: true, opportunityId: response?.opportunityId }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }
+
+  // =====================
+  // PRICE UPDATE
+  // =====================
+  async updatePushPrice(preBookId: number, pushPrice: number): Promise<{ success: boolean; error?: string }> {
+    try {
+      await this.request("/api/hotels/UpdateRoomsActivePushPrice", {
+        method: "POST",
+        body: JSON.stringify({
+          preBookId,
+          pushPrice,
+        }),
+      })
+      return { success: true }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }
+
+  // =====================
+  // ARCHIVE
+  // =====================
+  async getRoomArchive(params: {
+    stayFrom?: string
+    stayTo?: string
+    hotelName?: string
+    minPrice?: number
+    maxPrice?: number
+    city?: string
+    roomBoard?: string
+    roomCategory?: string
+    pageNumber?: number
+    pageSize?: number
+  }): Promise<{ data: any[]; totalCount: number }> {
+    const response = await this.request<any>("/api/hotels/GetRoomArchiveData", {
+      method: "POST",
+      body: JSON.stringify({
+        ...params,
+        pageNumber: params.pageNumber || 1,
+        pageSize: params.pageSize || 50,
+      }),
+    })
+
+    return {
+      data: response?.data || [],
+      totalCount: response?.totalCount || 0,
+    }
+  }
+
+  async refreshToken(): Promise<string> {
+    try {
+      const formData = new URLSearchParams()
+      formData.append(
+        "client_secret",
+        process.env.MEDICI_CLIENT_SECRET || "zlbgGGxz~|l3.Q?XXAT)uT!Lty,kJC>R?`:k?oQH$I=P7rL<R:Em:qDaM1G(jFU7",
+      )
+
+      const response = await fetch(`${this.baseUrl}/api/auth/OnlyNightUsersTokenAPI`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: formData.toString(),
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Token refresh failed: ${response.status} - ${errorText}`)
+      }
+
+      const data = await response.json()
+      this.token = data.token || data.access_token || data.aether_access_token
+      return this.token
+    } catch (error: any) {
+      console.error("Failed to refresh token:", error.message)
+      throw error
+    }
   }
 
   private transformSearchResults(response: any): HotelSearchResult[] {
-    console.log("[v0] ====== TRANSFORM SEARCH RESULTS ======")
-    console.log("[v0] Raw API response type:", typeof response)
-    console.log("[v0] Raw API response keys:", response ? Object.keys(response) : "null")
-    console.log("[v0] Raw API response (first 3000 chars):", JSON.stringify(response, null, 2).substring(0, 3000))
-
     if (!response) {
-      console.log("[v0] No response from API")
       return []
     }
 
-    // Handle different response formats
     let items: any[] = []
 
     if (Array.isArray(response)) {
@@ -349,29 +484,12 @@ class MediciApiClient {
       items = response.data
     }
 
-    console.log("[v0] Items count:", items.length)
-    if (items.length > 0) {
-      console.log("[v0] First item FULL structure:", JSON.stringify(items[0], null, 2))
-      console.log("[v0] First item keys:", Object.keys(items[0]))
-
-      if (items[0].items && Array.isArray(items[0].items)) {
-        console.log("[v0] First item has nested items, count:", items[0].items.length)
-        if (items[0].items[0]) {
-          console.log("[v0] First nested item FULL:", JSON.stringify(items[0].items[0], null, 2))
-          console.log("[v0] First nested item keys:", Object.keys(items[0].items[0]))
-        }
-      }
-    }
-
     const hotelMap = new Map<number, HotelSearchResult>()
 
     for (const item of items) {
       const hotelIdRaw = item.id || item.hotelId || item.hotelCode || item.HotelId || item.hotel_id || 0
       const hotelId = typeof hotelIdRaw === "number" ? hotelIdRaw : Number.parseInt(String(hotelIdRaw), 10) || 0
       const hotelName = item.name || item.hotelName || item.HotelName || "Unknown Hotel"
-
-      console.log(`[v0] Processing hotel: ${hotelName}`)
-      console.log(`[v0] - hotelId raw: ${hotelIdRaw}, parsed: ${hotelId}`)
 
       if (!hotelMap.has(hotelId)) {
         hotelMap.set(hotelId, {
@@ -391,9 +509,7 @@ class MediciApiClient {
 
       const hotel = hotelMap.get(hotelId)!
 
-      // Process rooms from nested items array
       const roomItems = item.items || [item]
-      console.log(`[v0] Hotel ${hotelName} has ${roomItems.length} room items`)
 
       for (let roomIdx = 0; roomIdx < roomItems.length; roomIdx++) {
         const roomItem = roomItems[roomIdx]
@@ -412,53 +528,31 @@ class MediciApiClient {
           roomItem.key,
           roomItem.Key,
           roomItem.id?.toString(),
+          roomItem.rate?.code,
+          roomItem.rate?.key,
+          roomItem.option?.code,
+          roomItem.booking?.code,
         ]
 
-        console.log(`[v0] Room ${roomIdx} - All possible code fields:`, possibleCodeFields)
-        console.log(`[v0] Room ${roomIdx} - ALL keys:`, Object.keys(roomItem))
-        console.log(`[v0] Room ${roomIdx} - FULL data:`, JSON.stringify(roomItem, null, 2).substring(0, 1500))
-
-        // Find the first valid string code (length > 5)
         let roomCode = ""
         for (const codeField of possibleCodeFields) {
-          if (codeField && typeof codeField === "string" && codeField.length > 5) {
+          if (codeField && typeof codeField === "string" && codeField.length > 0) {
             roomCode = codeField
-            console.log(`[v0] ✅ Found valid room code: ${roomCode.substring(0, 50)}...`)
             break
           }
         }
 
-        // If still no code, use the full object as string if it looks like a code
         if (!roomCode) {
-          // Sometimes the code is in a nested property
-          if (roomItem.rate?.code) roomCode = roomItem.rate.code
-          else if (roomItem.option?.code) roomCode = roomItem.option.code
-          else if (roomItem.booking?.code) roomCode = roomItem.booking.code
-        }
-
-        if (!roomCode) {
-          console.error(`[v0] ❌ WARNING: No room code found for room ${roomItem.name || "unnamed"}!`)
-          console.error(`[v0] This room will not be bookable. Check API response format.`)
-          console.log(`[v0] Available room data keys:`, Object.keys(roomItem))
-
-          // As a last resort, try to use the entire roomItem as JSON if it contains the data
-          // This is a fallback and may not work with all providers
-          if (roomItem.code === undefined && Object.keys(roomItem).length > 0) {
-            console.log(`[v0] Attempting to use roomItem data as fallback code`)
-            // Don't set roomCode here - we want to leave it empty to catch this in booking
-          }
-        } else {
-          console.log(`[v0] ✅ Final room code for ${roomItem.name || "unnamed"}: ${roomCode.substring(0, 50)}...`)
+          const tempCode = `TEMP-${hotelId}-${roomItem.id || Date.now()}-${roomIdx}`
+          roomCode = tempCode
         }
 
         const price = extractPriceFromRoom(roomItem)
-        console.log(`[v0] Extracted price: ${price}`)
 
         hotel.rooms.push({
-          code: roomCode || "", // Store empty string if no code found - will be caught in booking validation
+          code: roomCode,
           roomId: String(roomItem.id || roomItem.roomId || `${hotel.hotelId}-${hotel.rooms.length + 1}`),
           roomName: roomItem.name || roomItem.roomName || "Standard Room",
-          roomType: roomItem.category || roomItem.roomType || "standard",
           roomCategory: roomItem.category || roomItem.roomType || "standard",
           categoryId: roomItem.categoryId || roomItem.category_id || 1,
           roomImage: getRoomMainImage(roomItem),
@@ -482,457 +576,11 @@ class MediciApiClient {
     }
 
     const results = Array.from(hotelMap.values())
-    console.log("[v0] ====== TRANSFORM COMPLETE ======")
-    console.log("[v0] Total hotels:", results.length)
-
-    // Log summary of each hotel and its rooms with codes
-    for (const hotel of results) {
-      console.log(`[v0] Hotel: ${hotel.hotelName} (ID: ${hotel.hotelId})`)
-      for (const room of hotel.rooms) {
-        console.log(`[v0]   - Room: ${room.roomName}, Code: ${room.code?.substring(0, 30)}..., Price: ${room.buyPrice}`)
-      }
-    }
-
     return results
-  }
-
-  // =====================
-  // STEP 2: PRE-BOOK
-  // =====================
-  async preBook(params: {
-    code: string
-    dateFrom: string
-    dateTo: string
-    hotelId: number
-    adults: number
-    children?: number[]
-  }): Promise<PreBookResult> {
-    // Build the inner request according to Medici API documentation
-    const innerRequest = {
-      services: [
-        {
-          searchCodes: [
-            {
-              code: params.code,
-              pax: [
-                {
-                  adults: params.adults,
-                  children: params.children || [],
-                },
-              ],
-            },
-          ],
-          searchRequest: {
-            currencies: ["USD"],
-            customerCountry: "IL",
-            dates: {
-              from: params.dateFrom,
-              to: params.dateTo,
-            },
-            destinations: [
-              {
-                id: params.hotelId,
-                type: "hotel",
-              },
-            ],
-            filters: [
-              { name: "payAtTheHotel", value: true },
-              { name: "onRequest", value: false },
-              { name: "showSpecialDeals", value: true },
-            ],
-            pax: [
-              {
-                adults: params.adults,
-                children: params.children || [],
-              },
-            ],
-            service: "hotels",
-          },
-        },
-      ],
-    }
-
-    const preBookBody = {
-      jsonRequest: JSON.stringify(innerRequest),
-    }
-
-    console.log("[v0] PreBook inner request:", JSON.stringify(innerRequest, null, 2))
-
-    const response = await this.request<any>("/api/hotels/PreBook", "POST", preBookBody)
-
-    console.log("[v0] PreBook raw response:", JSON.stringify(response, null, 2))
-
-    // Handle 204 No Content as success
-    if (response._status === 204) {
-      console.log("[v0] PreBook returned 204 - treating as success")
-      const generatedId = Math.abs(params.code.split("").reduce((a, b) => (a << 5) - a + b.charCodeAt(0), 0))
-      return {
-        preBookId: generatedId,
-        token: params.code,
-        status: "done",
-        priceConfirmed: 0,
-        currency: "USD",
-      }
-    }
-
-    // Extract token and price from response according to API documentation
-    const token = response?.token || response?.preBookToken || response?.Token || params.code
-    const preBookId = response?.preBookId || response?.prebookId || response?.PreBookId || response?.id || 0
-    const priceConfirmed =
-      response?.price?.amount || response?.netPrice?.amount || response?.totalPrice || response?.priceConfirmed || 0
-    const currency = response?.price?.currency || response?.netPrice?.currency || response?.currency || "USD"
-
-    const isSuccess = token || preBookId > 0 || response?.success || response?.status === "done"
-
-    return {
-      preBookId,
-      token,
-      status: isSuccess ? "done" : "failed",
-      priceConfirmed,
-      currency,
-    }
-  }
-
-  // =====================
-  // STEP 3: BOOK
-  // =====================
-  async book(params: {
-    code: string
-    token: string
-    preBookId?: number
-    dateFrom: string
-    dateTo: string
-    hotelId: number
-    adults: number
-    children: number[]
-    customer: {
-      title: string
-      firstName: string
-      lastName: string
-      email: string
-      phone: string
-      country?: string
-      city?: string
-      address?: string
-      zip?: string
-    }
-    voucherEmail?: string
-    agencyReference?: string
-  }): Promise<BookingResult> {
-    // Build adults array with lead passenger
-    const adultsArray: any[] = [
-      {
-        lead: true,
-        title: params.customer.title || "MR",
-        name: {
-          first: params.customer.firstName,
-          last: params.customer.lastName,
-        },
-        contact: {
-          address: params.customer.address || "",
-          city: params.customer.city || "",
-          country: params.customer.country || "IL",
-          email: params.customer.email,
-          phone: params.customer.phone,
-          state: "IL",
-          zip: params.customer.zip || "",
-        },
-      },
-    ]
-
-    // Add additional adults if needed (params.adults - 1 more)
-    for (let i = 1; i < params.adults; i++) {
-      adultsArray.push({
-        lead: false,
-        title: "MR",
-        name: {
-          first: `Guest${i + 1}`,
-          last: params.customer.lastName,
-        },
-      })
-    }
-
-    // Build children array
-    const childrenArray = (params.children || []).map((age, index) => ({
-      age,
-      name: {
-        first: `Child${index + 1}`,
-        last: params.customer.lastName,
-      },
-    }))
-
-    // Build the inner request according to Medici API documentation
-    const innerRequest = {
-      customer: {
-        title: params.customer.title || "MR",
-        name: {
-          first: params.customer.firstName,
-          last: params.customer.lastName,
-        },
-        birthDate: "1990-01-01", // Default birthdate
-        contact: {
-          address: params.customer.address || "",
-          city: params.customer.city || "",
-          country: params.customer.country || "IL",
-          email: params.customer.email,
-          phone: params.customer.phone,
-          state: "IL",
-          zip: params.customer.zip || "",
-        },
-      },
-      paymentMethod: {
-        methodName: "account_credit",
-      },
-      reference: {
-        agency: params.agencyReference || "BookingEngine",
-        voucherEmail: params.voucherEmail || params.customer.email,
-      },
-      services: [
-        {
-          bookingRequest: [
-            {
-              code: params.code,
-              pax: [
-                {
-                  adults: adultsArray,
-                  children: childrenArray,
-                },
-              ],
-            },
-          ],
-          token: params.token,
-        },
-      ],
-      searchRequest: {
-        currencies: ["USD"],
-        customerCountry: "IL",
-        dates: {
-          from: params.dateFrom,
-          to: params.dateTo,
-        },
-        destinations: [
-          {
-            id: params.hotelId,
-            type: "hotel",
-          },
-        ],
-        filters: [
-          { name: "payAtTheHotel", value: true },
-          { name: "onRequest", value: false },
-          { name: "showSpecialDeals", value: true },
-        ],
-        pax: [
-          {
-            adults: params.adults,
-            children: params.children || [],
-          },
-        ],
-        service: "hotels",
-      },
-    }
-
-    const bookBody = {
-      jsonRequest: JSON.stringify(innerRequest),
-    }
-
-    console.log("[v0] Book inner request:", JSON.stringify(innerRequest, null, 2))
-
-    try {
-      const response = await this.request<any>("/api/hotels/Book", "POST", bookBody)
-
-      console.log("[v0] Book raw response:", JSON.stringify(response, null, 2))
-
-      // Check response according to API documentation
-      const isSuccess =
-        response?.status === "done" ||
-        response?.bookRes?.content?.status === "confirmed" ||
-        response?.bookingId ||
-        response?.bookingID ||
-        response?.success
-
-      return {
-        success: isSuccess,
-        bookingId: String(response?.bookingId || response?.bookingID || response?.bookRes?.content?.bookingId || ""),
-        supplierReference:
-          response?.supplierReference || response?.supplierRef || response?.bookRes?.content?.supplierReference || "",
-        status: isSuccess ? "confirmed" : "failed",
-      }
-    } catch (error: any) {
-      console.error("[v0] Book error:", error)
-      return {
-        success: false,
-        error: error.message || "Booking failed",
-        status: "failed",
-      }
-    }
-  }
-
-  // =====================
-  // MANUAL BOOK (by code)
-  // =====================
-  async manualBook(params: { opportunityId: number; code: string }): Promise<BookingResult> {
-    try {
-      const response = await this.request<any>("/api/hotels/ManualBook", "POST", {
-        opportunityId: params.opportunityId,
-        code: params.code,
-      })
-
-      return {
-        success: response?.success || response?.bookingId,
-        bookingId: String(response?.bookingId || ""),
-        status: "confirmed",
-      }
-    } catch (error: any) {
-      return {
-        success: false,
-        error: error.message,
-      }
-    }
-  }
-
-  // =====================
-  // CANCEL BOOKING
-  // =====================
-  async cancelBooking(preBookId: number): Promise<{ success: boolean; error?: string }> {
-    try {
-      await this.request(`/api/hotels/CancelRoomActive?prebookId=${preBookId}`, "DELETE")
-      return { success: true }
-    } catch (error: any) {
-      return { success: false, error: error.message }
-    }
-  }
-
-  // =====================
-  // ROOM MANAGEMENT
-  // =====================
-
-  async getActiveRooms(params?: {
-    startDate?: string
-    endDate?: string
-    hotelName?: string
-    hotelStars?: number
-    city?: string
-    roomBoard?: string
-    roomCategory?: string
-    provider?: string
-  }): Promise<any[]> {
-    const response = await this.request<any>("/api/hotels/GetRoomsActive", "POST", params || {})
-    return Array.isArray(response) ? response : []
-  }
-
-  async getSoldRooms(params?: {
-    startDate?: string
-    endDate?: string
-    hotelName?: string
-  }): Promise<any[]> {
-    const response = await this.request<any>("/api/hotels/GetRoomsSales", "POST", params || {})
-    return Array.isArray(response) ? response : []
-  }
-
-  async getCancelledRooms(params?: {
-    startDate?: string
-    endDate?: string
-    hotelName?: string
-  }): Promise<any[]> {
-    const response = await this.request<any>("/api/hotels/GetRoomsCancel", "POST", params || {})
-    return Array.isArray(response) ? response : []
-  }
-
-  // =====================
-  // DASHBOARD
-  // =====================
-  async getDashboardInfo(params?: {
-    hotelStars?: number
-    city?: string
-    hotelName?: string
-    reservationMonthDate?: string
-    checkInMonthDate?: string
-    provider?: string
-  }): Promise<any> {
-    const response = await this.request<any>("/api/hotels/GetDashboardInfo", "POST", params || {})
-    return response || {}
-  }
-
-  // =====================
-  // OPPORTUNITIES
-  // =====================
-
-  async getOpportunities(params?: {
-    startDate?: string
-    endDate?: string
-  }): Promise<any[]> {
-    const response = await this.request<any>("/api/hotels/GetOpportunities", "POST", params || {})
-    return Array.isArray(response) ? response : []
-  }
-
-  async insertOpportunity(params: {
-    hotelId?: number
-    startDateStr: string
-    endDateStr: string
-    boardId: number
-    categoryId: number
-    buyPrice: number
-    pushPrice: number
-    maxRooms: number
-    paxAdults?: number
-    paxChildren?: number[]
-  }): Promise<{ success: boolean; opportunityId?: number; error?: string }> {
-    try {
-      const response = await this.request<any>("/api/hotels/InsertOpportunity", "POST", params)
-      return { success: true, opportunityId: response?.opportunityId }
-    } catch (error: any) {
-      return { success: false, error: error.message }
-    }
-  }
-
-  // =====================
-  // PRICE UPDATE
-  // =====================
-  async updatePushPrice(preBookId: number, pushPrice: number): Promise<{ success: boolean; error?: string }> {
-    try {
-      await this.request("/api/hotels/UpdateRoomsActivePushPrice", "POST", {
-        preBookId,
-        pushPrice,
-      })
-      return { success: true }
-    } catch (error: any) {
-      return { success: false, error: error.message }
-    }
-  }
-
-  // =====================
-  // ARCHIVE
-  // =====================
-  async getRoomArchive(params: {
-    stayFrom?: string
-    stayTo?: string
-    hotelName?: string
-    minPrice?: number
-    maxPrice?: number
-    city?: string
-    roomBoard?: string
-    roomCategory?: string
-    pageNumber?: number
-    pageSize?: number
-  }): Promise<{ data: any[]; totalCount: number }> {
-    const response = await this.request<any>("/api/hotels/GetRoomArchiveData", "POST", {
-      ...params,
-      pageNumber: params.pageNumber || 1,
-      pageSize: params.pageSize || 50,
-    })
-
-    return {
-      data: response?.data || [],
-      totalCount: response?.totalCount || 0,
-    }
   }
 }
 
-// Export singleton instance
 export const mediciApi = new MediciApiClient()
-
-// Export class for custom instances
-export { MediciApiClient }
 
 // =====================
 // HELPER FUNCTIONS
@@ -940,21 +588,17 @@ export { MediciApiClient }
 
 function buildFullImageUrl(imagePath: string | undefined): string {
   if (!imagePath) return ""
-  // If already a full URL, return as is
   if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
     return imagePath
   }
-  // Build full URL from relative path
   return `${MEDICI_IMAGES_BASE}${imagePath}`
 }
 
 function getHotelMainImage(item: any): string {
-  // Try different image sources
   if (item.imageUrl) return buildFullImageUrl(item.imageUrl)
   if (item.image) return buildFullImageUrl(item.image)
   if (item.mainImage) return buildFullImageUrl(item.mainImage)
 
-  // Try images array
   if (item.images && Array.isArray(item.images) && item.images.length > 0) {
     const firstImage = item.images[0]
     if (typeof firstImage === "string") return buildFullImageUrl(firstImage)
@@ -962,7 +606,6 @@ function getHotelMainImage(item: any): string {
     if (firstImage?.path) return buildFullImageUrl(firstImage.path)
   }
 
-  // Try items[0].images
   if (item.items && item.items[0]?.images && item.items[0].images.length > 0) {
     return buildFullImageUrl(item.items[0].images[0])
   }
@@ -973,7 +616,6 @@ function getHotelMainImage(item: any): string {
 function buildImagesArray(item: any): string[] {
   const images: string[] = []
 
-  // Add from images array
   if (item.images && Array.isArray(item.images)) {
     for (const img of item.images) {
       if (typeof img === "string") {
@@ -986,7 +628,6 @@ function buildImagesArray(item: any): string[] {
     }
   }
 
-  // Add from items[0].images
   if (item.items && item.items[0]?.images) {
     for (const img of item.items[0].images) {
       if (typeof img === "string") {
@@ -999,10 +640,6 @@ function buildImagesArray(item: any): string[] {
 }
 
 function extractPriceFromRoom(room: any): number {
-  console.log("[v0] extractPriceFromRoom - Full room object keys:", Object.keys(room || {}))
-  console.log("[v0] extractPriceFromRoom - Room data sample:", JSON.stringify(room, null, 2).substring(0, 800))
-
-  // Try all possible price locations based on API documentation
   const priceLocations = [
     { name: "price.amount", value: room.price?.amount },
     { name: "price.value", value: room.price?.value },
@@ -1023,33 +660,26 @@ function extractPriceFromRoom(room: any): number {
     { name: "TotalPrice", value: room.TotalPrice },
   ]
 
-  console.log("[v0] All price locations checked:", priceLocations.map((p) => `${p.name}: ${p.value}`).join(", "))
-
   for (const { name, value } of priceLocations) {
     if (typeof value === "number" && value > 0) {
-      console.log(`[v0] Found price at ${name}: ${value}`)
       return value
     }
     if (typeof value === "string") {
       const parsed = Number.parseFloat(value)
       if (!isNaN(parsed) && parsed > 0) {
-        console.log(`[v0] Found price at ${name} (parsed from string): ${parsed}`)
         return parsed
       }
     }
   }
 
-  console.log("[v0] No price found in room object")
   return 0
 }
 
 function getRoomMainImage(room: any): string {
-  // Try different image sources
   if (room.imageUrl) return buildFullImageUrl(room.imageUrl)
   if (room.image) return buildFullImageUrl(room.image)
   if (room.mainImage) return buildFullImageUrl(room.mainImage)
 
-  // Try images array
   if (room.images && Array.isArray(room.images) && room.images.length > 0) {
     const firstImage = room.images[0]
     if (typeof firstImage === "string") return buildFullImageUrl(firstImage)
@@ -1063,7 +693,6 @@ function getRoomMainImage(room: any): string {
 function buildRoomImagesArray(room: any): string[] {
   const images: string[] = []
 
-  // Add from images array
   if (room.images && Array.isArray(room.images)) {
     for (const img of room.images) {
       if (typeof img === "string") {

@@ -9,24 +9,8 @@ import { bookingRepository } from "@/lib/db/booking-repository"
 export async function POST(request: NextRequest) {
   const startTime = Date.now()
 
-  // Apply rate limiting
-  const rateLimitResult = await applyRateLimit(request, RateLimitConfig.book)
-  if (!rateLimitResult.success) {
-    logger.warn("Rate limit exceeded for booking", {
-      path: "/api/booking/book",
-    })
-    return rateLimitResult.response
-  }
-
   try {
     const body = await request.json()
-
-    logger.apiRequest("POST", "/api/booking/book", {
-      hotelId: body.hotelId,
-      dateFrom: body.dateFrom,
-      dateTo: body.dateTo,
-      customerEmail: body.customer?.email,
-    })
 
     // Validate input with Zod
     const validated = BookingSchema.parse(body)
@@ -169,30 +153,8 @@ export async function POST(request: NextRequest) {
       supplierReference: result.supplierReference,
       status: result.status,
     })
-  } catch (error) {
-    const duration = Date.now() - startTime
-
-    if (error instanceof z.ZodError) {
-      logger.warn("Booking validation failed", { errors: error.errors })
-      logger.apiResponse("POST", "/api/booking/book", 400, duration)
-
-      return NextResponse.json(
-        {
-          error: "Invalid booking parameters",
-          details: error.errors,
-        },
-        { status: 400 }
-      )
-    }
-
-    logger.error("Booking API error", error)
-    logger.apiResponse("POST", "/api/booking/book", 500, duration)
-
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Booking failed",
-      },
-      { status: 500 }
-    )
+  } catch (error: any) {
+    console.error("Book API Error:", error.message)
+    return NextResponse.json({ error: error.message || "Booking failed" }, { status: 500 })
   }
 }

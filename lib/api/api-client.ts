@@ -236,24 +236,20 @@ class DualLayerAPIClient {
 
     // Try Medici Direct first (primary)
     if (mediciDirectClient.isConfigured()) {
-      try {
-        logger.info("[API Client] Attempting cancel via Medici Direct (primary)")
+      logger.info("[API Client] Attempting cancel via Medici Direct (primary)")
 
-        const result = await mediciDirectClient.cancelRoom(params)
+      const result = await mediciDirectClient.cancelRoom(params)
 
+      // Check if cancellation succeeded
+      if (result.success) {
         logger.info("[API Client] ✅ Cancel successful via Medici Direct")
-
         return result
-      } catch (error) {
-        if (shouldFallback(error)) {
-          logger.warn("[API Client] ⚠️  Medici Direct cancel failed, falling back to MANUS", {
-            error: error instanceof Error ? error.message : String(error),
-          })
-        } else {
-          logger.error("[API Client] ❌ Medici Direct cancel failed (no fallback)", error)
-          throw error
-        }
       }
+
+      // Cancellation failed, try fallback if available
+      logger.warn("[API Client] ⚠️  Medici Direct cancel failed, trying MANUS fallback", {
+        error: result.error,
+      })
     }
 
     // Fallback to MANUS
@@ -262,12 +258,24 @@ class DualLayerAPIClient {
 
       const result = await manusClient.cancelRoom(params.prebookId)
 
-      logger.info("[API Client] ✅ Cancel successful via MANUS")
+      if (result.success) {
+        logger.info("[API Client] ✅ Cancel successful via MANUS")
+        return result
+      }
 
+      logger.error("[API Client] ❌ MANUS cancel also failed", {
+        error: result.error,
+      })
       return result
     }
 
-    throw new Error("No API configured for cancellation")
+    // Neither API is configured or both failed
+    if (!mediciDirectClient.isConfigured() && !manusClient.isConfigured()) {
+      throw new Error("No API configured for cancellation")
+    }
+
+    // Return the failed result from Medici Direct
+    return { success: false, error: "Cancellation failed on all APIs" }
   }
 
   /**

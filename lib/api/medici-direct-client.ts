@@ -239,21 +239,33 @@ class MediciDirectClient {
    * Cancel a room
    * DELETE /api/hotels/CancelRoomDirectJson
    */
-  async cancelRoom(params: MediciCancelParams): Promise<any> {
+  async cancelRoom(params: MediciCancelParams): Promise<{ success: boolean; error?: string }> {
     logger.info("[Medici Direct] Cancel request", {
       prebookId: params.prebookId,
     })
 
-    const result = await this.request<any>(
-      `/api/hotels/CancelRoomDirectJson?prebookId=${params.prebookId}`,
-      "DELETE"
-    )
+    try {
+      const result = await this.request<any>(
+        `/api/hotels/CancelRoomDirectJson?prebookId=${params.prebookId}`,
+        "DELETE"
+      )
 
-    logger.info("[Medici Direct] Cancel completed", {
-      success: result.success,
-    })
+      logger.info("[Medici Direct] Cancel completed", {
+        success: true,
+      })
 
-    return result
+      // Normalize response format
+      return {
+        success: true,
+        ...result,
+      }
+    } catch (error: any) {
+      logger.error("[Medici Direct] Cancel failed", error)
+      return {
+        success: false,
+        error: error.message || "Cancellation failed",
+      }
+    }
   }
 
   /**

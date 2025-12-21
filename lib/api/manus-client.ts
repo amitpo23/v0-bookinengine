@@ -207,22 +207,42 @@ class ManusClient {
       status: result.status,
     })
 
-    return result
+    // Normalize response format
+    return {
+      success: result.status === "confirmed" || !!result.bookingId,
+      bookingId: result.bookingId,
+      supplierReference: result.supplierReference,
+      status: result.status,
+      error: result.error,
+      ...result,
+    }
   }
 
   /**
    * Cancel via MANUS
    */
-  async cancelRoom(prebookId: number): Promise<any> {
+  async cancelRoom(prebookId: number): Promise<{ success: boolean; error?: string }> {
     logger.info("[MANUS] Cancel request", { prebookId })
 
-    const result = await this.request<any>(`/api/hotels/cancel/${prebookId}`, "DELETE")
+    try {
+      const result = await this.request<any>(`/api/hotels/cancel/${prebookId}`, "DELETE")
 
-    logger.info("[MANUS] Cancel completed", {
-      success: result.success,
-    })
+      logger.info("[MANUS] Cancel completed", {
+        success: true,
+      })
 
-    return result
+      // Normalize response format
+      return {
+        success: true,
+        ...result,
+      }
+    } catch (error: any) {
+      logger.error("[MANUS] Cancel failed", error)
+      return {
+        success: false,
+        error: error.message || "Cancellation failed",
+      }
+    }
   }
 
   /**

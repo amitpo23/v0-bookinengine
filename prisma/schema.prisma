@@ -183,3 +183,90 @@ enum EmailStatus {
   SENT
   FAILED
 }
+
+// ==============================================
+// A/B TESTING FOR AI PROMPTS
+// ==============================================
+
+// Experiment - A/B test configuration
+model Experiment {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+
+  active      Boolean  @default(true)
+  startDate   DateTime @default(now())
+  endDate     DateTime?
+
+  variants    PromptVariant[]
+  assignments ExperimentAssignment[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([active])
+  @@index([startDate])
+}
+
+// PromptVariant - Different versions of AI prompts to test
+model PromptVariant {
+  id           String   @id @default(cuid())
+
+  experimentId String
+  experiment   Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+
+  name         String
+  systemPrompt String   @db.Text
+  weight       Int      @default(50) // Traffic split percentage (0-100)
+  active       Boolean  @default(true)
+
+  assignments  ExperimentAssignment[]
+  results      ExperimentResult[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([experimentId])
+  @@index([active])
+}
+
+// ExperimentAssignment - Track which variant each user sees
+model ExperimentAssignment {
+  id           String   @id @default(cuid())
+
+  experimentId String
+  experiment   Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+
+  variantId    String
+  variant      PromptVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  sessionId    String   // Unique session identifier
+
+  createdAt    DateTime @default(now())
+
+  @@unique([experimentId, sessionId])
+  @@index([variantId])
+  @@index([sessionId])
+}
+
+// ExperimentResult - Track performance metrics for each variant
+model ExperimentResult {
+  id               String   @id @default(cuid())
+
+  variantId        String
+  variant          PromptVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  sessionId        String
+
+  // Performance metrics
+  conversions      Int      @default(0)
+  responseTime     Int      @default(0) // in milliseconds
+  userSatisfaction Float    @default(0) // 1-5 rating
+  completedBooking Boolean  @default(false)
+
+  createdAt        DateTime @default(now())
+
+  @@index([variantId])
+  @@index([sessionId])
+  @@index([completedBooking])
+}

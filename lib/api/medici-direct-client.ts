@@ -51,6 +51,7 @@ export interface MediciPreBookParams {
   hotelId: number
   adults: number
   children: number[]
+  requestJson?: string // NEW: Use requestJson from search response
 }
 
 export interface MediciBookingParams {
@@ -184,22 +185,31 @@ class MediciDirectClient {
   /**
    * PreBook a room
    * POST /api/hotels/PreBook
+   * NOTE: According to new API spec, PreBook accepts only jsonRequest parameter
    */
   async preBook(params: MediciPreBookParams): Promise<any> {
     logger.info("[Medici Direct] PreBook request", {
       hotelId: params.hotelId,
       dateFrom: params.dateFrom,
       dateTo: params.dateTo,
+      hasRequestJson: !!params.requestJson,
     })
 
-    const result = await this.request<any>("/api/hotels/PreBook", "POST", {
-      code: params.code,
-      dateFrom: params.dateFrom,
-      dateTo: params.dateTo,
-      hotelId: params.hotelId,
-      adults: params.adults,
-      children: params.children,
-    })
+    // Use requestJson if provided (new API format), otherwise fall back to old format
+    const requestBody = params.requestJson
+      ? { jsonRequest: params.requestJson }
+      : {
+          code: params.code,
+          dateFrom: params.dateFrom,
+          dateTo: params.dateTo,
+          hotelId: params.hotelId,
+          adults: params.adults,
+          children: params.children,
+        }
+
+    logger.debug("[Medici Direct] PreBook body:", requestBody)
+
+    const result = await this.request<any>("/api/hotels/PreBook", "POST", requestBody)
 
     logger.info("[Medici Direct] PreBook completed", {
       preBookId: result.preBookId,

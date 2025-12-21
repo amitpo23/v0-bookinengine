@@ -29,6 +29,7 @@ export interface APIPreBookParams {
   hotelId: number
   adults: number
   children: number[]
+  requestJson?: string // NEW: Pass requestJson from search response (per new API spec)
 }
 
 export interface APIBookingParams {

@@ -106,9 +106,17 @@ async function searchMediciHotels(params: {
     const data = await response.json()
     console.log("[v0] Response items count:", data?.items?.length || 0)
 
+    // Use requestJson from API response (as per new API spec)
+    const requestJson = data.requestJson || JSON.stringify(body)
+    console.log("[v0] Captured requestJson:", {
+      source: data.requestJson ? "API response" : "fallback (request body)",
+      hasRequestJson: !!requestJson,
+      length: requestJson?.length || 0,
+    })
+
     return {
       results: data,
-      jsonRequest: JSON.stringify(body),
+      jsonRequest: requestJson,
     }
   } catch (error) {
     console.error("[v0] Search error:", error)
@@ -125,13 +133,22 @@ async function prebookRoom(params: {
   children: number[]
   requestJson: string
 }) {
-  console.log("[v0] PreBook with params:", params)
+  console.log("[v0] PreBook with params:", {
+    code: params.code,
+    hotelId: params.hotelId,
+    dateFrom: params.dateFrom,
+    dateTo: params.dateTo,
+    hasRequestJson: !!params.requestJson,
+    requestJsonLength: params.requestJson?.length || 0,
+  })
 
   const url = `${MEDICI_API_BASE}/api/hotels/PreBook`
 
   const body = {
     jsonRequest: params.requestJson,
   }
+
+  console.log("[v0] PreBook request body:", JSON.stringify(body).substring(0, 200) + "...")
 
   try {
     const response = await fetch(url, {
@@ -143,10 +160,16 @@ async function prebookRoom(params: {
       body: JSON.stringify(body),
     })
 
+    console.log("[v0] PreBook response status:", response.status)
+
     if (!response.ok) {
       const errorText = await response.text()
-      console.log("[v0] PreBook error:", errorText)
-      throw new Error(`PreBook error: ${response.status}`)
+      console.error("[v0] PreBook API error:", {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText,
+      })
+      throw new Error(`PreBook API error: ${response.status} - ${errorText}`)
     }
 
     const data = await response.json()
@@ -235,7 +258,7 @@ export async function POST(req: Request) {
     const isHebrew = language === "he"
     const hotelName = hotelConfig?.name || "Dizengoff Inn"
     const hotelApiName = hotelConfig?.apiSettings?.mediciHotelName || DEFAULT_HOTEL_NAME
-    const hotelCity = hotelConfig?.apiSettings?.mediciCity || hotelConfig?.city || "Tel Aviv"
+    const hotelCity = hotelConfig?.city || "Tel Aviv"
 
     console.log("[v0] Chat request - Hotel:", hotelName, "API Name:", hotelApiName)
     console.log("[v0] Booking state:", bookingState)
@@ -501,6 +524,14 @@ export async function POST(req: Request) {
             : "There was an issue reserving the room. Please try again or select another room.",
         })
       }
+    } else if (selectMatch && !bookingState?.jsonRequest) {
+      // User selected a room but jsonRequest is missing (e.g., page refresh or session lost)
+      console.error("[v0] Missing jsonRequest for PreBook - session may have been lost")
+      return Response.json({
+        message: isHebrew
+          ? "נראה שהמידע על החיפוש אבד. אנא חפש שוב את המלונות כדי להמשיך עם ההזמנה."
+          : "It seems the search information was lost. Please search for hotels again to continue with the booking.",
+      })
     }
 
     const bookMatch = text.match(/\[BOOK\](.*?)\[\/BOOK\]/s)

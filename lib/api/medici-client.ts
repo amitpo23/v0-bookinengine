@@ -59,36 +59,44 @@ export class MediciApiClient {
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`
-    const headers = {
+
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
       Authorization: `Bearer ${this.token}`,
-      ...options.headers,
+      ...(options.headers as Record<string, string>),
     }
 
-    const fetchOptions = {
-      ...options,
-      headers,
-    }
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers,
+      })
 
-    const response = await fetch(url, fetchOptions)
-
-    if (!response.ok) {
-      if (response.status === 401 && this.retries < this.maxRetries) {
-        this.retries++
-        await this.refreshToken()
-        return this.request<T>(endpoint, options)
-      } else if (response.status === 401) {
-        this.retries = 0
-        throw new Error(`Authentication failed: ${response.statusText}`)
+      if (response.status === 204) {
+        return {} as T
       }
-      throw new Error(`API Error ${response.status}: ${response.statusText}`)
-    }
 
-    if (response.status === 204) {
-      return {} as T
-    }
+      if (!response.ok) {
+        const errorBody = await response.text()
 
-    return response.json()
+        if (response.status === 401 && this.retries < this.maxRetries) {
+          this.retries++
+          await this.refreshToken()
+          return this.request<T>(endpoint, options)
+        }
+
+        throw new Error(`API Error ${response.status}: ${errorBody}`)
+      }
+
+      const data = await response.json()
+      this.retries = 0
+      return data
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error
+      }
+      throw new Error("Unknown error occurred")
+    }
   }
 
   // =====================
@@ -131,15 +139,12 @@ export class MediciApiClient {
       body: JSON.stringify(searchBody),
     })
 
-    const requestJson = response?.requestJson || null
-    const responseJson = response?.responseJson || JSON.stringify(response)
-
     const hotels = this.transformSearchResults(response)
 
     return hotels.map((hotel) => ({
       ...hotel,
-      requestJson,
-      responseJson,
+      requestJson: params,
+      responseJson: response,
     }))
   }
 
@@ -195,8 +200,8 @@ export class MediciApiClient {
       status: response?.status || (isSuccess ? "done" : "failed"),
       priceConfirmed,
       currency,
-      requestJson: response?.requestJson || params.jsonRequest,
-      responseJson: response?.responseJson || JSON.stringify(response),
+      requestJson: params.jsonRequest,
+      responseJson: response,
     }
   }
 

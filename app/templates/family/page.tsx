@@ -1,5 +1,6 @@
 "use client"
 
+import { PromotionBanner } from "@/components/promotions/promotion-banner"
 import { FamilySearchBar, FamilyRoomCard } from "@/components/booking/templates/family"
 import { BookingSteps, GuestDetailsForm, PaymentForm, BookingConfirmation } from "@/components/booking/templates/shared"
 import { useBookingEngine } from "@/hooks/use-booking-engine"
@@ -51,6 +52,9 @@ export default function FamilyTemplatePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-100 to-cyan-50" dir="rtl">
+      {/* Promotion Banner */}
+      <PromotionBanner />
+
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">

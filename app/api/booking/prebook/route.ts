@@ -1,39 +1,30 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { apiClient } from "@/lib/api/api-client"
-import { PreBookSchema } from "@/lib/validation/schemas"
-import { logger } from "@/lib/logger"
-import { z } from "zod"
-import { applyRateLimit, RateLimitConfig } from "@/lib/rate-limit"
+import { mediciApi } from "@/lib/api/medici-client"
+import { DEMO_MODE, mockPreBook } from "@/lib/demo/demo-mode"
 
 export async function POST(request: NextRequest) {
   try {
+    if (DEMO_MODE) {
+      const mockResult = await mockPreBook()
+      return NextResponse.json(mockResult)
+    }
+
     const body = await request.json()
 
-    // Validate input with Zod
-    const validated = PreBookSchema.parse(body)
+    const { jsonRequest } = body
 
-    logger.debug("Calling apiClient.preBook", {
-      hotelId: validated.hotelId,
-      dateFrom: validated.dateFrom,
-      dateTo: validated.dateTo,
-      adults: validated.adults,
-      hasRequestJson: !!validated.requestJson,
-    })
+    if (!jsonRequest || typeof jsonRequest !== "string") {
+      return NextResponse.json(
+        {
+          error: "jsonRequest is required - must be the requestJson from search results",
+          received: { jsonRequest: typeof jsonRequest },
+        },
+        { status: 400 },
+      )
+    }
 
-    const result = await apiClient.preBook({
-      code: validated.code,
-      dateFrom: validated.dateFrom,
-      dateTo: validated.dateTo,
-      hotelId: validated.hotelId,
-      adults: validated.adults,
-      children: validated.children,
-      requestJson: validated.requestJson,
-    })
-
-    logger.debug("PreBook result received", {
-      preBookId: result.preBookId,
-      status: result.status,
-      priceConfirmed: result.priceConfirmed,
+    const result = await mediciApi.preBook({
+      jsonRequest,
     })
 
     const hasValidResponse = result.token || result.preBookId || result.status === "done" || result.priceConfirmed > 0
@@ -56,7 +47,7 @@ export async function POST(request: NextRequest) {
       priceConfirmed: result.priceConfirmed,
       currency: result.currency,
       status: result.status,
-      requestJson: result.requestJson || validated.requestJson,
+      requestJson: result.requestJson,
       responseJson: result.responseJson,
     })
   } catch (error: any) {

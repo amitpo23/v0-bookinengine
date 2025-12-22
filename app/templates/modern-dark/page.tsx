@@ -1,5 +1,6 @@
 "use client"
 
+import { PromotionBanner } from "@/components/promotions/promotion-banner"
 import { ModernDarkSearchBar, ModernDarkRoomCard } from "@/components/booking/templates/modern-dark"
 import { BookingSteps, GuestDetailsForm, PaymentForm, BookingConfirmation } from "@/components/booking/templates/shared"
 import { useBookingEngine } from "@/hooks/use-booking-engine"
@@ -58,6 +59,9 @@ export default function ModernDarkTemplatePage() {
 
   return (
     <div className="min-h-screen bg-zinc-950" dir="rtl">
+      {/* Promotion Banner */}
+      <PromotionBanner />
+
       {/* Header */}
       <header className="bg-zinc-900 border-b border-zinc-800">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -129,7 +133,7 @@ export default function ModernDarkTemplatePage() {
             />
           </div>
           <div className="max-w-5xl mx-auto px-6 pb-16">
-            <h2 className="text-3xl font-bold text-white mb-8">החדרים הזמינים</h2>
+            <h2 className="text-3xl font-bold text-white mb-8">החדרים הזמינו</h2>
             {transformedRooms.length > 0 ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {transformedRooms.map((room) => (
@@ -142,7 +146,7 @@ export default function ModernDarkTemplatePage() {
               </div>
             ) : (
               <div className="text-center py-12 bg-zinc-800 rounded-lg">
-                <p className="text-zinc-400">לא נמצאו חדרים זמינים</p>
+                <p className="text-zinc-400">לא נמצאו חדרים זמינו</p>
                 <Button
                   className="mt-4 bg-cyan-500 hover:bg-cyan-600 text-black"
                   onClick={() => booking.goToStep("search")}

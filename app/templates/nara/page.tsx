@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { PromotionBanner } from "@/components/promotions/promotion-banner"
 import {
   NaraSearchBar,
   PriceComparison,
@@ -157,6 +158,9 @@ export default function NaraTemplatePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Promotion Banner */}
+      <PromotionBanner />
+
       {/* Header */}
       <header className="bg-white border-b">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">

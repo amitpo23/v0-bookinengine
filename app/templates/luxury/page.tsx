@@ -1,5 +1,6 @@
 "use client"
 
+import { PromotionBanner } from "@/components/promotions/promotion-banner"
 import { LuxurySearchBar, LuxuryRoomCard } from "@/components/booking/templates/luxury"
 import { BookingSteps, GuestDetailsForm, PaymentForm, BookingConfirmation } from "@/components/booking/templates/shared"
 import { useBookingEngine } from "@/hooks/use-booking-engine"
@@ -49,6 +50,9 @@ export default function LuxuryTemplatePage() {
 
   return (
     <div className="min-h-screen bg-stone-100" dir="rtl">
+      {/* Promotion Banner */}
+      <PromotionBanner />
+
       {/* Header */}
       <header className="bg-white border-b border-stone-200">
         <div className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">

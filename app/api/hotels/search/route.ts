@@ -1,12 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { apiClient } from "@/lib/api/api-client"
+import { mediciApi } from "@/lib/api/medici-client"
+import { DEMO_MODE } from "@/lib/demo/demo-mode"
+import { MOCK_HOTELS } from "@/lib/demo/mock-data"
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("[v0] Search API called")
-    console.log("[v0] MEDICI_TOKEN exists:", !!process.env.MEDICI_TOKEN)
-    console.log("[v0] MEDICI_BASE_URL exists:", !!process.env.MEDICI_BASE_URL)
-
     const body = await request.json()
 
     const { dateFrom, dateTo, hotelName, city, adults, children, stars, limit } = body
@@ -19,7 +17,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Either hotelName or city is required" }, { status: 400 })
     }
 
-    const results = await apiClient.searchHotels({
+    if (DEMO_MODE) {
+      const mockResults = MOCK_HOTELS.map((hotel) => ({
+        hotelId: hotel.hotelId,
+        hotelName: hotel.hotelName,
+        city: hotel.city,
+        stars: hotel.stars,
+        address: hotel.address,
+        imageUrl: hotel.hotelImage,
+        images: hotel.images,
+        description: hotel.description,
+        facilities: hotel.facilities,
+        rooms: hotel.rooms,
+        requestJson: hotel.requestJson,
+        responseJson: hotel.responseJson,
+      }))
+
+      return NextResponse.json({
+        success: true,
+        data: mockResults,
+        count: mockResults.length,
+      })
+    }
+
+    const results = await mediciApi.searchHotels({
       dateFrom,
       dateTo,
       hotelName: hotelName || undefined,

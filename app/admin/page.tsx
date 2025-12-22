@@ -19,7 +19,7 @@ import { ChatInterface } from "@/components/ai-chat/chat-interface"
 import { AiSettings } from "@/components/admin/ai-settings"
 import { AgentsManagement } from "@/components/admin/agents-management"
 import { RoomTypesManagement } from "@/components/admin/room-types-management"
-import { AnalyticsDashboard } from "@/components/admin/analytics-dashboard"
+import dynamic from "next/dynamic"
 import { getBookings, getDashboardStats } from "@/lib/admin-data"
 import { mockHotel, mockRooms } from "@/lib/mock-data"
 import type { Hotel } from "@/types/booking"
@@ -57,6 +57,8 @@ const DollarSignIcon = ({ className }: { className?: string }) => (
     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
   </svg>
 )
+
+const PromotionsManagement = dynamic(() => import("@/app/admin/promotions/page"), { ssr: false })
 
 function AdminDashboardContent() {
   const { currentHotel } = useHotelConfig()
@@ -96,7 +98,7 @@ function AdminDashboardContent() {
     rooms: { title: "ניהול חדרים", subtitle: "נהל את סוגי החדרים והזמינות" },
     roomtypes: { title: "סוגי חדרים", subtitle: "הגדר תמונות, תיאורים ומתקנים לכל סוג חדר" },
     pricing: { title: "ניהול תמחור", subtitle: "הגדר מחירים דינמיים לפי תאריכים" },
-    analytics: { title: "אנליטיקה ודוחות", subtitle: "מעקב אחר ביצועים והכנסות" },
+    promotions: { title: "ניהול מבצעים", subtitle: "צור ונהל מבצעים ומבצעים מיוחדים למובייל" },
     engines: { title: "הגדרות מנועים", subtitle: "הפעל וכבה מנועי הזמנות והגדר את ה-API" },
     agents: { title: "ניהול סוכנים", subtitle: "צור ונהל סוכני AI בעלי התמחויות שונות" },
     aiconfig: { title: "הגדרות AI", subtitle: "הנחיות, ידע וסגנון לצ'אט AI" },
@@ -185,7 +187,7 @@ function AdminDashboardContent() {
           {activeTab === "rooms" && <RoomsManagement rooms={mockRooms} />}
           {activeTab === "roomtypes" && <RoomTypesManagement />}
           {activeTab === "pricing" && <PricingCalendar rooms={mockRooms} />}
-          {activeTab === "analytics" && <AnalyticsDashboard />}
+          {activeTab === "promotions" && <PromotionsManagement />}
           {activeTab === "engines" && <EngineSettings />}
           {activeTab === "agents" && <AgentsManagement />}
           {activeTab === "aiconfig" && <AiSettings />}

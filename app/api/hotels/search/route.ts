@@ -18,6 +18,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (DEMO_MODE) {
+      console.log("🎭 DEMO MODE: Using mock hotel data")
+
+      await new Promise((resolve) => setTimeout(resolve, 800))
+
       const mockResults = MOCK_HOTELS.map((hotel) => ({
         hotelId: hotel.hotelId,
         hotelName: hotel.hotelName,

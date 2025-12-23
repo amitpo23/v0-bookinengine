@@ -32,6 +32,16 @@ const AMENITY_ICON_MAP = [
   { keywords: ['pool', 'spa'], icon: Waves },
 ];
 
+// Map amenity names to icons using lookup table
+const getAmenityIcon = (amenity: string) => {
+  const amenityLower = amenity.toLowerCase();
+  const match = AMENITY_ICON_MAP.find(({ keywords }) =>
+    keywords.some((keyword) => amenityLower.includes(keyword))
+  );
+  const IconComponent = match?.icon || MapPin;
+  return <IconComponent className="h-5 w-5 text-gray-600" />;
+};
+
 export function HotelAmenities({
   amenities,
   className = '',
@@ -40,16 +50,30 @@ export function HotelAmenities({
     return null;
   }
 
+  // Show max amenities to avoid overcrowding
   const displayAmenities = amenities.slice(0, MAX_DISPLAYED_AMENITIES);
   const hasMore = amenities.length > MAX_DISPLAYED_AMENITIES;
 
   return (
     <div className={className}>
-      <h4>Amenities & Services</h4>
-      {displayAmenities.map((amenity) => (
-        <div key={amenity}>{amenity}</div>
-      ))}
-      {hasMore && <div>+{amenities.length - MAX_DISPLAYED_AMENITIES} more</div>}
+      <h4 className="text-lg font-semibold text-gray-900 mb-3">Amenities & Services</h4>
+      <div className="grid grid-cols-2 gap-3">
+        {displayAmenities.map((amenity) => (
+          <div
+            key={amenity}
+            className="flex items-center gap-2 text-gray-700 text-sm"
+          >
+            {getAmenityIcon(amenity)}
+            <span>{amenity}</span>
+          </div>
+        ))}
+        {hasMore && (
+          <div className="flex items-center gap-2 text-blue-600 text-sm font-medium">
+            <span className="text-lg">+</span>
+            <span>+{amenities.length - MAX_DISPLAYED_AMENITIES} more amenities</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

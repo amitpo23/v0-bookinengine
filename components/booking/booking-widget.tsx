@@ -17,6 +17,7 @@ import { HotelSearchResults } from "./hotel-search-results"
 import { mockHotel, mockRooms } from "@/lib/mock-data"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { LoginButton } from '@/components/auth/login-button'
 
 // ... existing icon components ...
 const ArrowRightIcon = ({ className }: { className?: string }) => (
@@ -309,6 +310,9 @@ function BookingWidgetContent() {
             </div>
             <div className="xl:w-96 xl:flex-shrink-0">
               <div className="xl:sticky xl:top-28">
+                              <div className="mb-6 text-center">
+                <LoginButton />
+              </div>
                 <BookingSummary showContinue={false} />
               </div>
             </div>

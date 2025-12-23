@@ -7,8 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
-  const { dateFrom, hotelName, city, adults, children, stars, limit } = body    
-    // Support both old and new parameter formats
+  const { hotelName, city, adults, children, stars, limit } = body    // Support both old and new parameter formats
     // Old: dateFrom, dateTo, hotelName, city
     // New: destination, checkIn, checkOut, pax
     const dateFrom = body.dateFrom || body.checkIn

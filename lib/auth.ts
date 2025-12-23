@@ -9,7 +9,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
-  
+
   callbacks: {
     async signIn({ user, account }) {
       if (!user.email) return false
@@ -24,14 +24,12 @@ export const authOptions: NextAuthOptions = {
 
         if (!existingUser) {
           // Create new user in Supabase
-          await supabaseAdmin.from('users').insert([
-            {
-              email: user.email,
-              name: user.name,
-              image: user.image,
-              google_id: account?.providerAccountId,
-            },
-          ])
+          await supabaseAdmin.from('users').insert({
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            google_id: account?.providerAccountId,
+          })
         } else {
           // Update existing user
           await supabaseAdmin
@@ -39,7 +37,7 @@ export const authOptions: NextAuthOptions = {
             .update({
               name: user.name,
               image: user.image,
-              updated_at: new Date().toISOString(),
+              google_id: account?.providerAccountId,
             })
             .eq('email', user.email)
         }
@@ -52,8 +50,8 @@ export const authOptions: NextAuthOptions = {
     },
 
     async session({ session, token }) {
-      if (session.user?.email) {
-        // Fetch user data from Supabase
+      if (session.user) {
+        // Fetch additional user data from Supabase
         const { data: userData } = await supabaseAdmin
           .from('users')
           .select('*')
@@ -61,23 +59,20 @@ export const authOptions: NextAuthOptions = {
           .single()
 
         if (userData) {
-          session.user = {
-            ...session.user,
-            id: userData.id,
-            phone: userData.phone,
-            address: userData.address,
-            city: userData.city,
-            country: userData.country,
-          }
+          session.user.id = userData.id
+          session.user.address = userData.address
+          session.user.city = userData.city
+          session.user.phone = userData.phone
         }
       }
+
       return session
     },
   },
 
   pages: {
-    signIn: '/',  // Redirect to home page for sign in
-    error: '/',   // Error page
+    signIn: '/', // Redirect to home page for sign in
+    error: '/', // Error page
   },
 
   session: {
@@ -91,14 +86,13 @@ export const authOptions: NextAuthOptions = {
 declare module 'next-auth' {
   interface Session {
     user: {
-      id?: string
+      id: string
       name?: string | null
       email?: string | null
       image?: string | null
       phone?: string | null
       address?: string | null
       city?: string | null
-      country?: string | null
     }
   }
 }

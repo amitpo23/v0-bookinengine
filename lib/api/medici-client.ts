@@ -126,6 +126,7 @@ export class MediciApiClient {
       pax,
       stars: params.stars || null,
       limit: params.limit || null,
+      ShowExtendedData: true, // Get images, description, facilities from Medici
     }
 
     if (params.hotelName) {

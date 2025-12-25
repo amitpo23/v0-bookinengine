@@ -32,6 +32,8 @@ export interface RoomResult {
   images: string[]
   cancellationPolicy: string
   available: number
+  requestJson?: string
+  pax?: { adults: number; children: number[] }
 }
 
 export interface HotelResult {
@@ -150,17 +152,47 @@ export function useBookingEngine() {
       }))
 
       try {
+        // Build jsonRequest for PreBook API
+        const prebookRequest = {
+          services: [{
+            searchCodes: [{
+              code: room.code,
+              pax: [{
+                adults: state.searchParams?.adults || 2,
+                children: state.searchParams?.children || []
+              }]
+            }],
+            searchRequest: {
+              currencies: ["USD"],
+              customerCountry: "IL",
+              dates: {
+                from: state.searchParams ? format(state.searchParams.checkIn, "yyyy-MM-dd") : "",
+                to: state.searchParams ? format(state.searchParams.checkOut, "yyyy-MM-dd") : ""
+              },
+              destinations: [{
+                id: Number(hotel.hotelId),
+                type: "hotel"
+              }],
+              filters: [
+                { name: "payAtTheHotel", value: true },
+                { name: "onRequest", value: false },
+                { name: "showSpecialDeals", value: true }
+              ],
+              pax: [{
+                adults: state.searchParams?.adults || 2,
+                children: state.searchParams?.children || []
+              }],
+              service: "hotels"
+            }
+          }]
+        }
+
         // Call prebook API
         const response = await fetch("/api/booking/prebook", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            code: room.code,
-            dateFrom: state.searchParams ? format(state.searchParams.checkIn, "yyyy-MM-dd") : "",
-            dateTo: state.searchParams ? format(state.searchParams.checkOut, "yyyy-MM-dd") : "",
-            hotelId: hotel.hotelId,
-            adults: state.searchParams?.adults || 2,
-            children: state.searchParams?.children || [],
+            jsonRequest: JSON.stringify(prebookRequest)
           }),
         })
 
@@ -214,30 +246,104 @@ export function useBookingEngine() {
     setState((prev) => ({ ...prev, isLoading: true, error: null }))
 
     try {
+      // Extract guest info to avoid null checks
+      const guestInfo = state.guestInfo
+      const searchParams = state.searchParams
+      const selectedRoom = state.selectedRoom
+      const selectedHotel = state.selectedHotel
+      const prebookData = state.prebookData
+
+      // Build jsonRequest for Book API
+      const bookRequest = {
+        customer: {
+          title: guestInfo.title.toUpperCase(),
+          name: {
+            first: guestInfo.firstName,
+            last: guestInfo.lastName,
+          },
+          birthDate: "1990-01-01", // Default birth date
+          contact: {
+            address: guestInfo.address || "Main St 123",
+            city: guestInfo.city || "Tel Aviv",
+            country: guestInfo.country || "IL",
+            email: guestInfo.email,
+            phone: guestInfo.phone,
+            state: guestInfo.country || "IL",
+            zip: guestInfo.zip || "6439602",
+          },
+        },
+        paymentMethod: {
+          methodName: "account_credit",
+        },
+        reference: {
+          agency: "v0-bookinengine",
+          voucherEmail: guestInfo.email,
+        },
+        services: [
+          {
+            bookingRequest: [
+              {
+                code: selectedRoom.code,
+                pax: [
+                  {
+                    adults: Array.from({ length: searchParams.adults }, (_, i) => ({
+                      lead: i === 0,
+                      title: guestInfo.title.toUpperCase(),
+                      name: {
+                        first: i === 0 ? guestInfo.firstName : `Guest${i + 1}`,
+                        last: guestInfo.lastName,
+                      },
+                      contact: {
+                        address: guestInfo.address || "Main St 123",
+                        city: guestInfo.city || "Tel Aviv",
+                        country: guestInfo.country || "IL",
+                        email: guestInfo.email,
+                        phone: guestInfo.phone,
+                        state: guestInfo.country || "IL",
+                        zip: guestInfo.zip || "6439602",
+                      },
+                    })),
+                    children: [],
+                  },
+                ],
+                token: prebookData.token,
+              },
+            ],
+            searchRequest: {
+              currencies: ["USD"],
+              customerCountry: "IL",
+              dates: {
+                from: format(searchParams.checkIn, "yyyy-MM-dd"),
+                to: format(searchParams.checkOut, "yyyy-MM-dd"),
+              },
+              destinations: [
+                {
+                  id: Number(selectedHotel.hotelId),
+                  type: "hotel",
+                },
+              ],
+              filters: [
+                { name: "payAtTheHotel", value: true },
+                { name: "onRequest", value: false },
+                { name: "showSpecialDeals", value: true },
+              ],
+              pax: [
+                {
+                  adults: searchParams.adults,
+                  children: searchParams.children,
+                },
+              ],
+              service: "hotels",
+            },
+          },
+        ],
+      }
+
       const response = await fetch("/api/booking/book", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          code: state.selectedRoom.code,
-          token: state.prebookData.token,
-          preBookId: state.prebookData.preBookId,
-          dateFrom: format(state.searchParams.checkIn, "yyyy-MM-dd"),
-          dateTo: format(state.searchParams.checkOut, "yyyy-MM-dd"),
-          hotelId: state.selectedHotel.hotelId,
-          adults: state.searchParams.adults,
-          children: state.searchParams.children,
-          customer: {
-            title: state.guestInfo.title,
-            firstName: state.guestInfo.firstName,
-            lastName: state.guestInfo.lastName,
-            email: state.guestInfo.email,
-            phone: state.guestInfo.phone,
-            country: state.guestInfo.country || "IL",
-            city: state.guestInfo.city || "",
-            address: state.guestInfo.address || "",
-            zip: state.guestInfo.zip || "",
-          },
-          voucherEmail: state.guestInfo.email,
+          jsonRequest: JSON.stringify(bookRequest),
         }),
       })
 

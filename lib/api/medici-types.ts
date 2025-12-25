@@ -39,6 +39,8 @@ export interface RoomResult {
   currency: string
   cancellationPolicy: string
   available: number
+  requestJson?: string // Room code for prebook
+  pax?: { adults: number; children: number[] } // Occupancy info
 }
 
 export interface PreBookResponse {

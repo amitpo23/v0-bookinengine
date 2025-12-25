@@ -105,14 +105,43 @@ async function prebookRoom(params: {
   dateTo: string
   adults: number
   children: number[]
-  requestJson: string
+  searchRequestJson: string
 }) {
   console.log("[v0] PreBook with params:", params)
 
   const url = `${MEDICI_API_BASE}/api/hotels/PreBook`
 
+  // Parse the original search request to build PreBook request
+  let searchRequest
+  try {
+    searchRequest = JSON.parse(params.searchRequestJson)
+  } catch (error) {
+    console.error("[v0] Failed to parse search request:", error)
+    throw new Error("Invalid search request JSON")
+  }
+
+  // Build PreBook request according to Medici API format
+  const prebookRequest = {
+    services: [
+      {
+        searchCodes: [
+          {
+            code: params.code,
+            pax: [
+              {
+                adults: params.adults,
+                children: params.children,
+              },
+            ],
+          },
+        ],
+        searchRequest: searchRequest,
+      },
+    ],
+  }
+
   const body = {
-    jsonRequest: params.requestJson,
+    jsonRequest: JSON.stringify(prebookRequest),
   }
 
   try {
@@ -149,29 +178,79 @@ async function bookRoom(params: {
     email: string
     phone: string
   }
+  searchRequestJson: string
+  roomCode: string
+  adults: number
+  children: number[]
 }) {
   console.log("[v0] Book with params:", params)
 
   const url = `${MEDICI_API_BASE}/api/hotels/Book`
 
-  const body = {
-    jsonRequest: JSON.stringify({
-      customer: {
-        firstName: params.customer.firstName,
-        lastName: params.customer.lastName,
+  // Parse search request
+  let searchRequest
+  try {
+    searchRequest = JSON.parse(params.searchRequestJson)
+  } catch (error) {
+    console.error("[v0] Failed to parse search request:", error)
+    throw new Error("Invalid search request JSON")
+  }
+
+  // Build adult guests array
+  const adultGuests = []
+  for (let i = 0; i < params.adults; i++) {
+    adultGuests.push({
+      title: "MR",
+      name: {
+        first: i === 0 ? params.customer.firstName : `Guest${i + 1}`,
+        last: params.customer.lastName,
+      },
+      birthDate: "1990-01-01",
+    })
+  }
+
+  // Build Book request according to Medici API format
+  const bookRequest = {
+    customer: {
+      title: "MR",
+      name: {
+        first: params.customer.firstName,
+        last: params.customer.lastName,
+      },
+      birthDate: "1990-01-01",
+      contact: {
         email: params.customer.email,
         phone: params.customer.phone,
       },
-      paymentMethod: "card",
-      services: [
-        {
-          token: params.token,
-          bookingRequest: {
-            preBookId: params.preBookId,
+    },
+    paymentMethod: {
+      methodName: "account_credit",
+    },
+    reference: {
+      agency: "v0-bookinengine-ai-chat",
+      voucherEmail: params.customer.email,
+    },
+    services: [
+      {
+        bookingRequest: [
+          {
+            code: params.roomCode,
+            pax: [
+              {
+                adults: adultGuests,
+                children: [],
+              },
+            ],
+            token: params.token,
           },
-        },
-      ],
-    }),
+        ],
+        searchRequest: searchRequest,
+      },
+    ],
+  }
+
+  const body = {
+    jsonRequest: JSON.stringify(bookRequest),
   }
 
   try {
@@ -367,7 +446,7 @@ export async function POST(req: Request) {
           dateTo: bookingState.searchContext.dateTo,
           adults: bookingState.searchContext.adults,
           children: bookingState.searchContext.children,
-          requestJson: bookingState.jsonRequest,
+          searchRequestJson: bookingState.jsonRequest,
         })
 
         const cleanText = text.replace(/\[SELECT_ROOM\].*?\[\/SELECT_ROOM\]/s, "").trim()
@@ -398,7 +477,7 @@ export async function POST(req: Request) {
     }
 
     const bookMatch = text.match(/\[BOOK\](.*?)\[\/BOOK\]/s)
-    if (bookMatch && bookingState?.preBookData) {
+    if (bookMatch && bookingState?.preBookData && bookingState?.selectedRoom && bookingState?.jsonRequest) {
       console.log("[v0] Completing booking...")
 
       try {
@@ -407,6 +486,10 @@ export async function POST(req: Request) {
           token: bookingState.preBookData.token,
           preBookId: bookingState.preBookData.preBookId,
           customer: customerDetails,
+          searchRequestJson: bookingState.jsonRequest,
+          roomCode: bookingState.selectedRoom.code,
+          adults: bookingState.searchContext?.adults || 2,
+          children: bookingState.searchContext?.children || [],
         })
 
         const cleanText = text.replace(/\[BOOK\].*?\[\/BOOK\]/s, "").trim()

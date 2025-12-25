@@ -325,6 +325,9 @@ export function ChatInterface({
     adults: number
     children: number[]
   } | null>(null)
+  const [jsonRequest, setJsonRequest] = useState<string | null>(null)
+  const [preBookData, setPreBookData] = useState<any>(null)
+  const [selectedRoomForBooking, setSelectedRoomForBooking] = useState<any>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -395,6 +398,12 @@ export function ChatInterface({
           })),
           hotelConfig: hotel,
           language,
+          bookingState: {
+            searchContext,
+            jsonRequest,
+            preBookData,
+            selectedRoom: selectedRoomForBooking,
+          },
         }),
       })
 
@@ -402,6 +411,17 @@ export function ChatInterface({
 
       if (data.searchContext) {
         setSearchContext(data.searchContext)
+      }
+
+      // Save jsonRequest from search results
+      if (data.bookingData?.type === "search_results" && data.bookingData?.data?.jsonRequest) {
+        setJsonRequest(data.bookingData.data.jsonRequest)
+      }
+
+      // Save preBook data
+      if (data.bookingData?.type === "prebook_complete" && data.bookingData?.data?.preBookData) {
+        setPreBookData(data.bookingData.data.preBookData)
+        setSelectedRoomForBooking(data.bookingData.data.selectedRoom)
       }
 
       const assistantMessage: Message = {

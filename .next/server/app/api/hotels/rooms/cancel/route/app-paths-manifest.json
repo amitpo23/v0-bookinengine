@@ -1,0 +1,3 @@
+{
+  "/api/hotels/rooms/cancel/route": "app/api/hotels/rooms/cancel/route.js"
+}

@@ -576,6 +576,8 @@ export class MediciApiClient {
           currency: roomItem.currency || "ILS",
           cancellationPolicy: roomItem.cancellationPolicy || roomItem.cancellation || "free",
           available: roomItem.quantity?.max || roomItem.available || 1,
+          requestJson: roomItem.code || roomCode, // Store the room code for prebook
+          pax: roomItem.pax || { adults: 2, children: [] },
         })
       }
     }
@@ -646,6 +648,8 @@ function buildImagesArray(item: any): string[] {
 
 function extractPriceFromRoom(room: any): number {
   const priceLocations = [
+    // Medici API uses netPrice as primary price field
+    { name: "netPrice.amount", value: room.netPrice?.amount },
     { name: "price.amount", value: room.price?.amount },
     { name: "price.value", value: room.price?.value },
     { name: "price (direct)", value: room.price },

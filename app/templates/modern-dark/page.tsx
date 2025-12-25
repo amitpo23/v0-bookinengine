@@ -1,7 +1,8 @@
 "use client"
 
 import { PromotionBanner } from "@/components/promotions/promotion-banner"
-import { ModernDarkSearchBar, ModernDarkRoomCard } from "@/components/booking/templates/modern-dark"
+import { ModernDarkSearchBar } from "@/components/booking/templates/modern-dark"
+import { EnhancedSearchResults } from "@/components/booking/enhanced-search-results"
 import { BookingSteps, GuestDetailsForm, PaymentForm, BookingConfirmation } from "@/components/booking/templates/shared"
 import { useBookingEngine } from "@/hooks/use-booking-engine"
 import { Loader2, AlertCircle, ArrowRight } from "lucide-react"
@@ -42,18 +43,29 @@ export default function ModernDarkTemplatePage() {
   // Transform API results to template format
   const transformedRooms = booking.searchResults.flatMap((hotel) =>
     hotel.rooms.map((room) => ({
-      id: room.roomId,
+      hotelId: hotel.hotelId,
+      hotelName: hotel.hotelName,
       name: room.roomName,
-      description: `חדר מרווח עם ${room.bedding || "מיטה זוגית"}`,
+      images: room.images.length > 0 ? room.images : ["/modern-dark-hotel-room.jpg"],
       size: room.size || 35,
       maxGuests: room.maxOccupancy,
-      price: room.buyPrice,
-      originalPrice: room.originalPrice || undefined,
-      images: room.images.length > 0 ? room.images : ["/modern-dark-hotel-room.jpg"],
-      amenities: room.amenities.length > 0 ? room.amenities : ["WiFi", "מיזוג", "מיניבר"],
-      available: room.available,
-      hotelData: hotel,
-      roomData: room,
+      guestDescription: `עד ${room.maxOccupancy} אורחים`,
+      amenities: (room.amenities.length > 0 ? room.amenities : ["WiFi", "מיזוג", "מיניבר", "טלוויזיה"]).map(a => ({ icon: "modern", label: a })),
+      offers: [{
+        id: room.roomId,
+        code: room.code,
+        title: room.roomName,
+        description: `חדר מרווח עם ${room.bedding || "מיטה זוגית"}`,
+        price: room.buyPrice,
+        originalPrice: room.originalPrice || room.buyPrice * 1.2,
+        board: room.boardType === "BB" ? "לינה וארוחת בוקר" : room.boardType === "HB" ? "חצי פנסיון" : "לינה בלבד",
+        cancellationDate: "ביטול חינם עד 2 ימים לפני",
+        refundable: room.cancellationPolicy === "free",
+        badge: room.buyPrice < (room.originalPrice || room.buyPrice * 1.2) ? "מבצע" : undefined,
+        roomData: room,
+        hotelData: hotel,
+      }],
+      remainingRooms: room.available,
     })),
   )
 
@@ -132,29 +144,17 @@ export default function ModernDarkTemplatePage() {
               }}
             />
           </div>
-          <div className="max-w-5xl mx-auto px-6 pb-16">
-            <h2 className="text-3xl font-bold text-white mb-8">החדרים הזמינו</h2>
-            {transformedRooms.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {transformedRooms.map((room) => (
-                  <ModernDarkRoomCard
-                    key={room.id}
-                    room={room}
-                    onSelect={() => booking.selectRoom(room.hotelData, room.roomData)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12 bg-zinc-800 rounded-lg">
-                <p className="text-zinc-400">לא נמצאו חדרים זמינו</p>
-                <Button
-                  className="mt-4 bg-cyan-500 hover:bg-cyan-600 text-black"
-                  onClick={() => booking.goToStep("search")}
-                >
-                  חזרה לחיפוש
-                </Button>
-              </div>
-            )}
+          <div className="max-w-6xl mx-auto px-6 pb-16">
+            <EnhancedSearchResults
+              rooms={transformedRooms}
+              nights={booking.nights}
+              onSelectOffer={(room, offer) =>
+                booking.selectRoom(offer.hotelData, offer.roomData)
+              }
+              currency="₪"
+              hotelName="THE NOIR HOTEL"
+              hotelRating={4}
+            />
           </div>
         </>
       )}

@@ -1,7 +1,8 @@
 "use client"
 
 import { PromotionBanner } from "@/components/promotions/promotion-banner"
-import { FamilySearchBar, FamilyRoomCard } from "@/components/booking/templates/family"
+import { FamilySearchBar } from "@/components/booking/templates/family"
+import { EnhancedSearchResults } from "@/components/booking/enhanced-search-results"
 import { BookingSteps, GuestDetailsForm, PaymentForm, BookingConfirmation } from "@/components/booking/templates/shared"
 import { useBookingEngine } from "@/hooks/use-booking-engine"
 import { Loader2, AlertCircle, ArrowRight } from "lucide-react"
@@ -34,19 +35,29 @@ export default function FamilyTemplatePage() {
   // Transform API results to template format
   const transformedRooms = booking.searchResults.flatMap((hotel) =>
     hotel.rooms.map((room) => ({
-      id: room.roomId,
+      hotelId: hotel.hotelId,
+      hotelName: hotel.hotelName,
       name: room.roomName,
-      description: `חדר מרווח ומשפחתי עם כל מה שצריך לחופשה מושלמת!`,
+      images: room.images.length > 0 ? room.images : ["/family-friendly-hotel-room-kids.jpg"],
       size: room.size || 45,
       maxGuests: room.maxOccupancy,
-      price: room.buyPrice,
-      originalPrice: room.originalPrice || undefined,
-      images: room.images.length > 0 ? room.images : ["/family-friendly-hotel-room-kids.jpg"],
-      kidsFriendly: true,
-      amenities:
-        room.amenities.length > 0 ? room.amenities.slice(0, 4) : ["WiFi חינם", "מטבחון", "ערוצי ילדים", "מיזוג"],
-      hotelData: hotel,
-      roomData: room,
+      guestDescription: `עד ${room.maxOccupancy} אורחים`,
+      amenities: (room.amenities.length > 0 ? room.amenities.slice(0, 6) : ["WiFi חינם", "מטבחון", "ערוצי ילדים", "מיזוג", "משחקים", "מקרר"]).map(a => ({ icon: "family", label: a })),
+      offers: [{
+        id: room.roomId,
+        code: room.code,
+        title: room.roomName,
+        description: "חדר מרווח ומשפחתי עם כל מה שצריך! 🎉",
+        price: room.buyPrice,
+        originalPrice: room.originalPrice || room.buyPrice * 1.25,
+        board: room.boardType === "BB" ? "🍳 ארוחת בוקר" : room.boardType === "HB" ? "🍽️ חצי פנסיון" : "🛏️ לינה בלבד",
+        cancellationDate: "ביטול חינם עד 3 ימים לפני",
+        refundable: true,
+        badge: room.buyPrice < (room.originalPrice || room.buyPrice * 1.25) ? "מבצע משפחתי" : undefined,
+        roomData: room,
+        hotelData: hotel,
+      }],
+      remainingRooms: room.available,
     })),
   )
 
@@ -142,29 +153,18 @@ export default function FamilyTemplatePage() {
               }}
             />
           </div>
-          <div className="max-w-5xl mx-auto px-6 pb-16">
+          <div className="max-w-6xl mx-auto px-6 pb-16">
             <h2 className="text-3xl font-bold text-gray-800 text-center mb-8">🛏️ החדרים שלנו 🛏️</h2>
-            {transformedRooms.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {transformedRooms.map((room) => (
-                  <FamilyRoomCard
-                    key={room.id}
-                    room={room}
-                    onSelect={() => booking.selectRoom(room.hotelData, room.roomData)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12 bg-white rounded-2xl shadow">
-                <p className="text-gray-500 text-xl">😢 לא נמצאו חדרים זמינים</p>
-                <Button
-                  className="mt-4 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-xl"
-                  onClick={() => booking.goToStep("search")}
-                >
-                  🔍 חזרה לחיפוש
-                </Button>
-              </div>
-            )}
+            <EnhancedSearchResults
+              rooms={transformedRooms}
+              nights={booking.nights}
+              onSelectOffer={(room, offer) =>
+                booking.selectRoom(offer.hotelData, offer.roomData)
+              }
+              currency="₪"
+              hotelName="SunKids Resort"
+              hotelRating={4}
+            />
           </div>
         </>
       )}

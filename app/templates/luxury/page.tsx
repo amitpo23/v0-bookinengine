@@ -1,7 +1,8 @@
 "use client"
 
 import { PromotionBanner } from "@/components/promotions/promotion-banner"
-import { LuxurySearchBar, LuxuryRoomCard } from "@/components/booking/templates/luxury"
+import { LuxurySearchBar } from "@/components/booking/templates/luxury"
+import { EnhancedSearchResults } from "@/components/booking/enhanced-search-results"
 import { BookingSteps, GuestDetailsForm, PaymentForm, BookingConfirmation } from "@/components/booking/templates/shared"
 import { useBookingEngine } from "@/hooks/use-booking-engine"
 import { Loader2, AlertCircle, ArrowRight } from "lucide-react"
@@ -34,17 +35,29 @@ export default function LuxuryTemplatePage() {
   // Transform API results to template format
   const transformedRooms = booking.searchResults.flatMap((hotel) =>
     hotel.rooms.map((room) => ({
-      id: room.roomId,
+      hotelId: hotel.hotelId,
+      hotelName: hotel.hotelName,
       name: room.roomName,
-      description: `סוויטה מפוארת עם שירות יוקרתי`,
+      images: room.images.length > 0 ? room.images : ["/luxury-elegant-hotel-suite-gold.jpg"],
       size: room.size || 50,
       maxGuests: room.maxOccupancy,
-      price: room.buyPrice,
-      images: room.images.length > 0 ? room.images : ["/luxury-elegant-hotel-suite-gold.jpg"],
-      amenities: room.amenities.length > 0 ? room.amenities.slice(0, 4) : ["נוף פנורמי", "ספא פרטי", "באטלר", "מיניבר"],
-      features: room.amenities.length > 0 ? room.amenities : ["מיטת קינג", "אמבט שיש", "חלוקי רחצה", "שירות 24/7"],
-      hotelData: hotel,
-      roomData: room,
+      guestDescription: `עד ${room.maxOccupancy} אורחים`,
+      amenities: (room.amenities.length > 0 ? room.amenities.slice(0, 6) : ["נוף פנורמי", "ספא פרטי", "באטלר", "מיניבר", "WiFi", "מיזוג"]).map(a => ({ icon: "luxury", label: a })),
+      offers: [{
+        id: room.roomId,
+        code: room.code,
+        title: room.roomName,
+        description: "סוויטה מפוארת עם שירות יוקרתי",
+        price: room.buyPrice,
+        originalPrice: room.originalPrice || room.buyPrice * 1.3,
+        board: room.boardType === "BB" ? "לינה וארוחת בוקר" : room.boardType === "HB" ? "חצי פנסיון" : "לינה בלבד",
+        cancellationDate: "ביטול חינם עד 7 ימים לפני",
+        refundable: true,
+        badge: room.buyPrice < (room.originalPrice || room.buyPrice * 1.3) ? "מחיר יוקרתי" : undefined,
+        roomData: room,
+        hotelData: hotel,
+      }],
+      remainingRooms: room.available,
     })),
   )
 
@@ -132,29 +145,21 @@ export default function LuxuryTemplatePage() {
               }}
             />
           </div>
-          <div className="max-w-5xl mx-auto px-6 pb-20">
+          <div className="max-w-6xl mx-auto px-6 pb-20">
             <div className="text-center mb-12">
               <h2 className="font-serif text-4xl text-stone-800 mb-4">הסוויטות שלנו</h2>
               <div className="w-16 h-0.5 bg-amber-600 mx-auto" />
             </div>
-            {transformedRooms.length > 0 ? (
-              <div className="space-y-8">
-                {transformedRooms.map((room) => (
-                  <LuxuryRoomCard
-                    key={room.id}
-                    room={room}
-                    onSelect={() => booking.selectRoom(room.hotelData, room.roomData)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12 bg-white rounded-lg shadow">
-                <p className="text-stone-500 font-serif">לא נמצאו סוויטות זמינות</p>
-                <Button className="mt-4 bg-amber-600 hover:bg-amber-700" onClick={() => booking.goToStep("search")}>
-                  חזרה לחיפוש
-                </Button>
-              </div>
-            )}
+            <EnhancedSearchResults
+              rooms={transformedRooms}
+              nights={booking.nights}
+              onSelectOffer={(room, offer) =>
+                booking.selectRoom(offer.hotelData, offer.roomData)
+              }
+              currency="₪"
+              hotelName="CHÂTEAU Luxury Resort"
+              hotelRating={5}
+            />
           </div>
         </>
       )}

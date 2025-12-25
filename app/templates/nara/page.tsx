@@ -5,11 +5,11 @@ import { PromotionBanner } from "@/components/promotions/promotion-banner"
 import {
   NaraSearchBar,
   PriceComparison,
-  NaraRoomCard,
   NaraCalendarPicker,
   AddonsCarousel,
-  BookingSidebar,
 } from "@/components/booking/templates/nara-style"
+import { EnhancedSearchResults } from "@/components/booking/enhanced-search-results"
+import { EnhancedBookingSidebar } from "@/components/booking/enhanced-booking-sidebar"
 import { BookingSteps, GuestDetailsForm, PaymentForm, BookingConfirmation } from "@/components/booking/templates/shared"
 import { useBookingEngine } from "@/hooks/use-booking-engine"
 import { addDays } from "date-fns"
@@ -242,46 +242,19 @@ export default function NaraTemplatePage() {
           <PriceComparison sitePrice={transformedRooms[0]?.offers[0]?.price || 570} />
 
           <div className="container mx-auto px-6 pb-12">
-            <div className="flex gap-6" dir="rtl">
-              <BookingSidebar
-                checkIn={booking.searchParams?.checkIn || addDays(today, 5)}
-                checkOut={booking.searchParams?.checkOut || addDays(today, 6)}
-                nights={booking.nights}
-                rooms={1}
-                guests={booking.searchParams?.adults || 2}
-                selectedRoom={
-                  booking.selectedRoom
-                    ? { name: booking.selectedRoom.roomName, price: booking.selectedRoom.buyPrice }
-                    : null
-                }
-                totalPrice={booking.totalPrice}
-                onBook={() => {}}
-              />
-
-              <div className="flex-1 space-y-6">
-                {transformedRooms.length > 0 ? (
-                  transformedRooms.map((room, index) => (
-                    <NaraRoomCard
-                      key={index}
-                      {...room}
-                      onSelectOffer={(offer) =>
-                        handleSelectRoom(
-                          { hotelId: room.hotelId, hotelName: room.hotelName },
-                          { ...offer.roomData, ...offer },
-                        )
-                      }
-                    />
-                  ))
-                ) : (
-                  <div className="text-center py-12 bg-white rounded-lg">
-                    <p className="text-gray-500">לא נמצאו חדרים זמינים לתאריכים שנבחרו</p>
-                    <Button className="mt-4" onClick={() => booking.goToStep("search")}>
-                      חזרה לחיפוש
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
+            <EnhancedSearchResults
+              rooms={transformedRooms}
+              nights={booking.nights}
+              onSelectOffer={(room, offer) =>
+                handleSelectRoom(
+                  { hotelId: room.hotelId, hotelName: room.hotelName },
+                  { ...offer.roomData, ...offer },
+                )
+              }
+              currency="₪"
+              hotelName="NARA Hotels"
+              hotelRating={4}
+            />
           </div>
 
           <div className="bg-white py-12 border-t">

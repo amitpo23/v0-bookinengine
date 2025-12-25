@@ -1,6 +1,6 @@
 import type { PreBookResponse, BookResponse } from "@/lib/api/medici-types"
 
-export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE !== "false"
+export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true"
 
 export async function mockPreBook(): Promise<PreBookResponse> {
   await new Promise((resolve) => setTimeout(resolve, 1000))

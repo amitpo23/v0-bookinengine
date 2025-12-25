@@ -17,7 +17,9 @@ interface GuestDetailsFormProps {
   isLoading?: boolean
   variant?: "default" | "dark" | "luxury" | "family"
 }
-{ data: session } = useSession()
+
+export function GuestDetailsForm({ onSubmit, isLoading, variant = "default" }: GuestDetailsFormProps) {
+  const { data: session } = useSession()
   const [formData, setFormData] = useState<GuestInfo>({
     title: "MR",
     firstName: "",
@@ -50,9 +52,7 @@ interface GuestDetailsFormProps {
   }
 
   const handleGoogleSignIn = () => {
-    signIn("google"= (e: React.FormEvent) => {
-    e.preventDefault()
-    onSubmit(formData)
+    signIn("google")
   }
 
   const inputClass =

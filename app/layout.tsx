@@ -4,6 +4,8 @@ import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { SessionProvider } from '@/components/providers/session-provider'
 import { FeaturesProvider } from '@/lib/features-context'
+import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
+import { AffiliateTracker } from '@/components/analytics/AffiliateTracker'
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -39,6 +41,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={'font-sans antialiased'}>
+        <GoogleAnalytics measurementId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || ''} />
+        <AffiliateTracker />
         <SessionProvider>
           <FeaturesProvider>
             {children}

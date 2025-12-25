@@ -86,6 +86,13 @@ const ZapIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
+const MailIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+    <polyline points="22,6 12,13 2,6" />
+  </svg>
+)
+
 const ChevronLeftIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <polyline points="15 18 9 12 15 6" />
@@ -169,6 +176,7 @@ const menuItems = [
   { id: "pricing", label: "תמחור", icon: DollarSignIcon },
   { id: "promotions", label: "מבצעים", icon: PercentIcon, isNew: true },
   { id: "features", label: "ניהול תכונות", icon: ZapIcon, isNew: true },
+  { id: "email", label: "הגדרות Email", icon: MailIcon },
   { id: "engines", label: "מנועי הזמנות", icon: ApiIcon },
   { id: "agents", label: "ניהול סוכנים", icon: UsersIcon },
   { id: "aiconfig", label: "הגדרות AI", icon: SparklesIcon },

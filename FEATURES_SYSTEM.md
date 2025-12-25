@@ -216,9 +216,9 @@ app/
 ## 🚀 השלבים הבאים:
 
 1. ✅ מערכת Feature Flags - **הושלם!**
-2. ⏳ חיבור ל-Supabase לשמירת הגדרות
-3. ⏳ יישום התכונות עצמן:
-   - Email System (Resend)
+2. ✅ Email System (Resend) - **מחובר ומוכן!**
+3. ⏳ חיבור ל-Supabase לשמירת הגדרות Features
+4. ⏳ יישום תכונות נוספות:
    - Google Maps Integration
    - Reviews System
    - Payment Split (Stripe)

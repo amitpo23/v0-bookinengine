@@ -1,6 +1,8 @@
 import { generateText } from "ai"
 import type { HotelConfig } from "@/types/saas"
 import { getBookingAgentPrompt } from "@/lib/prompts/booking-agent-prompt"
+import { emailService } from "@/lib/email/email-service"
+import { format } from "date-fns"
 
 const MEDICI_API_BASE = "https://medici-backend.azurewebsites.net"
 const MEDICI_IMAGES_BASE = "https://cdn.medicihotels.com/images/"
@@ -491,6 +493,51 @@ export async function POST(req: Request) {
           adults: bookingState.searchContext?.adults || 2,
           children: bookingState.searchContext?.children || [],
         })
+
+        // Send confirmation email (non-blocking)
+        if (bookingResult.bookingId && bookingResult.supplierReference && emailService.isEnabled()) {
+          try {
+            const searchRequest = JSON.parse(bookingState.jsonRequest)
+            const checkInDate = searchRequest.dates?.from || new Date().toISOString()
+            const checkOutDate = searchRequest.dates?.to || new Date().toISOString()
+            const nights = Math.ceil(
+              (new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / (1000 * 60 * 60 * 24)
+            )
+
+            emailService
+              .sendBookingConfirmation({
+                to: customerDetails.email,
+                customerName: `${customerDetails.firstName} ${customerDetails.lastName}`,
+                bookingId: bookingResult.bookingId,
+                supplierReference: bookingResult.supplierReference,
+                hotelName: bookingState.selectedRoom?.hotelName || hotelName,
+                roomType: bookingState.selectedRoom?.roomName || "Room",
+                checkIn: format(new Date(checkInDate), "MMM dd, yyyy"),
+                checkOut: format(new Date(checkOutDate), "MMM dd, yyyy"),
+                nights,
+                adults: bookingState.searchContext?.adults || 2,
+                children: bookingState.searchContext?.children?.length || 0,
+                totalPrice: bookingState.preBookData?.netPrice || 0,
+                currency: searchRequest.currencies?.[0] || "USD",
+                language: language,
+              })
+              .then((emailResult) => {
+                if (emailResult.success) {
+                  console.log("[AI Chat] ✅ Confirmation email sent", {
+                    bookingId: bookingResult.bookingId,
+                    emailId: emailResult.emailId,
+                  })
+                } else {
+                  console.warn("[AI Chat] ⚠️ Email failed (non-critical)", emailResult.error)
+                }
+              })
+              .catch((error) => {
+                console.error("[AI Chat] Email error (non-critical):", error)
+              })
+          } catch (error) {
+            console.error("[AI Chat] Failed to parse search request for email:", error)
+          }
+        }
 
         const cleanText = text.replace(/\[BOOK\].*?\[\/BOOK\]/s, "").trim()
 

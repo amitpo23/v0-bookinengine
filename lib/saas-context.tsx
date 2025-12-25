@@ -83,6 +83,38 @@ const mockTenant: Tenant = {
         language: "he",
       },
     },
+    {
+      id: "hotel-scarlet",
+      name: "מלון סקרלט תל אביב",
+      hotelId: "scarlet-tlv",
+      hotelName: "Scarlet Hotel Tel Aviv",
+      city: "Tel Aviv",
+      stars: 5,
+      currency: "ILS",
+      primaryColor: "#DC143C",
+      secondaryColor: "#2C3E50",
+      enableWidget: true,
+      enableAiChat: true,
+      plan: "enterprise",
+      apiSettings: {
+        mediciHotelId: "scarlet-001",
+        mediciHotelName: "Scarlet Hotel Tel Aviv",
+      },
+      widgetSettings: {
+        language: "both",
+        showPrices: true,
+        showAvailability: true,
+        primaryColor: "#DC143C",
+        secondaryColor: "#E74C3C",
+      },
+      aiChatSettings: {
+        welcomeMessage: "Welcome to Scarlet Hotel Tel Aviv! Where urban meets romance. How can I create an unforgettable experience for you today?",
+        welcomeMessageHe: "ברוכים הבאים למלון סקרלט תל אביב! היכן שהאורבני פוגש את הרומנטי. איך אוכל ליצור לכם חוויה בלתי נשכחת היום?",
+        personality: "romantic",
+        language: "both",
+        primaryColor: "#DC143C",
+      },
+    },
   ],
 }
 

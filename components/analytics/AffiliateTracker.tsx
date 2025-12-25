@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 
-export function AffiliateTracker() {
+function AffiliateTrackerInner() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -20,6 +20,9 @@ export function AffiliateTracker() {
       if (!utmSource && !utmMedium && !utmCampaign && !affiliateCode) {
         return
       }
+
+      // Only run in browser
+      if (typeof window === 'undefined') return
 
       // Generate session ID (or get from localStorage)
       let sessionId = localStorage.getItem("affiliate_session_id")
@@ -60,4 +63,12 @@ export function AffiliateTracker() {
   }, [searchParams])
 
   return null
+}
+
+export function AffiliateTracker() {
+  return (
+    <Suspense fallback={null}>
+      <AffiliateTrackerInner />
+    </Suspense>
+  )
 }

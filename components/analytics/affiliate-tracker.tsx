@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 interface AffiliateTrackerProps {
   hotelId?: string
 }
 
-export function AffiliateTracker({ hotelId }: AffiliateTrackerProps) {
+function AffiliateTrackerInner({ hotelId }: AffiliateTrackerProps) {
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -17,8 +17,10 @@ export function AffiliateTracker({ hotelId }: AffiliateTrackerProps) {
       if (!ref) return
 
       // Store in localStorage for later conversion
-      localStorage.setItem('affiliate_ref', ref)
-      localStorage.setItem('affiliate_timestamp', Date.now().toString())
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('affiliate_ref', ref)
+        localStorage.setItem('affiliate_timestamp', Date.now().toString())
+      }
 
       try {
         await fetch('/api/affiliate/track', {
@@ -40,5 +42,13 @@ export function AffiliateTracker({ hotelId }: AffiliateTrackerProps) {
     trackAffiliate()
   }, [searchParams, hotelId])
 
-  return null // This is a tracking component, no UI
+  return null
+}
+
+export function AffiliateTracker(props: AffiliateTrackerProps) {
+  return (
+    <Suspense fallback={null}>
+      <AffiliateTrackerInner {...props} />
+    </Suspense>
+  )
 }

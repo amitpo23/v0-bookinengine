@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server"
 import Stripe from "stripe"
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-04-30.basil",
-})
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2025-04-30.basil",
+    })
+  : null
 
 export async function POST(request: Request) {
   try {
+    if (!stripe) {
+      return NextResponse.json(
+        { error: "Payment processing not configured" },
+        { status: 503 }
+      )
+    }
+
     const { amount, currency, metadata, customerEmail, customerName } = await request.json()
 
     // Create or retrieve customer

@@ -12,6 +12,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (!supabase) {
+      return NextResponse.json(
+        { error: "Database not configured" },
+        { status: 503 }
+      )
+    }
+
     // Record usage
     const { error: usageError } = await supabase.from("promo_code_usage").insert({
       promo_code_id: promoCodeId,

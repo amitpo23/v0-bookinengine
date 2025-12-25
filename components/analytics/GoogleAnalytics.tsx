@@ -50,15 +50,3 @@ export function GoogleAnalytics({ measurementId }: GoogleAnalyticsProps) {
     </>
   );
 }
-
-// Type declaration for gtag
-declare global {
-  interface Window {
-    gtag: (
-      command: string,
-      targetId: string,
-      config?: Record<string, any>
-    ) => void;
-    dataLayer: any[];
-  }
-}

@@ -260,14 +260,3 @@ export const trackTemplateView = (params: { templateName: string }) => {
     template_name: params.templateName,
   })
 }
-
-// ========================================
-// TYPE DECLARATIONS
-// ========================================
-
-declare global {
-  interface Window {
-    dataLayer: any[]
-    gtag: (command: string, ...args: any[]) => void
-  }
-}

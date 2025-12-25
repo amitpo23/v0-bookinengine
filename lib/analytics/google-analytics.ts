@@ -1,6 +1,14 @@
 // Google Analytics 4 (GA4) Integration
 // Tracks events and conversions
 
+// Type declarations
+declare global {
+  interface Window {
+    dataLayer: any[]
+    gtag: (...args: any[]) => void
+  }
+}
+
 export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || ""
 
 // Initialize GA4

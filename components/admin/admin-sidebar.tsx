@@ -175,6 +175,7 @@ const menuItems = [
   { id: "roomtypes", label: "סוגי חדרים", icon: ImageIcon, isNew: true },
   { id: "pricing", label: "תמחור", icon: DollarSignIcon },
   { id: "promotions", label: "מבצעים", icon: PercentIcon, isNew: true },
+  { id: "marketing", label: "שיווק ומכירות", icon: SparklesIcon, isNew: true },
   { id: "features", label: "ניהול תכונות", icon: ZapIcon, isNew: true },
   { id: "email", label: "הגדרות Email", icon: MailIcon },
   { id: "engines", label: "מנועי הזמנות", icon: ApiIcon },

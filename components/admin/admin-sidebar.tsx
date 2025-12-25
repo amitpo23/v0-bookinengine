@@ -80,6 +80,12 @@ const SparklesIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
+const ZapIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+  </svg>
+)
+
 const ChevronLeftIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <polyline points="15 18 9 12 15 6" />
@@ -162,6 +168,7 @@ const menuItems = [
   { id: "roomtypes", label: "סוגי חדרים", icon: ImageIcon, isNew: true },
   { id: "pricing", label: "תמחור", icon: DollarSignIcon },
   { id: "promotions", label: "מבצעים", icon: PercentIcon, isNew: true },
+  { id: "features", label: "ניהול תכונות", icon: ZapIcon, isNew: true },
   { id: "engines", label: "מנועי הזמנות", icon: ApiIcon },
   { id: "agents", label: "ניהול סוכנים", icon: UsersIcon },
   { id: "aiconfig", label: "הגדרות AI", icon: SparklesIcon },

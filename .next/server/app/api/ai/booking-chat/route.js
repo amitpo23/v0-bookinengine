@@ -1,8 +1,11 @@
 var R=require("../../../../chunks/[turbopack]_runtime.js")("server/app/api/ai/booking-chat/route.js")
-R.c("server/chunks/[root-of-the-server]__a9208ca6._.js")
-R.c("server/chunks/node_modules_next_dist_esm_build_templates_app-route_ef5668c7.js")
-R.c("server/chunks/node_modules_e0eb4235._.js")
-R.c("server/chunks/[root-of-the-server]__42a428ae._.js")
+R.c("server/chunks/[root-of-the-server]__85b97006._.js")
+R.c("server/chunks/67b5b_next_dist_esm_build_templates_app-route_3b7bc3c8.js")
+R.c("server/chunks/50d1e_date-fns_format_8e02fb11.js")
+R.c("server/chunks/node_modules__pnpm_e09f786d._.js")
+R.c("server/chunks/[root-of-the-server]__f3152bfa._.js")
+R.c("server/chunks/[root-of-the-server]__322f6d13._.js")
+R.c("server/chunks/[root-of-the-server]__c95b6bf0._.js")
 R.c("server/chunks/_next-internal_server_app_api_ai_booking-chat_route_actions_bd1e62f2.js")
-R.m(91683)
-module.exports=R.m(91683).exports
+R.m(68239)
+module.exports=R.m(68239).exports

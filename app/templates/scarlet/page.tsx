@@ -8,21 +8,75 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { scarletRoomTypes, scarletHotelConfig } from "@/lib/hotels/scarlet-config"
+import { PromoCodeInput } from "@/components/promotions/promo-code-input"
+import { LoyaltySignup } from "@/components/promotions/loyalty-signup"
+import { LoyaltyBadge } from "@/components/promotions/loyalty-badge"
+import { AffiliateTracker } from "@/components/analytics/affiliate-tracker"
+import { trackEvent, trackPageView, trackSelectItem, trackSearch } from "@/lib/analytics/ga4"
 
 export default function ScarletTemplate() {
   const [checkIn, setCheckIn] = useState("")
   const [checkOut, setCheckOut] = useState("")
   const [guests, setGuests] = useState(2)
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null)
+  const [promoCode, setPromoCode] = useState("")
+  const [discount, setDiscount] = useState(0)
+
+  // Track page view on mount
+  useEffect(() => {
+    trackPageView(window.location.href, 'Scarlet Hotel Tel Aviv')
+    trackEvent({
+      event: 'page_view',
+      page_title: 'Scarlet Hotel Tel Aviv',
+      hotel_id: scarletHotelConfig.hotelId,
+      template_name: 'scarlet'
+    })
+  }, [])
 
   const handleSearch = () => {
+    trackSearch(`${checkIn} to ${checkOut}, ${guests} guests`, {
+      check_in: checkIn,
+      check_out: checkOut,
+      guests,
+      hotel_id: scarletHotelConfig.hotelId
+    })
     console.log("Searching:", { checkIn, checkOut, guests })
   }
 
   const handleBookRoom = (roomId: string) => {
     const room = scarletRoomTypes.find(r => r.id === roomId)
     setSelectedRoom(roomId)
+    
+    if (room) {
+      trackSelectItem({
+        item_id: roomId,
+        item_name: room.name,
+        price: room.basePrice,
+        quantity: 1
+      })
+      
+      trackEvent({
+        event: 'select_room',
+        room_id: roomId,
+        room_name: room.name,
+        room_price: room.basePrice,
+        hotel_id: scarletHotelConfig.hotelId
+      })
+    }
+    
     console.log("Booking room:", roomId)
+  }
+
+  const handlePromoApplied = (code: string, discountAmount: number) => {
+    setPromoCode(code)
+    setDiscount(discountAmount)
+    
+    trackEvent({
+      event: 'apply_promotion',
+      promotion_name: code,
+      discount_amount: discountAmount,
+      hotel_id: scarletHotelConfig.hotelId
+    })
   }
 
   return (
@@ -277,42 +331,81 @@ export default function ScarletTemplate() {
         </div>
       </section>
 
-      {/* Call to Action - Join Club */}
+      {/* Promo Code & Loyalty Section */}
       <section className="py-20 px-4 bg-gradient-to-b from-gray-900 to-black">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="mb-8">
-            <Crown className="h-16 w-16 text-pink-500 mx-auto mb-4 animate-pulse" />
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">
-              הצטרפו למועדון VIP
+              הטבות והנחות
             </h2>
-            <p className="text-xl text-gray-400 mb-8">
-              קבלו הנחות בלעדיות, שדרוגי חדרים והטבות מיוחדות
-            </p>
+            <p className="text-gray-400">חסכו יותר בהזמנה הבאה</p>
           </div>
-          <Card className="bg-gradient-to-br from-red-900/20 via-gray-900/50 to-pink-900/20 backdrop-blur-sm border-red-500/30 p-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            {/* Promo Code */}
+            <Card className="bg-gradient-to-br from-red-900/20 via-gray-900/50 to-gray-900/50 backdrop-blur-sm border-red-500/30 p-6">
+              <h3 className="text-xl font-bold mb-4 text-white flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-red-400" />
+                קוד הנחה
+              </h3>
+              <PromoCodeInput
+                onPromoApplied={handlePromoApplied}
+                hotelId={scarletHotelConfig.hotelId}
+                variant="dark"
+              />
+              {discount > 0 && (
+                <div className="mt-4 p-3 bg-green-900/30 rounded-lg border border-green-500/30">
+                  <p className="text-green-400 text-sm font-semibold">
+                    🎉 הנחה של {discount}% הופעלה!
+                  </p>
+                </div>
+              )}
+            </Card>
+
+            {/* Loyalty Club */}
+            <Card className="bg-gradient-to-br from-pink-900/20 via-gray-900/50 to-gray-900/50 backdrop-blur-sm border-pink-500/30 p-6">
+              <h3 className="text-xl font-bold mb-4 text-white flex items-center gap-2">
+                <Crown className="h-5 w-5 text-pink-400" />
+                מועדון לקוחות
+              </h3>
+              <LoyaltyBadge hotelId={scarletHotelConfig.hotelId} variant="dark" />
+              <div className="mt-4">
+                <LoyaltySignup hotelId={scarletHotelConfig.hotelId} variant="dark" />
+              </div>
+            </Card>
+          </div>
+
+          {/* Benefits */}
+          <Card className="bg-gradient-to-br from-yellow-900/20 via-gray-900/50 to-purple-900/20 backdrop-blur-sm border-yellow-500/30 p-8">
+            <div className="text-center mb-6">
+              <Crown className="h-12 w-12 text-yellow-500 mx-auto mb-3" />
+              <h3 className="text-2xl font-bold text-white mb-2">
+                מה מקבלים חברי VIP?
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
                 <Sparkles className="h-8 w-8 text-red-400 mx-auto mb-2" />
-                <h3 className="font-bold text-white mb-1">10% הנחה</h3>
+                <h4 className="font-bold text-white mb-1">10% הנחה</h4>
                 <p className="text-sm text-gray-400">על כל ההזמנות</p>
               </div>
               <div className="text-center">
                 <Heart className="h-8 w-8 text-pink-400 mx-auto mb-2" />
-                <h3 className="font-bold text-white mb-1">שדרוג חינם</h3>
+                <h4 className="font-bold text-white mb-1">שדרוג חינם</h4>
                 <p className="text-sm text-gray-400">כפוף לזמינות</p>
               </div>
               <div className="text-center">
                 <Crown className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
-                <h3 className="font-bold text-white mb-1">צ'ק-אין מהיר</h3>
+                <h4 className="font-bold text-white mb-1">צ'ק-אין מהיר</h4>
                 <p className="text-sm text-gray-400">ללא המתנה</p>
               </div>
             </div>
-            <Button className="w-full md:w-auto px-12 h-14 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-lg">
-              הצטרפו עכשיו
-            </Button>
           </Card>
         </div>
       </section>
+
+      {/* Affiliate Tracker */}
+      <AffiliateTracker hotelId={scarletHotelConfig.hotelId} />
 
       {/* Footer */}
       <footer className="py-12 px-4 bg-black border-t border-white/10">

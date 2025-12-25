@@ -9,6 +9,16 @@ import { Check, Zap } from "lucide-react"
 
 const templates = [
   {
+    id: "scarlet",
+    name: "Scarlet Hotel Tel Aviv",
+    description: "מלון בוטיק רומנטי ומודרני בלב תל אביב, עם 7 סוגי חדרים ייחודיים ואמבטיות חיצוניות",
+    image: "/scarlet-hotel-romantic-modern.jpg",
+    tags: ["רומנטי", "מודרני", "בוטיק"],
+    color: "bg-gradient-to-r from-red-600 to-pink-600",
+    href: "/templates/scarlet",
+    features: ["7 סוגי חדרים ייחודיים", "אמבטיות חיצוניות", "עיצוב רומנטי", "מרפסות פרטיות"],
+  },
+  {
     id: "nara",
     name: "NARA Style",
     description: "עיצוב מקצועי בסגנון NARA Hotels עם השוואת מחירים, לוח שנה עם מחירים ותוספות",

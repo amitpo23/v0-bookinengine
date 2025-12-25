@@ -64,8 +64,8 @@ export function GuestDetailsForm({ onSubmit, isLoading, variant = "default" }: G
           ? "border-purple-200 focus:border-orange-400 rounded-xl"
           : ""
 
-  cons{/* Google Sign In Button */}
-      {!session?.user && (
+  {/* Google Sign In Button */}
+  {!session?.user && (
         <div className="space-y-4">
           <Button
             type="button"
@@ -119,7 +119,7 @@ export function GuestDetailsForm({ onSubmit, isLoading, variant = "default" }: G
         </div>
       )}
 
-      t labelClass =
+  const labelClass =
     variant === "dark"
       ? "text-zinc-300"
       : variant === "luxury"

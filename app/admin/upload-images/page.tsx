@@ -42,12 +42,13 @@ export default function UploadImagesPage() {
           body: formData,
         });
 
-        const data = await response.json();
 
         if (response.ok) {
+                  const data = await response.json();
           urls.push(data.url);
         } else {
-          throw new Error(data.error || 'שגיאה בהעלאת קובץ');
+                  const errorData = await response.text();
+                  throw new Error(errorData || 'שגיאה בהעלאת קובץ');
         }
       }
 

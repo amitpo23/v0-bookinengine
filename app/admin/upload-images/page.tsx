@@ -5,6 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function UploadImagesPage() {
   const [hotelId, setHotelId] = useState('scarlet-hotel');
@@ -32,24 +39,29 @@ export default function UploadImagesPage() {
 
     try {
       for (const file of selectedFiles) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('hotelId', hotelId);
-        formData.append('roomType', roomType);
+        // Generate unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `${hotelId}/${roomType || 'general'}/${fileName}`;
 
-        const response = await fetch('/api/upload/images', {
-          method: 'POST',
-          body: formData,
+      // Upload directly to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('hotel-assets')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
         });
 
+      if (error) {
+        throw new Error(error.message || 'שגיאה בהעלאת קובץ');
+      }
 
-        if (response.ok) {
-                  const data = await response.json();
-          urls.push(data.url);
-        } else {
-                  const errorData = await response.text();
-                  throw new Error(errorData || 'שגיאה בהעלאת קובץ');
-        }
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('hotel-assets')
+        .getPublicUrl(filePath);
+
+      urls.push(publicUrl);
       }
 
       setUploadedUrls(urls);

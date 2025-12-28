@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { format } from "date-fns"
 import { he } from "date-fns/locale"
-import { Calendar, Users, Heart, Sparkles, Bath, Home, Crown, User } from "lucide-react"
+import { Calendar, Users, Heart, Sparkles, Bath, Home, Crown, User, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -23,6 +23,7 @@ export default function ScarletTemplate() {
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null)
   const [promoCode, setPromoCode] = useState("")
   const [discount, setDiscount] = useState(0)
+  const [roomImageIndexes, setRoomImageIndexes] = useState<Record<string, number>>({})
 
   // Track page view on mount
   useEffect(() => {
@@ -220,10 +221,10 @@ export default function ScarletTemplate() {
               } backdrop-blur-sm overflow-hidden group hover:shadow-2xl hover:shadow-red-500/20 transition-all duration-500`}
             >
               <div className={`grid grid-cols-1 lg:grid-cols-2 ${index % 2 === 1 ? "lg:grid-flow-dense" : ""}`}>
-                {/* Image */}
-                <div className={`relative h-80 lg:h-auto overflow-hidden ${index % 2 === 1 ? "lg:col-start-2" : ""}`}>
+                {/* Image Gallery */}
+                <div className={`relative h-80 lg:h-auto overflow-hidden group/gallery ${index % 2 === 1 ? "lg:col-start-2" : ""}`}>
                   <img
-                    src={room.images[0]}
+                    src={room.images[roomImageIndexes[room.id] || 0]}
                     alt={room.hebrewName}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
@@ -246,6 +247,61 @@ export default function ScarletTemplate() {
                       <Sparkles className="h-3 w-3 mr-1" />
                       WOW
                     </Badge>
+                  )}
+
+                  {/* Image Counter - only show if multiple images */}
+                  {room.images.length > 1 && (
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
+                      {(roomImageIndexes[room.id] || 0) + 1}/{room.images.length}
+                    </div>
+                  )}
+
+                  {/* Previous Button - only show if multiple images */}
+                  {room.images.length > 1 && (
+                    <button
+                      onClick={() => {
+                        const currentIndex = roomImageIndexes[room.id] || 0
+                        const newIndex = currentIndex === 0 ? room.images.length - 1 : currentIndex - 1
+                        setRoomImageIndexes(prev => ({ ...prev, [room.id]: newIndex }))
+                      }}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 backdrop-blur-sm hover:bg-black/80 p-3 rounded-full transition-all opacity-0 group-hover/gallery:opacity-100"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft className="h-6 w-6" />
+                    </button>
+                  )}
+
+                  {/* Next Button - only show if multiple images */}
+                  {room.images.length > 1 && (
+                    <button
+                      onClick={() => {
+                        const currentIndex = roomImageIndexes[room.id] || 0
+                        const newIndex = currentIndex === room.images.length - 1 ? 0 : currentIndex + 1
+                        setRoomImageIndexes(prev => ({ ...prev, [room.id]: newIndex }))
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 backdrop-blur-sm hover:bg-black/80 p-3 rounded-full transition-all opacity-0 group-hover/gallery:opacity-100"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight className="h-6 w-6" />
+                    </button>
+                  )}
+
+                  {/* Dots Navigation - only show if multiple images */}
+                  {room.images.length > 1 && (
+                    <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex gap-2">
+                      {room.images.map((_, imgIndex) => (
+                        <button
+                          key={imgIndex}
+                          onClick={() => setRoomImageIndexes(prev => ({ ...prev, [room.id]: imgIndex }))}
+                          className={`w-2 h-2 rounded-full transition-all ${
+                            (roomImageIndexes[room.id] || 0) === imgIndex
+                              ? "bg-white w-8"
+                              : "bg-white/50 hover:bg-white/75"
+                          }`}
+                          aria-label={`Go to image ${imgIndex + 1}`}
+                        />
+                      ))}
+                    </div>
                   )}
 
                   {/* Price Tag */}

@@ -7,6 +7,7 @@ import { Calendar, Users, Heart, Sparkles, Bath, Home, Crown, User, ChevronLeft,
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { scarletRoomTypes, scarletHotelConfig } from "@/lib/hotels/scarlet-config"
 import { PromoCodeInput } from "@/components/promotions/promo-code-input"
 import { LoyaltySignup } from "@/components/promotions/loyalty-signup"
@@ -14,6 +15,8 @@ import { LoyaltyBadge } from "@/components/promotions/loyalty-badge"
 import { AffiliateTracker } from "@/components/analytics/affiliate-tracker"
 import { trackEvent, trackPageView, trackSelectItem, trackSearch } from "@/lib/analytics/ga4"
 import { LoginButton } from "@/components/auth/login-button"
+import { useBookingEngine } from "@/hooks/use-booking-engine"
+import { BookingWidget } from "@/components/booking/booking-widget"
 import Link from "next/link"
 
 export default function ScarletTemplate() {
@@ -25,6 +28,8 @@ export default function ScarletTemplate() {
   const [discount, setDiscount] = useState(0)
   const [roomImageIndexes, setRoomImageIndexes] = useState<Record<string, number>>({})
   const [backgroundImageIndex, setBackgroundImageIndex] = useState(0)
+  const [showBookingDialog, setShowBookingDialog] = useState(false)
+  const bookingEngine = useBookingEngine()
 
   // Track page view on mount
   useEffect(() => {
@@ -84,9 +89,10 @@ export default function ScarletTemplate() {
         room_price: room.basePrice,
         hotel_id: scarletHotelConfig.hotelId
       })
+      
+      // Open booking dialog with pre-selected room
+      setShowBookingDialog(true)
     }
-    
-    console.log("Booking room:", roomId)
   }
 
   const handlePromoApplied = (code: string, discountAmount: number) => {
@@ -538,6 +544,35 @@ export default function ScarletTemplate() {
           </p>
         </div>
       </footer>
+
+      {/* Booking Engine Dialog */}
+      <Dialog open={showBookingDialog} onOpenChange={setShowBookingDialog}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-0">
+          <BookingWidget 
+            hotel={{
+              id: scarletHotelConfig.hotelId,
+              name: scarletHotelConfig.name,
+              slug: 'scarlet-tlv',
+              description: scarletHotelConfig.description,
+              address: scarletHotelConfig.location.address,
+              city: scarletHotelConfig.location.city,
+              country: 'Israel',
+              stars: 5,
+              images: scarletHotelConfig.images,
+              amenities: scarletHotelConfig.amenities,
+              policies: {
+                checkIn: '15:00',
+                checkOut: '11:00',
+                cancellation: 'ביטול חינם עד 24 שעות לפני הגעה'
+              },
+              currency: 'ILS',
+              primaryColor: scarletHotelConfig.style.primary,
+              logo: undefined
+            }}
+            defaultLocale="he"
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

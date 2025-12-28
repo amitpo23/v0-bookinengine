@@ -258,5 +258,51 @@ export const scarletHotelConfig = {
     phone: "+972-3-SCARLET",
     email: "reservations@scarlet-tlv.com",
     website: "https://scarlet-tlv.com"
-  }
+  },
+  activePromotions: [
+    {
+      id: "miluim-special",
+      title: "מבצע למילואימניקים",
+      titleEn: "Reservists Special",
+      discount: 20,
+      description: "20% הנחה למילואימניקים עם תעודה",
+      badge: "🎖️ מבצע מילואים",
+      badgeColor: "bg-blue-600",
+      validUntil: "2025-12-31",
+      terms: "בהצגת צו 8 או תעודת מילואים"
+    },
+    {
+      id: "third-night-free",
+      title: "25% הנחה על הלילה השלישי",
+      titleEn: "25% Off 3rd Night",
+      discount: 25,
+      description: "הזמינו 3 לילות והלילה השלישי ב-25% הנחה",
+      badge: "🎉 3 לילות",
+      badgeColor: "bg-purple-600",
+      validUntil: "2025-12-31",
+      terms: "תקף להזמנות של 3 לילות ומעלה"
+    },
+    {
+      id: "weekend-special",
+      title: "מבצע סופ\"ש",
+      titleEn: "Weekend Special",
+      discount: 15,
+      description: "15% הנחה על סופי שבוע",
+      badge: "🌟 סופ\"ש",
+      badgeColor: "bg-pink-600",
+      validUntil: "2025-12-31",
+      terms: "תקף לשישי-שבת"
+    },
+    {
+      id: "early-bird",
+      title: "הזמנה מוקדמת",
+      titleEn: "Early Bird",
+      discount: 30,
+      description: "30% הנחה להזמנות 30 יום מראש",
+      badge: "🐦 מוקדם",
+      badgeColor: "bg-orange-600",
+      validUntil: "2025-12-31",
+      terms: "להזמנות 30+ יום מראש"
+    }
+  ]
 }

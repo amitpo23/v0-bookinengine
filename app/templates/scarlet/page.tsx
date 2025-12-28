@@ -247,6 +247,29 @@ export default function ScarletTemplate() {
         </div>
       </section>
 
+      {/* Active Promotions Banner */}
+      {scarletHotelConfig.activePromotions && scarletHotelConfig.activePromotions.length > 0 && (
+        <section className="py-8 bg-gradient-to-r from-red-600 via-pink-600 to-purple-600">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-center gap-8 overflow-x-auto">
+              <Sparkles className="h-8 w-8 text-white animate-spin-slow flex-shrink-0" />
+              {scarletHotelConfig.activePromotions.map((promo, index) => (
+                <div key={promo.id} className="flex items-center gap-4 text-white flex-shrink-0">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold">{promo.discount}%</div>
+                    <div className="text-sm font-medium">{promo.title}</div>
+                  </div>
+                  {index < scarletHotelConfig.activePromotions.length - 1 && (
+                    <div className="w-px h-12 bg-white/30" />
+                  )}
+                </div>
+              ))}
+              <Sparkles className="h-8 w-8 text-white animate-spin-slow flex-shrink-0" />
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Rooms Section */}
       <section className="py-20 px-4 max-w-7xl mx-auto">
         <div className="text-center mb-16">
@@ -284,6 +307,20 @@ export default function ScarletTemplate() {
                   <div className="absolute top-4 right-4 w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-3xl border-2 border-white/30">
                     {room.emoji}
                   </div>
+
+                  {/* Active Promotions Badges */}
+                  {scarletHotelConfig.activePromotions && scarletHotelConfig.activePromotions.length > 0 && (
+                    <div className="absolute bottom-4 left-4 right-4 flex flex-wrap gap-2">
+                      {scarletHotelConfig.activePromotions.slice(0, 2).map((promo) => (
+                        <Badge 
+                          key={promo.id}
+                          className={`${promo.badgeColor} text-white font-bold border-0 shadow-lg animate-pulse`}
+                        >
+                          {promo.badge}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Special Badges */}
                   {room.isPremium && (

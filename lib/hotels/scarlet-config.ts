@@ -20,8 +20,12 @@ export const scarletRoomTypes = [
     ],
     suitableFor: "זוגות או יחידים",
     images: [
-      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/romantic-classic/Scarlet%20Hotel-100.jpg",
-      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/romantic-classic/Scarlet%20Hotel-101.jpg"
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/classic-balcony/SCARLET%20DAY2-1.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/classic-balcony/SCARLET%20DAY2-2.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/classic-balcony/SCARLET%20DAY2-3.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/classic-balcony/urban-plus-dave-1900.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/classic-balcony/urban-plus-dave.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/classic-balcony/urbn-plus-dave-1-1900.jpg"
     ]
   },
   {
@@ -47,6 +51,8 @@ export const scarletRoomTypes = [
     suitableFor: "זוגות לרגעים רומנטיים",
     special: "אמבטיה יוקרתית במרכז החלל",
     images: [
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/romantic-classic/Scarlet%20Hotel-100.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/romantic-classic/Scarlet%20Hotel-101.jpg",
       "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/romantic-classic/Scarlet%20Hotel-102.jpg",
       "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/romantic-classic/Scarlet%20Hotel-103.jpg"
     ]
@@ -123,8 +129,12 @@ export const scarletRoomTypes = [
     ],
     suitableFor: "עד 4 אורחים - משפחות וחברים",
     images: [
-      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/romantic-classic/Scarlet%20Hotel-100.jpg",
-      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/romantic-classic/Scarlet%20Hotel-101.jpg"
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/deluxe/_92a9431%20%28i%29.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/deluxe/_92a9487.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/deluxe/Scarlet%20Hotel-27.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/deluxe/Scarlet%20Hotel-28.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/deluxe/Scarlet%20Hotel-29.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/deluxe/Scarlet%20Hotel-30.jpg"
     ]
   },
   {
@@ -180,9 +190,14 @@ export const scarletRoomTypes = [
     special: "סלון נפרד, מרפסת ענקית ואמבטיה חיצונית",
     isPremium: true,
     images: [
-      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/romantic-classic/Scarlet%20Hotel-100.jpg",
-      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/romantic-classic/Scarlet%20Hotel-101.jpg",
-      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/romantic-classic/Scarlet%20Hotel-102.jpg"
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/suite/Scarlet%20Hotel-9.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/suite/Scarlet%20Hotel-10.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/suite/Scarlet%20Hotel-11.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/suite/Scarlet%20Hotel-12.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/suite/Scarlet%20Hotel-13.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/suite/Scarlet%20Hotel-14.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/suite/Scarlet%20Hotel-15.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/suite/Scarlet%20Hotel-16.jpg"
     ]
   }
 ]
@@ -194,6 +209,29 @@ export const scarletHotelConfig = {
   tagline: "Where Urban Meets Romance",
   hebrewTagline: "היכן שהאורבני פוגש את הרומנטי",
   description: "מלון בוטיק בלב תל אביב המשלב עיצוב מודרני עם אווירה רומנטית ייחודית. כל חדר מעוצב בקפידה כדי להעניק לכם חוויה בלתי נשכחת.",
+  images: [
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/Scarlet%20Hotel-1.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/Scarlet%20Hotel-2.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/Scarlet%20Hotel-3.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/Scarlet%20Hotel-4.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/Scarlet%20Hotel-5.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/Scarlet%20Hotel-6.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/Scarlet%20Hotel-7.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/Scarlet%20Hotel-8.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/Scarlet%20Hotel-9.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/Scarlet%20Hotel-10.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/Scarlet%20Hotel-11.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/Scarlet%20Hotel-12.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/Scarlet%20Hotel-13.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/Scarlet%20Hotel-14.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/Scarlet%20Hotel-15.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/Scarlet%20Hotel-16.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/Scarlet%20Hotel-17.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/Scarlet%20Hotel-18.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/Scarlet%20Hotel-19.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/SCARLET%20DAY2-6.jpg",
+    "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/looby/SCARLET%20DAY2-7%20(i).jpg"
+  ],
   location: {
     city: "Tel Aviv",
     address: "רחוב סקרלט, תל אביב",

@@ -28,6 +28,10 @@ export default function ScarletTemplate() {
 
   // Track page view on mount
   useEffect(() => {
+    console.log('Scarlet Hotel Config Images:', {
+      total: scarletHotelConfig.images.length,
+      images: scarletHotelConfig.images
+    })
     trackPageView(window.location.href, 'Scarlet Hotel Tel Aviv')
     trackEvent({
       event: 'page_view',
@@ -39,10 +43,13 @@ export default function ScarletTemplate() {
 
   // Auto-rotate background images every 5 seconds
   useEffect(() => {
+    console.log('Setting up background image rotation for', scarletHotelConfig.images.length, 'images')
     const interval = setInterval(() => {
-      setBackgroundImageIndex((prevIndex) => 
-        (prevIndex + 1) % scarletHotelConfig.images.length
-      )
+      setBackgroundImageIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % scarletHotelConfig.images.length
+        console.log('Background image rotating from', prevIndex, 'to', nextIndex)
+        return nextIndex
+      })
     }, 5000)
 
     return () => clearInterval(interval)
@@ -116,17 +123,25 @@ export default function ScarletTemplate() {
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         {/* Background Image Gallery with Auto-Rotation */}
         <div className="absolute inset-0">
-          {scarletHotelConfig.images.map((image, index) => (
-            <div
-              key={index}
-              className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
-              style={{
-                backgroundImage: `url('${image}')`,
-                opacity: backgroundImageIndex === index ? 1 : 0,
-                zIndex: backgroundImageIndex === index ? 1 : 0,
-              }}
-            />
-          ))}
+          {scarletHotelConfig.images && scarletHotelConfig.images.length > 0 ? (
+            scarletHotelConfig.images.map((image, index) => (
+              <div
+                key={`bg-${index}`}
+                className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
+                style={{
+                  backgroundImage: `url('${image}')`,
+                  opacity: backgroundImageIndex === index ? 1 : 0,
+                  zIndex: backgroundImageIndex === index ? 2 : 1,
+                }}
+              />
+            ))
+          ) : (
+            <div className="absolute inset-0 bg-gray-900">
+              <div className="absolute inset-0 flex items-center justify-center text-white">
+                Loading images...
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Hero Content */}

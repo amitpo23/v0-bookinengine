@@ -125,9 +125,7 @@ export default function ScarletTemplate() {
                 opacity: backgroundImageIndex === index ? 1 : 0,
                 zIndex: backgroundImageIndex === index ? 1 : 0,
               }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/60"></div>
-            </div>
+            />
           ))}
         </div>
 
@@ -141,11 +139,11 @@ export default function ScarletTemplate() {
             Scarlet
           </h1>
           
-          <p className="text-3xl md:text-4xl font-light mb-2 text-gray-200">
+          <p className="text-3xl md:text-4xl font-light mb-2 text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 4px 16px rgba(0,0,0,0.6)' }}>
             {scarletHotelConfig.hebrewName}
           </p>
           
-          <p className="text-xl md:text-2xl text-gray-300 mb-12">
+          <p className="text-xl md:text-2xl text-white mb-12" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 4px 16px rgba(0,0,0,0.6)' }}>
             {scarletHotelConfig.hebrewTagline}
           </p>
 

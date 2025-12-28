@@ -101,6 +101,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../app/admin/upload-images/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/admin/upload-images">> = Specific
+  const handler = {} as typeof import("../../app/admin/upload-images/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../app/ai-chat/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/ai-chat">> = Specific
@@ -663,6 +672,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/tools">> = Specific
   const handler = {} as typeof import("../../app/api/tools/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/api/upload/images/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/upload/images">> = Specific
+  const handler = {} as typeof import("../../app/api/upload/images/route.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check

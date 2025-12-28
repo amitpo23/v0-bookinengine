@@ -117,6 +117,12 @@
       "namedRegex": "^/admin/rbac(?:/)?$"
     },
     {
+      "page": "/admin/upload-images",
+      "regex": "^/admin/upload\\-images(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/upload\\-images(?:/)?$"
+    },
+    {
       "page": "/ai-chat",
       "regex": "^/ai\\-chat(?:/)?$",
       "routeKeys": {},
@@ -397,6 +403,12 @@
       "regex": "^/api/tools(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/tools(?:/)?$"
+    },
+    {
+      "page": "/api/upload/images",
+      "regex": "^/api/upload/images(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/upload/images(?:/)?$"
     },
     {
       "page": "/api/user/bookings",

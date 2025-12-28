@@ -24,6 +24,7 @@ export default function ScarletTemplate() {
   const [promoCode, setPromoCode] = useState("")
   const [discount, setDiscount] = useState(0)
   const [roomImageIndexes, setRoomImageIndexes] = useState<Record<string, number>>({})
+  const [backgroundImageIndex, setBackgroundImageIndex] = useState(0)
 
   // Track page view on mount
   useEffect(() => {
@@ -34,6 +35,17 @@ export default function ScarletTemplate() {
       hotel_id: scarletHotelConfig.hotelId,
       template_name: 'scarlet'
     })
+  }, [])
+
+  // Auto-rotate background images every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBackgroundImageIndex((prevIndex) => 
+        (prevIndex + 1) % scarletHotelConfig.images.length
+      )
+    }, 5000)
+
+    return () => clearInterval(interval)
   }, [])
 
   const handleSearch = () => {
@@ -102,14 +114,21 @@ export default function ScarletTemplate() {
 
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Image with Overlay */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: "url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920')",
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black"></div>
+        {/* Background Image Gallery with Auto-Rotation */}
+        <div className="absolute inset-0">
+          {scarletHotelConfig.images.map((image, index) => (
+            <div
+              key={index}
+              className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
+              style={{
+                backgroundImage: `url('${image}')`,
+                opacity: backgroundImageIndex === index ? 1 : 0,
+                zIndex: backgroundImageIndex === index ? 1 : 0,
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black"></div>
+            </div>
+          ))}
         </div>
 
         {/* Hero Content */}

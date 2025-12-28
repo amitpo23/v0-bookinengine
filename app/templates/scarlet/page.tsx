@@ -3,20 +3,23 @@
 import { useState, useEffect } from "react"
 import { format } from "date-fns"
 import { he } from "date-fns/locale"
-import { Calendar, Users, Heart, Sparkles, Bath, Home, Crown, User, ChevronLeft, ChevronRight } from "lucide-react"
+import { Calendar, Users, Heart, Sparkles, Bath, Home, Crown, User, ChevronLeft, ChevronRight, MessageCircle, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { SocialShare } from "@/components/ui/social-share"
 import { scarletRoomTypes, scarletHotelConfig } from "@/lib/hotels/scarlet-config"
 import { PromoCodeInput } from "@/components/promotions/promo-code-input"
 import { LoyaltySignup } from "@/components/promotions/loyalty-signup"
 import { LoyaltyBadge } from "@/components/promotions/loyalty-badge"
+import { PromotionBanner } from "@/components/promotions/promotion-banner"
 import { AffiliateTracker } from "@/components/analytics/affiliate-tracker"
 import { trackEvent, trackPageView, trackSelectItem, trackSearch } from "@/lib/analytics/ga4"
 import { LoginButton } from "@/components/auth/login-button"
 import { useBookingEngine } from "@/hooks/use-booking-engine"
 import { BookingWidget } from "@/components/booking/booking-widget"
+import { AiChatWidget } from "@/components/booking/ai-chat-widget"
 import Link from "next/link"
 
 export default function ScarletTemplate() {
@@ -29,6 +32,8 @@ export default function ScarletTemplate() {
   const [roomImageIndexes, setRoomImageIndexes] = useState<Record<string, number>>({})
   const [backgroundImageIndex, setBackgroundImageIndex] = useState(0)
   const [showBookingDialog, setShowBookingDialog] = useState(false)
+  const [showAiChat, setShowAiChat] = useState(false)
+  const [showPromoInput, setShowPromoInput] = useState(false)
   const bookingEngine = useBookingEngine()
 
   // Track page view on mount
@@ -116,6 +121,13 @@ export default function ScarletTemplate() {
             <span className="text-sm">חזרה לטמפלטים</span>
           </Link>
           <div className="flex items-center gap-4">
+            <SocialShare 
+              variant="icon" 
+              title={`${scarletHotelConfig.hebrewName} - ${scarletHotelConfig.hebrewTagline}`}
+              description={scarletHotelConfig.description}
+              hashtags={['ScarletHotel', 'TelAviv', 'BoutiqueHotel']}
+              className="text-gray-300 hover:text-white"
+            />
             <Link href="/my-account" className="flex items-center gap-2 text-gray-300 hover:text-red-400 transition-colors">
               <User className="w-4 h-4" />
               <span className="text-sm font-medium">האזור האישי שלי</span>
@@ -516,6 +528,147 @@ export default function ScarletTemplate() {
         </div>
       </section>
 
+      {/* Marketing Features Section */}
+      <section className="py-16 px-4 bg-gradient-to-b from-gray-900 to-black">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'var(--font-assistant)' }}>
+              מבצעים והטבות מיוחדות
+            </h2>
+            <p className="text-xl text-gray-400" style={{ fontFamily: 'var(--font-assistant)' }}>
+              חסכו עוד יותר עם הקופונים והטבות הנאמנות שלנו
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {/* Promo Codes Card */}
+            <Card className="bg-gradient-to-br from-orange-900/30 to-red-900/30 border-orange-500/30 hover:border-orange-500 transition-all duration-300 hover:scale-105">
+              <div className="p-6 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-orange-500/20 rounded-full flex items-center justify-center">
+                  <Sparkles className="h-8 w-8 text-orange-400" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3 text-white" style={{ fontFamily: 'var(--font-assistant)' }}>
+                  קודי קופון
+                </h3>
+                <p className="text-gray-300 mb-6" style={{ fontFamily: 'var(--font-assistant)' }}>
+                  השתמשו בקוד קופון וקבלו הנחה מיוחדת על ההזמנה שלכם
+                </p>
+                <Button 
+                  onClick={() => setShowPromoInput(!showPromoInput)}
+                  className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold"
+                  style={{ fontFamily: 'var(--font-assistant)' }}
+                >
+                  {showPromoInput ? 'הסתר' : 'הזן קוד קופון'}
+                </Button>
+                {showPromoInput && (
+                  <div className="mt-4">
+                    <PromoCodeInput 
+                      hotelId={scarletHotelConfig.hotelId}
+                      variant="default"
+                      onPromoApplied={(promo: any) => {
+                        console.log('Promo applied:', promo)
+                        if (typeof promo === 'string') {
+                          alert(`קוד קופון הופעל! ${promo}`)
+                        } else if (promo?.discountPercent) {
+                          alert(`קוד קופון הופעל! הנחה של ${promo.discountPercent}%`)
+                        } else {
+                          alert('קוד קופון הופעל בהצלחה!')
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+                <ul className="text-right text-sm text-gray-400 mt-4 space-y-2" style={{ fontFamily: 'var(--font-assistant)' }}>
+                  <li>✨ הנחות עד 30%</li>
+                  <li>🎁 מבצעים עונתיים</li>
+                  <li>🔥 קופונים בלעדיים</li>
+                </ul>
+              </div>
+            </Card>
+
+            {/* Loyalty Program Card */}
+            <Card className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 border-purple-500/30 hover:border-purple-500 transition-all duration-300 hover:scale-105">
+              <div className="p-6 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-purple-500/20 rounded-full flex items-center justify-center">
+                  <Crown className="h-8 w-8 text-purple-400" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3 text-white" style={{ fontFamily: 'var(--font-assistant)' }}>
+                  תוכנית נאמנות
+                </h3>
+                <p className="text-gray-300 mb-6" style={{ fontFamily: 'var(--font-assistant)' }}>
+                  הצטרפו לתוכנית הנאמנות שלנו וצברו נקודות עם כל הזמנה
+                </p>
+                <LoyaltyBadge hotelId={scarletHotelConfig.hotelId} variant="luxury" />
+                <div className="mt-4">
+                  <LoyaltySignup hotelId={scarletHotelConfig.hotelId} />
+                </div>
+                <ul className="text-right text-sm text-gray-400 mt-4 space-y-2" style={{ fontFamily: 'var(--font-assistant)' }}>
+                  <li>👑 3 רמות חברות</li>
+                  <li>💎 הנחות מצטברות</li>
+                  <li>🎯 הטבות בלעדיות</li>
+                  <li>🌟 שדרוגי חדרים</li>
+                </ul>
+              </div>
+            </Card>
+
+            {/* Affiliate Program Card */}
+            <Card className="bg-gradient-to-br from-blue-900/30 to-cyan-900/30 border-blue-500/30 hover:border-blue-500 transition-all duration-300 hover:scale-105">
+              <div className="p-6 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-blue-500/20 rounded-full flex items-center justify-center">
+                  <Users className="h-8 w-8 text-blue-400" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3 text-white" style={{ fontFamily: 'var(--font-assistant)' }}>
+                  תוכנית שותפים
+                </h3>
+                <p className="text-gray-300 mb-6" style={{ fontFamily: 'var(--font-assistant)' }}>
+                  המליצו לחברים וקבלו הטבות על כל הזמנה
+                </p>
+                <Button 
+                  variant="outline"
+                  className="w-full border-blue-500 text-blue-400 hover:bg-blue-500/20 font-bold"
+                  style={{ fontFamily: 'var(--font-assistant)' }}
+                  onClick={() => window.open('/api/affiliate/register', '_blank')}
+                >
+                  הצטרפו כשותפים
+                </Button>
+                <ul className="text-right text-sm text-gray-400 mt-4 space-y-2" style={{ fontFamily: 'var(--font-assistant)' }}>
+                  <li>💰 עמלה על כל הזמנה</li>
+                  <li>🔗 קישור אישי</li>
+                  <li>📊 ניהול מכירות</li>
+                  <li>🎁 בונוסים מיוחדים</li>
+                </ul>
+              </div>
+            </Card>
+          </div>
+
+          {/* Active Promotions Banner */}
+          <div className="mb-8">
+            <PromotionBanner />
+          </div>
+
+          {/* Special Offers Info */}
+          <Card className="bg-gradient-to-r from-red-900/20 to-pink-900/20 border-red-500/30">
+            <div className="p-8 text-center">
+              <h3 className="text-3xl font-bold mb-4 text-white" style={{ fontFamily: 'var(--font-assistant)' }}>
+                💝 מבצעים נוספים זמינים במהלך ההזמנה
+              </h3>
+              <p className="text-xl text-gray-300 mb-6" style={{ fontFamily: 'var(--font-assistant)' }}>
+                לחצו על "הזמן עכשיו" כדי לראות את כל המבצעים והקופונים הזמינים
+              </p>
+              <Button 
+                onClick={() => handleBookRoom('classic-double')}
+                size="lg"
+                className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-xl px-12 py-6 shadow-2xl shadow-red-500/50"
+                style={{ fontFamily: 'var(--font-assistant)' }}
+              >
+                <Sparkles className="ml-2 h-6 w-6" />
+                גלו את המבצעים
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </section>
+
       {/* Affiliate Tracker */}
       <AffiliateTracker hotelId={scarletHotelConfig.hotelId} />
 
@@ -537,6 +690,17 @@ export default function ScarletTemplate() {
               <span className="font-semibold text-white">אימייל:</span>{" "}
               {scarletHotelConfig.contact.email}
             </div>
+          </div>
+
+          <div className="flex justify-center items-center gap-3 mb-6">
+            <span className="text-sm text-gray-400">שתפו אותנו:</span>
+            <SocialShare 
+              variant="minimal" 
+              title={`${scarletHotelConfig.hebrewName} - ${scarletHotelConfig.hebrewTagline}`}
+              description={scarletHotelConfig.description}
+              hashtags={['ScarletHotel', 'TelAviv', 'BoutiqueHotel']}
+              className="text-gray-400 hover:text-red-400"
+            />
           </div>
 
           <p className="text-gray-500 text-sm">
@@ -573,6 +737,45 @@ export default function ScarletTemplate() {
           />
         </DialogContent>
       </Dialog>
+
+      {/* AI Chat Widget */}
+      <div className="fixed bottom-6 left-6 z-50">
+        <Button
+          onClick={() => setShowAiChat(!showAiChat)}
+          className="rounded-full w-14 h-14 bg-red-600 hover:bg-red-700 shadow-2xl shadow-red-500/50 transition-all duration-300 hover:scale-110"
+          size="icon"
+        >
+          <MessageCircle className="h-6 w-6" />
+        </Button>
+        {showAiChat && (
+          <div className="absolute bottom-16 left-0 w-96 h-[600px] shadow-2xl rounded-lg overflow-hidden border border-red-500/30 bg-black">
+            <div className="p-4 bg-gradient-to-r from-red-600 to-pink-600 text-white">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-lg" style={{ fontFamily: 'var(--font-assistant)' }}>
+                  💬 צ'אט עם העוזר החכם שלנו
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowAiChat(false)}
+                  className="text-white hover:bg-white/20"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+              <p className="text-sm mt-1 text-white/90" style={{ fontFamily: 'var(--font-assistant)' }}>
+                שאלו אותנו הכל על {scarletHotelConfig.hebrewName}
+              </p>
+            </div>
+            <div className="p-4 h-[500px] overflow-y-auto bg-gray-950">
+              <p className="text-gray-400 text-center py-8" style={{ fontFamily: 'var(--font-assistant)' }}>
+                העוזר החכם יהיה זמין בקרוב!<br />
+                בינתיים, לחצו על "הזמן עכשיו" כדי להתחיל את תהליך ההזמנה.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

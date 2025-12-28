@@ -126,7 +126,7 @@ export default function ScarletTemplate() {
                 zIndex: backgroundImageIndex === index ? 1 : 0,
               }}
             >
-              <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/60"></div>
             </div>
           ))}
         </div>

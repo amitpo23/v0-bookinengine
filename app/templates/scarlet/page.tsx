@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { format } from "date-fns"
 import { he } from "date-fns/locale"
-import { Calendar, Users, Heart, Sparkles, Bath, Home, Crown } from "lucide-react"
+import { Calendar, Users, Heart, Sparkles, Bath, Home, Crown, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -13,6 +13,8 @@ import { LoyaltySignup } from "@/components/promotions/loyalty-signup"
 import { LoyaltyBadge } from "@/components/promotions/loyalty-badge"
 import { AffiliateTracker } from "@/components/analytics/affiliate-tracker"
 import { trackEvent, trackPageView, trackSelectItem, trackSearch } from "@/lib/analytics/ga4"
+import { LoginButton } from "@/components/auth/login-button"
+import Link from "next/link"
 
 export default function ScarletTemplate() {
   const [checkIn, setCheckIn] = useState("")
@@ -81,6 +83,22 @@ export default function ScarletTemplate() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black text-white">
+      {/* Header */}
+      <header className="absolute top-0 left-0 right-0 z-20 bg-black/30 backdrop-blur-sm border-b border-white/10">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <Link href="/templates" className="text-gray-300 hover:text-white flex items-center gap-2 transition-colors">
+            <span className="text-sm">חזרה לטמפלטים</span>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/my-account" className="flex items-center gap-2 text-gray-300 hover:text-red-400 transition-colors">
+              <User className="w-4 h-4" />
+              <span className="text-sm font-medium">האזור האישי שלי</span>
+            </Link>
+            <LoginButton />
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         {/* Background Image with Overlay */}

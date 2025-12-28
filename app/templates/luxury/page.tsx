@@ -5,10 +5,11 @@ import { LuxurySearchBar } from "@/components/booking/templates/luxury"
 import { EnhancedSearchResults } from "@/components/booking/enhanced-search-results"
 import { BookingSteps, GuestDetailsForm, PaymentForm, BookingConfirmation } from "@/components/booking/templates/shared"
 import { useBookingEngine } from "@/hooks/use-booking-engine"
-import { Loader2, AlertCircle, ArrowRight } from "lucide-react"
+import { Loader2, AlertCircle, ArrowRight, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
+import { LoginButton } from "@/components/auth/login-button"
 
 const STEPS = [
   { id: "search", label: "חיפוש" },
@@ -80,7 +81,13 @@ export default function LuxuryTemplatePage() {
             <h1 className="font-serif text-3xl text-stone-800 tracking-widest">CHÂTEAU</h1>
             <p className="text-stone-500 text-sm uppercase tracking-widest">LUXURY RESORT</p>
           </div>
-          <div />
+          <div className="flex items-center gap-4">
+            <Link href="/my-account" className="flex items-center gap-2 text-stone-600 hover:text-amber-700 transition-colors">
+              <User className="w-4 h-4" />
+              <span className="text-sm font-medium">האזור האישי שלי</span>
+            </Link>
+            <LoginButton />
+          </div>
         </div>
       </header>
 

@@ -5,6 +5,7 @@ import { CheckCircle, Calendar, Users, MapPin, Download, Mail, Phone } from "luc
 import { format } from "date-fns"
 import { he } from "date-fns/locale"
 import type { HotelResult, RoomResult, SearchParams } from "@/hooks/use-booking-engine"
+import Link from "next/link"
 
 interface BookingConfirmationProps {
   bookingId: string
@@ -153,11 +154,14 @@ export function BookingConfirmation({
       </div>
 
       <div className="flex gap-4">
-        <Button variant="outline" className="flex-1 gap-2 bg-transparent">
+        <Link href="/my-account" className="flex-1">
+          <Button variant="default" className={`w-full gap-2 ${buttonClass}`}>
+            <Users className="w-4 h-4" />
+            צפה בהזמנה שלי
+          </Button>
+        </Link>
+        <Button variant="outline" className="flex-1 gap-2 bg-transparent" onClick={onNewBooking}>
           <Download className="w-4 h-4" />
-          הורד אישור
-        </Button>
-        <Button className={`flex-1 ${buttonClass}`} onClick={onNewBooking}>
           הזמנה חדשה
         </Button>
       </div>

@@ -13,10 +13,11 @@ import { EnhancedBookingSidebar } from "@/components/booking/enhanced-booking-si
 import { BookingSteps, GuestDetailsForm, PaymentForm, BookingConfirmation } from "@/components/booking/templates/shared"
 import { useBookingEngine } from "@/hooks/use-booking-engine"
 import { addDays } from "date-fns"
-import { Loader2, AlertCircle, ArrowRight } from "lucide-react"
+import { Loader2, AlertCircle, ArrowRight, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
+import { LoginButton } from "@/components/auth/login-button"
 
 const STEPS = [
   { id: "search", label: "חיפוש" },
@@ -169,7 +170,13 @@ export default function NaraTemplatePage() {
             חזרה לטמפלטים
           </Link>
           <h1 className="text-2xl font-bold text-[#0a3d62]">NARA HOTELS</h1>
-          <div />
+          <div className="flex items-center gap-4">
+            <Link href="/my-account" className="flex items-center gap-2 text-gray-700 hover:text-[#0a3d62] transition-colors">
+              <User className="w-4 h-4" />
+              <span className="text-sm font-medium">האזור האישי שלי</span>
+            </Link>
+            <LoginButton />
+          </div>
         </div>
       </header>
 

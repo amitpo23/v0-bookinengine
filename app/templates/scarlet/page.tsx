@@ -22,10 +22,96 @@ import { ScarletAddonsCarousel, ScarletBookingSidebar } from "@/components/booki
 import { GuestDetailsForm } from "@/components/booking/guest-details-form"
 import { PaymentForm } from "@/components/booking/payment-form"
 import { BookingConfirmation } from "@/components/booking/booking-confirmation"
+import { I18nProvider, useI18n } from "@/lib/i18n/context"
+import { LanguageSwitcher } from "@/components/booking/language-switcher"
 import { addDays } from "date-fns"
 import Link from "next/link"
 
-export default function ScarletTemplate() {
+function ScarletTemplateContent() {
+  const { t, locale, dir } = useI18n()
+  
+  // Set document metadata dynamically
+  useEffect(() => {
+    const title = locale === 'he' 
+      ? `${scarletHotelConfig.hebrewName} - ${scarletHotelConfig.hebrewTagline}` 
+      : `Scarlet Hotel Tel Aviv - A romantic experience in the heart of Tel Aviv`
+    
+    const description = scarletHotelConfig.description
+    
+    document.title = title
+    
+    // Update meta tags
+    const metaDescription = document.querySelector('meta[name="description"]')
+    if (metaDescription) {
+      metaDescription.setAttribute('content', description)
+    } else {
+      const meta = document.createElement('meta')
+      meta.name = 'description'
+      meta.content = description
+      document.head.appendChild(meta)
+    }
+    
+    // Add/Update Open Graph tags
+    const ogTags = [
+      { property: 'og:title', content: title },
+      { property: 'og:description', content: description },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:url', content: window.location.href },
+      { property: 'og:image', content: scarletHotelConfig.images[0] },
+      { property: 'og:site_name', content: 'Scarlet Hotel Tel Aviv' },
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:title', content: title },
+      { name: 'twitter:description', content: description },
+      { name: 'twitter:image', content: scarletHotelConfig.images[0] },
+    ]
+    
+    ogTags.forEach(({ property, name, content }) => {
+      const selector = property ? `meta[property="${property}"]` : `meta[name="${name}"]`
+      let meta = document.querySelector(selector)
+      if (meta) {
+        meta.setAttribute('content', content)
+      } else {
+        meta = document.createElement('meta')
+        if (property) meta.setAttribute('property', property)
+        if (name) meta.setAttribute('name', name)
+        meta.setAttribute('content', content)
+        document.head.appendChild(meta)
+      }
+    })
+    
+    // Add structured data for Hotel
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "Hotel",
+      "name": "Scarlet Hotel Tel Aviv",
+      "image": scarletHotelConfig.images,
+      "description": scarletHotelConfig.description,
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Tel Aviv",
+        "addressCountry": "IL"
+      },
+      "telephone": scarletHotelConfig.contact.phone,
+      "email": scarletHotelConfig.contact.email,
+      "starRating": {
+        "@type": "Rating",
+        "ratingValue": "5"
+      },
+      "priceRange": "₪₪₪",
+      "amenityFeature": scarletHotelConfig.amenities.map(amenity => ({
+        "@type": "LocationFeatureSpecification",
+        "name": amenity
+      }))
+    }
+    
+    let scriptTag = document.querySelector('script[type="application/ld+json"]')
+    if (!scriptTag) {
+      scriptTag = document.createElement('script')
+      scriptTag.type = 'application/ld+json'
+      document.head.appendChild(scriptTag)
+    }
+    scriptTag.textContent = JSON.stringify(structuredData)
+  }, [locale])
   const [checkIn, setCheckIn] = useState("")
   const [checkOut, setCheckOut] = useState("")
   const [guests, setGuests] = useState(2)
@@ -188,24 +274,25 @@ export default function ScarletTemplate() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black text-white">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black text-white" dir={dir}>
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 z-20 bg-black/30 backdrop-blur-sm border-b border-white/10">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/templates" className="text-gray-300 hover:text-white flex items-center gap-2 transition-colors">
-            <span className="text-sm">חזרה לטמפלטים</span>
+            <span className="text-sm">{t('backToTemplates')}</span>
           </Link>
           <div className="flex items-center gap-4">
+            <LanguageSwitcher />
             <SocialShare 
               variant="icon" 
-              title={`${scarletHotelConfig.hebrewName} - ${scarletHotelConfig.hebrewTagline}`}
+              title={locale === 'he' ? `${scarletHotelConfig.hebrewName} - ${scarletHotelConfig.hebrewTagline}` : t('scarletHotelName')}
               description={scarletHotelConfig.description}
               hashtags={['ScarletHotel', 'TelAviv', 'BoutiqueHotel']}
               className="text-gray-300 hover:text-white"
             />
             <Link href="/my-account" className="flex items-center gap-2 text-gray-300 hover:text-red-400 transition-colors">
               <User className="w-4 h-4" />
-              <span className="text-sm font-medium">האזור האישי שלי</span>
+              <span className="text-sm font-medium">{t('myAccount')}</span>
             </Link>
             <LoginButton />
           </div>
@@ -226,6 +313,8 @@ export default function ScarletTemplate() {
                   opacity: backgroundImageIndex === index ? 1 : 0,
                   zIndex: backgroundImageIndex === index ? 2 : 1,
                 }}
+                role="img"
+                aria-label={`${scarletHotelConfig.hebrewName} hotel image ${index + 1}`}
               />
             ))
           ) : (
@@ -248,11 +337,11 @@ export default function ScarletTemplate() {
           </h1>
           
           <p className="text-3xl md:text-4xl font-light mb-2 text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 4px 16px rgba(0,0,0,0.6)' }}>
-            {scarletHotelConfig.hebrewName}
+            {locale === 'he' ? scarletHotelConfig.hebrewName : t('scarletHotelName')}
           </p>
           
           <p className="text-xl md:text-2xl text-white mb-12" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 4px 16px rgba(0,0,0,0.6)' }}>
-            {scarletHotelConfig.hebrewTagline}
+            {locale === 'he' ? scarletHotelConfig.hebrewTagline : t('scarletTagline')}
           </p>
 
           {/* Search Box */}
@@ -261,7 +350,7 @@ export default function ScarletTemplate() {
               <div className="space-y-2">
                 <label className="text-sm font-medium flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-red-400" />
-                  תאריך הגעה
+                  {t('checkIn')}
                 </label>
                 <input
                   type="date"
@@ -274,7 +363,7 @@ export default function ScarletTemplate() {
               <div className="space-y-2">
                 <label className="text-sm font-medium flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-red-400" />
-                  תאריך עזיבה
+                  {t('checkOut')}
                 </label>
                 <input
                   type="date"
@@ -287,7 +376,7 @@ export default function ScarletTemplate() {
               <div className="space-y-2">
                 <label className="text-sm font-medium flex items-center gap-2">
                   <Users className="h-4 w-4 text-red-400" />
-                  מספר אורחים
+                  {t('guests')}
                 </label>
                 <select
                   value={guests}
@@ -296,7 +385,7 @@ export default function ScarletTemplate() {
                 >
                   {[1, 2, 3, 4, 5].map((num) => (
                     <option key={num} value={num} className="bg-gray-800">
-                      {num} {num === 1 ? "אורח" : "אורחים"}
+                      {num} {t('guests')}
                     </option>
                   ))}
                 </select>
@@ -307,7 +396,7 @@ export default function ScarletTemplate() {
                   onClick={handleSearch}
                   className="w-full h-[52px] bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg shadow-red-500/50"
                 >
-                  חפש חדרים
+                  {t('searchRooms')}
                 </Button>
               </div>
             </div>
@@ -349,10 +438,10 @@ export default function ScarletTemplate() {
       <section className="py-20 px-4 max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">
-            החדרים שלנו
+            {t('ourRooms')}
           </h2>
           <p className="text-xl text-gray-300">
-            גלו את החדר המושלם עבורכם
+            {t('findPerfectRoom')}
           </p>
         </div>
 
@@ -373,7 +462,7 @@ export default function ScarletTemplate() {
                 <div className={`relative h-80 lg:h-auto overflow-hidden group/gallery ${index % 2 === 1 ? "lg:col-start-2" : ""}`}>
                   <img
                     src={room.images[roomImageIndexes[room.id] || 0]}
-                    alt={room.hebrewName}
+                    alt={`${room.hebrewName} - ${room.name} hotel room`}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
@@ -427,7 +516,8 @@ export default function ScarletTemplate() {
                         setRoomImageIndexes(prev => ({ ...prev, [room.id]: newIndex }))
                       }}
                       className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 backdrop-blur-sm hover:bg-black/80 p-3 rounded-full transition-all opacity-0 group-hover/gallery:opacity-100"
-                      aria-label="Previous image"
+                      aria-label={`Previous image of ${room.name}`}
+                      title="Previous image"
                     >
                       <ChevronLeft className="h-6 w-6" />
                     </button>
@@ -442,7 +532,8 @@ export default function ScarletTemplate() {
                         setRoomImageIndexes(prev => ({ ...prev, [room.id]: newIndex }))
                       }}
                       className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 backdrop-blur-sm hover:bg-black/80 p-3 rounded-full transition-all opacity-0 group-hover/gallery:opacity-100"
-                      aria-label="Next image"
+                      aria-label={`Next image of ${room.name}`}
+                      title="Next image"
                     >
                       <ChevronRight className="h-6 w-6" />
                     </button>
@@ -469,7 +560,7 @@ export default function ScarletTemplate() {
                   {/* Price Tag */}
                   <div className="absolute bottom-4 left-4 bg-red-600/90 backdrop-blur-md px-6 py-3 rounded-full">
                     <div className="text-2xl font-bold">₪{room.basePrice}</div>
-                    <div className="text-xs text-gray-200">ללילה</div>
+                    <div className="text-xs text-gray-200">{t('perNight')}</div>
                   </div>
                 </div>
 
@@ -493,24 +584,24 @@ export default function ScarletTemplate() {
                   <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-white/5 rounded-lg">
                     <div className="text-center">
                       <Home className="h-6 w-6 mx-auto mb-2 text-red-400" />
-                      <div className="text-sm text-gray-400">גודל</div>
-                      <div className="font-bold">{room.size} מ"ר</div>
+                      <div className="text-sm text-gray-400">{t('size')}</div>
+                      <div className="font-bold">{room.size} {t('sqm')}</div>
                     </div>
                     <div className="text-center">
                       <Users className="h-6 w-6 mx-auto mb-2 text-red-400" />
-                      <div className="text-sm text-gray-400">אורחים</div>
-                      <div className="font-bold">עד {room.maxGuests}</div>
+                      <div className="text-sm text-gray-400">{t('guests')}</div>
+                      <div className="font-bold">{t('upToGuests', { count: room.maxGuests })}</div>
                     </div>
                     <div className="text-center">
                       <Bath className="h-6 w-6 mx-auto mb-2 text-red-400" />
-                      <div className="text-sm text-gray-400">מקלחת</div>
-                      <div className="font-bold">מלאה</div>
+                      <div className="text-sm text-gray-400">{t('fullBathroom')}</div>
+                      <div className="font-bold">{locale === 'he' ? 'מלאה' : 'Full'}</div>
                     </div>
                   </div>
 
                   {/* Features */}
                   <div className="mb-6">
-                    <h4 className="font-semibold mb-3 text-red-400">מה כלול:</h4>
+                    <h4 className="font-semibold mb-3 text-red-400">{t('whatsIncluded')}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                       {room.features.map((feature, idx) => (
                         <div key={idx} className="flex items-start gap-2">
@@ -525,7 +616,7 @@ export default function ScarletTemplate() {
                     <div className="mb-6 p-4 bg-gradient-to-r from-red-900/30 to-pink-900/30 rounded-lg border border-red-500/30">
                       <div className="flex items-center gap-2 text-red-400 mb-1">
                         <Sparkles className="h-4 w-4" />
-                        <span className="font-semibold">מיוחד במינו:</span>
+                        <span className="font-semibold">{t('unique')}</span>
                       </div>
                       <p className="text-sm text-gray-300">{room.special}</p>
                     </div>
@@ -535,7 +626,7 @@ export default function ScarletTemplate() {
                     onClick={() => handleBookRoom(room.id)}
                     className="w-full h-14 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-lg rounded-lg shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-all"
                   >
-                    הזמן עכשיו
+                    {t('bookNow')}
                   </Button>
                 </div>
               </div>
@@ -549,9 +640,9 @@ export default function ScarletTemplate() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4 text-white">
-              השירותים שלנו
+              {t('ourAmenities')}
             </h2>
-            <p className="text-gray-400">כל מה שצריך לחופשה מושלמת</p>
+            <p className="text-gray-400">{t('everythingForPerfectVacation')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -572,9 +663,9 @@ export default function ScarletTemplate() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">
-              הטבות והנחות
+              {t('discountsAndDeals')}
             </h2>
-            <p className="text-gray-400">חסכו יותר בהזמנה הבאה</p>
+            <p className="text-gray-400">{t('saveMore')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
@@ -582,7 +673,7 @@ export default function ScarletTemplate() {
             <Card className="bg-gradient-to-br from-red-900/20 via-gray-900/50 to-gray-900/50 backdrop-blur-sm border-red-500/30 p-6">
               <h3 className="text-xl font-bold mb-4 text-white flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-red-400" />
-                קוד הנחה
+                {t('promoCode')}
               </h3>
               <PromoCodeInput
                 onPromoApplied={handlePromoApplied}
@@ -592,7 +683,7 @@ export default function ScarletTemplate() {
               {discount > 0 && (
                 <div className="mt-4 p-3 bg-green-900/30 rounded-lg border border-green-500/30">
                   <p className="text-green-400 text-sm font-semibold">
-                    🎉 הנחה של {discount}% הופעלה!
+                    {t('promoApplied', { discount })}
                   </p>
                 </div>
               )}
@@ -602,7 +693,7 @@ export default function ScarletTemplate() {
             <Card className="bg-gradient-to-br from-pink-900/20 via-gray-900/50 to-gray-900/50 backdrop-blur-sm border-pink-500/30 p-6">
               <h3 className="text-xl font-bold mb-4 text-white flex items-center gap-2">
                 <Crown className="h-5 w-5 text-pink-400" />
-                מועדון לקוחות
+                {t('loyaltyClub')}
               </h3>
               <LoyaltyBadge hotelId={scarletHotelConfig.hotelId} variant="dark" />
               <div className="mt-4">
@@ -616,24 +707,24 @@ export default function ScarletTemplate() {
             <div className="text-center mb-6">
               <Crown className="h-12 w-12 text-yellow-500 mx-auto mb-3" />
               <h3 className="text-2xl font-bold text-white mb-2">
-                מה מקבלים חברי VIP?
+                {t('vipBenefits')}
               </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
                 <Sparkles className="h-8 w-8 text-red-400 mx-auto mb-2" />
-                <h4 className="font-bold text-white mb-1">10% הנחה</h4>
-                <p className="text-sm text-gray-400">על כל ההזמנות</p>
+                <h4 className="font-bold text-white mb-1">{t('discount10Percent')}</h4>
+                <p className="text-sm text-gray-400">{t('onAllBookings')}</p>
               </div>
               <div className="text-center">
                 <Heart className="h-8 w-8 text-pink-400 mx-auto mb-2" />
-                <h4 className="font-bold text-white mb-1">שדרוג חינם</h4>
-                <p className="text-sm text-gray-400">כפוף לזמינות</p>
+                <h4 className="font-bold text-white mb-1">{t('freeUpgrade')}</h4>
+                <p className="text-sm text-gray-400">{t('subjectToAvailability')}</p>
               </div>
               <div className="text-center">
                 <Crown className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
-                <h4 className="font-bold text-white mb-1">צ'ק-אין מהיר</h4>
-                <p className="text-sm text-gray-400">ללא המתנה</p>
+                <h4 className="font-bold text-white mb-1">{t('fastCheckIn')}</h4>
+                <p className="text-sm text-gray-400">{t('noWaiting')}</p>
               </div>
             </div>
           </Card>
@@ -645,10 +736,10 @@ export default function ScarletTemplate() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'var(--font-assistant)' }}>
-              מבצעים והטבות מיוחדות
+              {t('specialOffersMarketing')}
             </h2>
             <p className="text-xl text-gray-400" style={{ fontFamily: 'var(--font-assistant)' }}>
-              חסכו עוד יותר עם הקופונים והטבות הנאמנות שלנו
+              {t('saveMoreWithPromos')}
             </p>
           </div>
 
@@ -660,17 +751,17 @@ export default function ScarletTemplate() {
                   <Sparkles className="h-8 w-8 text-orange-400" />
                 </div>
                 <h3 className="text-2xl font-bold mb-3 text-white" style={{ fontFamily: 'var(--font-assistant)' }}>
-                  קודי קופון
+                  {t('promoCodes')}
                 </h3>
                 <p className="text-gray-300 mb-6" style={{ fontFamily: 'var(--font-assistant)' }}>
-                  השתמשו בקוד קופון וקבלו הנחה מיוחדת על ההזמנה שלכם
+                  {t('usePromoCodeDescription')}
                 </p>
                 <Button 
                   onClick={() => setShowPromoInput(!showPromoInput)}
                   className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold"
                   style={{ fontFamily: 'var(--font-assistant)' }}
                 >
-                  {showPromoInput ? 'הסתר' : 'הזן קוד קופון'}
+                  {showPromoInput ? t('hide') : t('enterPromoCode')}
                 </Button>
                 {showPromoInput && (
                   <div className="mt-4">
@@ -705,20 +796,20 @@ export default function ScarletTemplate() {
                   <Crown className="h-8 w-8 text-purple-400" />
                 </div>
                 <h3 className="text-2xl font-bold mb-3 text-white" style={{ fontFamily: 'var(--font-assistant)' }}>
-                  תוכנית נאמנות
+                  {t('loyaltyProgram')}
                 </h3>
                 <p className="text-gray-300 mb-6" style={{ fontFamily: 'var(--font-assistant)' }}>
-                  הצטרפו לתוכנית הנאמנות שלנו וצברו נקודות עם כל הזמנה
+                  {t('loyaltyProgramDescription')}
                 </p>
                 <LoyaltyBadge hotelId={scarletHotelConfig.hotelId} variant="luxury" />
                 <div className="mt-4">
                   <LoyaltySignup hotelId={scarletHotelConfig.hotelId} />
                 </div>
                 <ul className="text-right text-sm text-gray-400 mt-4 space-y-2" style={{ fontFamily: 'var(--font-assistant)' }}>
-                  <li>👑 3 רמות חברות</li>
-                  <li>💎 הנחות מצטברות</li>
-                  <li>🎯 הטבות בלעדיות</li>
-                  <li>🌟 שדרוגי חדרים</li>
+                  <li>👑 {t('threeMembershipLevels')}</li>
+                  <li>💎 {t('cumulativeDiscounts')}</li>
+                  <li>🎯 {t('exclusiveBenefits')}</li>
+                  <li>🌟 {t('roomUpgrades')}</li>
                 </ul>
               </div>
             </Card>
@@ -730,10 +821,10 @@ export default function ScarletTemplate() {
                   <Users className="h-8 w-8 text-blue-400" />
                 </div>
                 <h3 className="text-2xl font-bold mb-3 text-white" style={{ fontFamily: 'var(--font-assistant)' }}>
-                  תוכנית שותפים
+                  {t('affiliateProgram')}
                 </h3>
                 <p className="text-gray-300 mb-6" style={{ fontFamily: 'var(--font-assistant)' }}>
-                  המליצו לחברים וקבלו הטבות על כל הזמנה
+                  {t('affiliateProgramDescription')}
                 </p>
                 <Button 
                   variant="outline"
@@ -741,13 +832,13 @@ export default function ScarletTemplate() {
                   style={{ fontFamily: 'var(--font-assistant)' }}
                   onClick={() => window.open('/api/affiliate/register', '_blank')}
                 >
-                  הצטרפו כשותפים
+                  {t('joinAsPartner')}
                 </Button>
                 <ul className="text-right text-sm text-gray-400 mt-4 space-y-2" style={{ fontFamily: 'var(--font-assistant)' }}>
-                  <li>💰 עמלה על כל הזמנה</li>
-                  <li>🔗 קישור אישי</li>
-                  <li>📊 ניהול מכירות</li>
-                  <li>🎁 בונוסים מיוחדים</li>
+                  <li>💰 {t('commissionPerBooking')}</li>
+                  <li>🔗 {t('personalLink')}</li>
+                  <li>📊 {t('salesManagement')}</li>
+                  <li>🎁 {t('specialBonuses')}</li>
                 </ul>
               </div>
             </Card>
@@ -762,10 +853,10 @@ export default function ScarletTemplate() {
           <Card className="bg-gradient-to-r from-red-900/20 to-pink-900/20 border-red-500/30">
             <div className="p-8 text-center">
               <h3 className="text-3xl font-bold mb-4 text-white" style={{ fontFamily: 'var(--font-assistant)' }}>
-                💝 מבצעים נוספים זמינים במהלך ההזמנה
+                {t('moreOffersAvailable')}
               </h3>
               <p className="text-xl text-gray-300 mb-6" style={{ fontFamily: 'var(--font-assistant)' }}>
-                לחצו על "הזמן עכשיו" כדי לראות את כל המבצעים והקופונים הזמינים
+                {t('clickBookNowToSee')}
               </p>
               <Button 
                 onClick={() => handleBookRoom('classic-double')}
@@ -774,7 +865,7 @@ export default function ScarletTemplate() {
                 style={{ fontFamily: 'var(--font-assistant)' }}
               >
                 <Sparkles className="ml-2 h-6 w-6" />
-                גלו את המבצעים
+                {t('discoverOffers')}
               </Button>
             </div>
           </Card>
@@ -805,7 +896,7 @@ export default function ScarletTemplate() {
           </div>
 
           <div className="flex justify-center items-center gap-3 mb-6">
-            <span className="text-sm text-gray-400">שתפו אותנו:</span>
+            <span className="text-sm text-gray-400">{t('shareWithUs')}</span>
             <SocialShare 
               variant="minimal" 
               title={`${scarletHotelConfig.hebrewName} - ${scarletHotelConfig.hebrewTagline}`}
@@ -827,17 +918,17 @@ export default function ScarletTemplate() {
           <DialogHeader className="border-b border-white/10 pb-4">
             <div className="flex items-center justify-center gap-3">
               <Heart className="h-8 w-8 text-red-500 animate-pulse" />
-              <DialogTitle className="text-3xl font-bold text-white">השלימו את ההזמנה</DialogTitle>
+              <DialogTitle className="text-3xl font-bold text-white">{t('completeBooking')}</DialogTitle>
               <Heart className="h-8 w-8 text-pink-500 animate-pulse" />
             </div>
             {/* Progress Steps */}
             <div className="flex justify-center gap-2 mt-6">
               {[
-                { id: 'summary', label: 'סיכום' },
-                { id: 'addons', label: 'תוספות' },
-                { id: 'details', label: 'פרטים' },
-                { id: 'payment', label: 'תשלום' },
-                { id: 'confirmation', label: 'אישור' },
+                { id: 'summary', label: t('summary') },
+                { id: 'addons', label: t('addons') },
+                { id: 'details', label: t('details') },
+                { id: 'payment', label: t('payment') },
+                { id: 'confirmation', label: t('confirmation') },
               ].map((step, idx) => (
                 <div key={step.id} className="flex items-center">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
@@ -878,7 +969,7 @@ export default function ScarletTemplate() {
                   <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-8 border border-red-500/20">
                     <h2 className="text-3xl font-bold text-white mb-6 text-center">
                       <Sparkles className="inline h-8 w-8 text-yellow-400 ml-2" />
-                      הזמנתכם מוכנה!
+                      {t('yourBookingReady')}
                     </h2>
                     
                     {/* Room Details */}
@@ -895,12 +986,12 @@ export default function ScarletTemplate() {
                           <div className="grid grid-cols-2 gap-4 pt-4">
                             <div className="bg-white/5 rounded-lg p-4 border border-white/10">
                               <Users className="h-5 w-5 text-pink-400 mb-2" />
-                              <p className="text-gray-400 text-sm">מתאים ל</p>
+                              <p className="text-gray-400 text-sm">{t('suitableFor')}</p>
                               <p className="text-white font-bold">{room.suitableFor}</p>
                             </div>
                             <div className="bg-white/5 rounded-lg p-4 border border-white/10">
                               <Bath className="h-5 w-5 text-red-400 mb-2" />
-                              <p className="text-gray-400 text-sm">מיוחד</p>
+                              <p className="text-gray-400 text-sm">{t('special')}</p>
                               <p className="text-white font-bold">{room.special}</p>
                             </div>
                           </div>
@@ -910,7 +1001,7 @@ export default function ScarletTemplate() {
                             className="w-full h-14 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-lg mt-6"
                           >
                             <Heart className="ml-2" />
-                            המשך לבחירת תוספות
+                            {t('continueToAddons')}
                           </Button>
                         </div>
                       ) : null
@@ -948,7 +1039,7 @@ export default function ScarletTemplate() {
                   {/* Selected Addons List */}
                   {selectedAddons.length > 0 && (
                     <div className="mt-6 bg-gradient-to-br from-gray-900 to-black rounded-xl p-6 border border-green-500/20">
-                      <h3 className="text-xl font-bold text-white mb-4">✅ תוספות שנבחרו:</h3>
+                      <h3 className="text-xl font-bold text-white mb-4">{t('selectedAddons')}</h3>
                       <div className="space-y-2">
                         {selectedAddons.map((addon) => (
                           <div key={addon.id} className="flex justify-between items-center bg-white/5 rounded-lg p-3 border border-white/10">
@@ -976,13 +1067,13 @@ export default function ScarletTemplate() {
                       variant="outline"
                       className="flex-1 h-12 border-white/20 text-white hover:bg-white/10"
                     >
-                      חזור
+                      {t('back')}
                     </Button>
                     <Button
                       onClick={() => setBookingStep('details')}
                       className="flex-1 h-12 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold"
                     >
-                      המשך למילוי פרטים
+                      {t('continueToDetails')}
                     </Button>
                   </div>
                 </div>
@@ -1011,7 +1102,7 @@ export default function ScarletTemplate() {
                   <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-8 border border-red-500/20">
                     <h2 className="text-3xl font-bold text-white mb-6 text-center">
                       <User className="inline h-8 w-8 text-pink-400 ml-2" />
-                      פרטי האורח
+                      {t('guestDetailsTitle')}
                     </h2>
                     <div className="bg-white/5 rounded-xl p-6 border border-white/10">
                       <GuestDetailsForm
@@ -1027,7 +1118,7 @@ export default function ScarletTemplate() {
                       variant="outline"
                       className="w-full h-12 mt-4 border-white/20 text-white hover:bg-white/10"
                     >
-                      חזור
+                      {t('back')}
                     </Button>
                   </div>
                 </div>
@@ -1055,7 +1146,7 @@ export default function ScarletTemplate() {
                 <div className="flex-1">
                   <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-8 border border-red-500/20">
                     <h2 className="text-3xl font-bold text-white mb-6 text-center">
-                      💳 פרטי תשלום
+                      {t('paymentDetails')}
                     </h2>
                     <div className="bg-white/5 rounded-xl p-6 border border-white/10">
                       <PaymentForm
@@ -1081,7 +1172,7 @@ export default function ScarletTemplate() {
                       variant="outline"
                       className="w-full h-12 mt-4 border-white/20 text-white hover:bg-white/10"
                     >
-                      חזור
+                      {t('back')}
                     </Button>
                   </div>
                 </div>
@@ -1094,37 +1185,37 @@ export default function ScarletTemplate() {
                 <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-12 border border-green-500/30 text-center">
                   <div className="mb-8">
                     <Heart className="h-20 w-20 text-red-500 mx-auto mb-4 animate-pulse" />
-                    <h2 className="text-4xl font-bold text-white mb-2">ההזמנה אושרה בהצלחה!</h2>
-                    <p className="text-gray-300 text-lg">מחכים לראותכם ב{scarletHotelConfig.hebrewName} ❤️</p>
+                    <h2 className="text-4xl font-bold text-white mb-2">{t('bookingConfirmed')}</h2>
+                    <p className="text-gray-300 text-lg">{t('lookingForwardToSeeYou', { hotelName: locale === 'he' ? scarletHotelConfig.hebrewName : t('scarletHotelName') })}</p>
                   </div>
 
                   <div className="bg-white/5 rounded-xl p-6 border border-white/10 text-right space-y-4 mb-8">
                     <div className="flex justify-between pb-4 border-b border-white/10">
-                      <span className="text-gray-400">מספר הזמנה:</span>
+                      <span className="text-gray-400">{t('bookingNumber')}</span>
                       <span className="text-white font-bold">SCARLET-{Date.now()}</span>
                     </div>
                     <div className="flex justify-between pb-4 border-b border-white/10">
-                      <span className="text-gray-400">חדר:</span>
+                      <span className="text-gray-400">{t('room')}</span>
                       <span className="text-white font-bold">{scarletRoomTypes.find(r => r.id === selectedRoom)?.name}</span>
                     </div>
                     <div className="flex justify-between pb-4 border-b border-white/10">
-                      <span className="text-gray-400">תאריכים:</span>
+                      <span className="text-gray-400">{t('dates')}</span>
                       <span className="text-white font-bold">
                         {checkIn && checkOut && `${format(new Date(checkIn), 'd בMMM', { locale: he })} - ${format(new Date(checkOut), 'd בMMM yyyy', { locale: he })}`}
                       </span>
                     </div>
                     <div className="flex justify-between pb-4 border-b border-white/10">
-                      <span className="text-gray-400">לילות:</span>
+                      <span className="text-gray-400">{t('nights')}</span>
                       <span className="text-white font-bold">{getNights()}</span>
                     </div>
                     {selectedAddons.length > 0 && (
                       <div className="flex justify-between pb-4 border-b border-white/10">
-                        <span className="text-gray-400">תוספות:</span>
-                        <span className="text-white font-bold">{selectedAddons.length} פריטים</span>
+                        <span className="text-gray-400">{t('addons')}</span>
+                        <span className="text-white font-bold">{selectedAddons.length} {t('items')}</span>
                       </div>
                     )}
                     <div className="flex justify-between pt-2">
-                      <span className="text-gray-400 text-lg">סה"כ שולם:</span>
+                      <span className="text-gray-400 text-lg">{t('totalPaidAmount')}</span>
                       <span className="text-green-400 font-bold text-2xl">{getTotalPrice()} ₪</span>
                     </div>
                   </div>
@@ -1138,10 +1229,10 @@ export default function ScarletTemplate() {
                       className="w-full h-14 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-lg"
                     >
                       <Heart className="ml-2" />
-                      סגור וחזור לדף הראשי
+                      {t('closeAndReturn')}
                     </Button>
                     <p className="text-gray-400 text-sm">
-                      אישור ההזמנה נשלח לאימייל שהזנתם 📧
+                      {t('confirmationSentEmail')}
                     </p>
                   </div>
                 </div>
@@ -1165,7 +1256,7 @@ export default function ScarletTemplate() {
             <div className="p-4 bg-gradient-to-r from-red-600 to-pink-600 text-white">
               <div className="flex items-center justify-between">
                 <h3 className="font-bold text-lg" style={{ fontFamily: 'var(--font-assistant)' }}>
-                  💬 צ'אט עם העוזר החכם שלנו
+                  {t('chatWithAssistant')}
                 </h3>
                 <Button
                   variant="ghost"
@@ -1177,18 +1268,24 @@ export default function ScarletTemplate() {
                 </Button>
               </div>
               <p className="text-sm mt-1 text-white/90" style={{ fontFamily: 'var(--font-assistant)' }}>
-                שאלו אותנו הכל על {scarletHotelConfig.hebrewName}
+                {t('askUsAnything', { hotelName: locale === 'he' ? scarletHotelConfig.hebrewName : t('scarletHotelName') })}
               </p>
             </div>
             <div className="p-4 h-[500px] overflow-y-auto bg-gray-950">
-              <p className="text-gray-400 text-center py-8" style={{ fontFamily: 'var(--font-assistant)' }}>
-                העוזר החכם יהיה זמין בקרוב!<br />
-                בינתיים, לחצו על "הזמן עכשיו" כדי להתחיל את תהליך ההזמנה.
+              <p className="text-gray-400 text-center py-8" style={{ fontFamily: 'var(--font-assistant)' }} dangerouslySetInnerHTML={{ __html: t('assistantComingSoon') }}>
               </p>
             </div>
           </div>
         )}
       </div>
     </div>
+  )
+}
+
+export default function ScarletTemplate() {
+  return (
+    <I18nProvider defaultLocale="he">
+      <ScarletTemplateContent />
+    </I18nProvider>
   )
 }

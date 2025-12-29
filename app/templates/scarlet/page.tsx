@@ -100,7 +100,7 @@ function ScarletTemplateContent() {
     let scriptTag = document.querySelector('script[type="application/ld+json"]')
     if (!scriptTag) {
       scriptTag = document.createElement('script')
-      scriptTag.type = 'application/ld+json'
+      scriptTag.setAttribute('type', 'application/ld+json')
       document.head.appendChild(scriptTag)
     }
     scriptTag.textContent = JSON.stringify(structuredData)

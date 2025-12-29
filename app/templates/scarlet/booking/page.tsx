@@ -4,18 +4,15 @@ import { useState, useEffect, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { format, addDays } from "date-fns"
 import { he } from "date-fns/locale"
-import { Calendar, Users, Heart, ChevronLeft, ArrowRight } from "lucide-react"
+import { Calendar, Users, Heart, ChevronLeft, ArrowRight, CheckCircle, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { scarletRoomTypes, scarletHotelConfig } from "@/lib/hotels/scarlet-config"
-import { PromoCodeInput } from "@/components/promotions/promo-code-input"
 import { LoyaltyBadge } from "@/components/promotions/loyalty-badge"
 import { trackEvent, trackPageView } from "@/lib/analytics/ga4"
-import { ScarletAddonsCarousel, ScarletBookingSidebar } from "@/components/booking/templates/scarlet-style"
+import { ScarletBookingSidebar } from "@/components/booking/templates/scarlet-style"
 import { GuestDetailsForm } from "@/components/booking/templates/shared/guest-details-form"
 import { PaymentForm } from "@/components/booking/templates/shared/payment-form"
-import { BookingConfirmation } from "@/components/booking/templates/shared/booking-confirmation"
 import { I18nProvider, useI18n } from "@/lib/i18n/context"
 import { LanguageSwitcher } from "@/components/booking/language-switcher"
 import Link from "next/link"
@@ -111,14 +108,14 @@ function ScarletBookingContent() {
         <Card className="bg-gray-900/80 border-red-500/30 p-8 max-w-md text-center">
           <Heart className="h-16 w-16 text-red-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-assistant)' }}>
-            {t('roomNotSelected')}
+            לא נבחר חדר
           </h1>
           <p className="text-gray-300 mb-6" style={{ fontFamily: 'var(--font-assistant)' }}>
-            {t('pleaseSelectRoomFirst')}
+            אנא בחר חדר מהמלון תחילה
           </p>
           <Link href="/templates/scarlet">
             <Button className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700">
-              {t('backToHotel')}
+              {t('backToTemplates')}
             </Button>
           </Link>
         </Card>
@@ -138,7 +135,7 @@ function ScarletBookingContent() {
                 {scarletHotelConfig.hebrewName}
               </h1>
               <p className="text-sm text-gray-400" style={{ fontFamily: 'var(--font-assistant)' }}>
-                {t('bookingYourRoom')}
+                {t('completeBooking')}
               </p>
             </div>
           </Link>
@@ -178,11 +175,11 @@ function ScarletBookingContent() {
               {bookingStep === 1 && (
                 <div>
                   <h2 className="text-3xl font-bold text-white mb-6" style={{ fontFamily: 'var(--font-assistant)' }}>
-                    {t('addExtras')}
+                    {t('addons')}
                   </h2>
-                  <ScarletAddonsCarousel
-                    onAddonsChange={setSelectedAddons}
-                  />
+                  <div className="text-gray-300 mb-6">
+                    <p>בחר תוספות מיוחדות להזמנה שלך</p>
+                  </div>
                   <div className="mt-8 flex justify-between">
                     <Link href="/templates/scarlet">
                       <Button variant="outline" className="border-red-500/30">
@@ -194,7 +191,7 @@ function ScarletBookingContent() {
                       onClick={handleContinue}
                       className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700"
                     >
-                      {t('continueToGuestDetails')}
+                      {t('continueToPayment')}
                       <ArrowRight className="mr-2 h-5 w-5" />
                     </Button>
                   </div>
@@ -248,16 +245,46 @@ function ScarletBookingContent() {
               )}
 
               {bookingStep === 4 && (
-                <BookingConfirmation
-                  bookingId={`SCARLET-${Date.now()}`}
-                  hotelName={locale === 'he' ? scarletHotelConfig.hebrewName : t('scarletHotelName')}
-                  roomName={roomType.hebrewName}
-                  checkIn={checkIn}
-                  checkOut={checkOut}
-                  guests={guests}
-                  total={total}
-                  onNewBooking={() => router.push('/templates/scarlet')}
-                />
+                <div className="text-center py-12">
+                  <div className="mb-8">
+                    <CheckCircle className="h-20 w-20 text-green-500 mx-auto mb-4" />
+                    <h2 className="text-4xl font-bold text-white mb-2">{t('bookingConfirmed')}</h2>
+                    <p className="text-gray-300 text-lg">ההזמנה שלך בוצעה בהצלחה!</p>
+                  </div>
+
+                  <div className="bg-white/5 rounded-xl p-6 border border-white/10 text-right space-y-4 mb-8 max-w-2xl mx-auto">
+                    <div className="flex justify-between pb-4 border-b border-white/10">
+                      <span className="text-gray-400">{t('bookingNumber')}</span>
+                      <span className="text-white font-bold">SCARLET-{Date.now()}</span>
+                    </div>
+                    <div className="flex justify-between pb-4 border-b border-white/10">
+                      <span className="text-gray-400">{t('room')}</span>
+                      <span className="text-white font-bold">{roomType.hebrewName}</span>
+                    </div>
+                    <div className="flex justify-between pb-4 border-b border-white/10">
+                      <span className="text-gray-400">{t('dates')}</span>
+                      <span className="text-white font-bold">
+                        {format(checkIn, 'd בMMM', { locale: he })} - {format(checkOut, 'd בMMM yyyy', { locale: he })}
+                      </span>
+                    </div>
+                    <div className="flex justify-between pb-4 border-b border-white/10">
+                      <span className="text-gray-400">{t('nights')}</span>
+                      <span className="text-white font-bold">{nights}</span>
+                    </div>
+                    <div className="flex justify-between pt-2">
+                      <span className="text-gray-400 text-lg">{t('totalPaid')}</span>
+                      <span className="text-green-400 font-bold text-2xl">{total} ₪</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={() => router.push('/templates/scarlet')}
+                    className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-lg px-8 py-6"
+                  >
+                    <Heart className="ml-2" />
+                    חזור למלון
+                  </Button>
+                </div>
               )}
             </Card>
           </div>

@@ -72,6 +72,7 @@
   "/templates/modern-dark/page": "app/templates/modern-dark/page.js",
   "/templates/nara/page": "app/templates/nara/page.js",
   "/templates/page": "app/templates/page.js",
+  "/templates/scarlet/booking/page": "app/templates/scarlet/booking/page.js",
   "/templates/scarlet/page": "app/templates/scarlet/page.js",
   "/widget/page": "app/widget/page.js"
 }

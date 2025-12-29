@@ -477,6 +477,31 @@
         "x-next-revalidate-tag-token"
       ]
     },
+    "/templates/scarlet/booking": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/templates/scarlet/booking",
+      "dataRoute": "/templates/scarlet/booking.rsc",
+      "prefetchDataRoute": null,
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
     "/templates/scarlet": {
       "experimentalBypassFor": [
         {
@@ -531,8 +556,8 @@
   "dynamicRoutes": {},
   "notFoundRoutes": [],
   "preview": {
-    "previewModeId": "98520114addecb6c9b25fa66714dd6ec",
-    "previewModeSigningKey": "586670d5eac84ac8a1929f94243402048a3a8f3ca4c7e5049f24596dde3ac7c6",
-    "previewModeEncryptionKey": "b5600bd90b1679d40753ec96e1aeb962ddcf5b741b189b01988c4c9675b89ce3"
+    "previewModeId": "350b744644e4a3e9887de84d9b55e52d",
+    "previewModeSigningKey": "cab81512f45259e00b86b47855b4a7e7754ae8146ca3e24abbb57ac7c126b406",
+    "previewModeEncryptionKey": "86c9292443df96c9e6e64e228a582db82594bdbbd2ef0e99b040861d803f5e46"
   }
 }

@@ -7,21 +7,14 @@ import { Calendar, Users, Heart, Sparkles, Bath, Home, Crown, User, ChevronLeft,
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { SocialShare } from "@/components/ui/social-share"
 import { scarletRoomTypes, scarletHotelConfig } from "@/lib/hotels/scarlet-config"
-import { PromoCodeInput } from "@/components/promotions/promo-code-input"
 import { LoyaltySignup } from "@/components/promotions/loyalty-signup"
 import { LoyaltyBadge } from "@/components/promotions/loyalty-badge"
 import { PromotionBanner } from "@/components/promotions/promotion-banner"
 import { AffiliateTracker } from "@/components/analytics/affiliate-tracker"
 import { trackEvent, trackPageView, trackSelectItem, trackSearch } from "@/lib/analytics/ga4"
 import { LoginButton } from "@/components/auth/login-button"
-import { useBookingEngine } from "@/hooks/use-booking-engine"
-import { ScarletAddonsCarousel, ScarletBookingSidebar } from "@/components/booking/templates/scarlet-style"
-import { GuestDetailsForm } from "@/components/booking/templates/shared/guest-details-form"
-import { PaymentForm } from "@/components/booking/templates/shared/payment-form"
-import { BookingConfirmation } from "@/components/booking/templates/shared/booking-confirmation"
 import { I18nProvider, useI18n } from "@/lib/i18n/context"
 import { LanguageSwitcher } from "@/components/booking/language-switcher"
 import { addDays } from "date-fns"
@@ -115,56 +108,9 @@ function ScarletTemplateContent() {
   const [checkIn, setCheckIn] = useState("")
   const [checkOut, setCheckOut] = useState("")
   const [guests, setGuests] = useState(2)
-  const [selectedRoom, setSelectedRoom] = useState<string | null>(null)
-  const [promoCode, setPromoCode] = useState("")
-  const [discount, setDiscount] = useState(0)
   const [roomImageIndexes, setRoomImageIndexes] = useState<Record<string, number>>({})
   const [backgroundImageIndex, setBackgroundImageIndex] = useState(0)
-  const [showBookingDialog, setShowBookingDialog] = useState(false)
   const [showAiChat, setShowAiChat] = useState(false)
-  const [showPromoInput, setShowPromoInput] = useState(false)
-  const [bookingStep, setBookingStep] = useState<'summary' | 'addons' | 'details' | 'payment' | 'confirmation'>('summary')
-  const [selectedAddons, setSelectedAddons] = useState<Array<{id: string, name: string, price: number}>>([])
-  const bookingEngine = useBookingEngine()
-
-  // Sample addons data for Scarlet
-  const scarletAddons = [
-    {
-      id: '1',
-      name: 'בקבוק שמפניה מקררת',
-      description: 'בקבוק שמפניה איכותי מוגש קר בחדר עם תותים',
-      price: 250,
-      image: 'https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?w=500',
-    },
-    {
-      id: '2',
-      name: 'ארוחת בוקר פרטית',
-      description: 'ארוחת בוקר זוגית מוגשת לחדר בשעה שתבחרו',
-      price: 180,
-      image: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=500',
-    },
-    {
-      id: '3',
-      name: 'עיסוי זוגי',
-      description: 'עיסוי רילקסציה זוגי למשך שעה',
-      price: 600,
-      image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=500',
-    },
-    {
-      id: '4',
-      name: 'זר פרחים רומנטי',
-      description: 'זר ורדים אדומים מעוצב במיוחד',
-      price: 150,
-      image: 'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=500',
-    },
-    {
-      id: '5',
-      name: 'ערב קולנוע פרטי',
-      description: 'הקרנת סרט בחדר עם פופקורן ושתייה',
-      price: 120,
-      image: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500',
-    },
-  ]
 
   // Track page view on mount
   useEffect(() => {
@@ -203,74 +149,6 @@ function ScarletTemplateContent() {
       hotel_id: scarletHotelConfig.hotelId
     })
     console.log("Searching:", { checkIn, checkOut, guests })
-  }
-
-  const handleBookRoom = (roomId: string) => {
-    const room = scarletRoomTypes.find(r => r.id === roomId)
-    setSelectedRoom(roomId)
-    
-    if (room) {
-      trackSelectItem({
-        item_id: roomId,
-        item_name: room.name,
-        price: room.basePrice,
-        quantity: 1
-      })
-      
-      trackEvent({
-        event: 'select_room',
-        room_id: roomId,
-        room_name: room.name,
-        room_price: room.basePrice,
-        hotel_id: scarletHotelConfig.hotelId
-      })
-      
-      // Reset booking state and open dialog at summary step
-      setBookingStep('summary')
-      setSelectedAddons([])
-      setShowBookingDialog(true)
-    }
-  }
-
-  const handleAddAddon = (addon: typeof scarletAddons[0]) => {
-    if (!selectedAddons.find(a => a.id === addon.id)) {
-      setSelectedAddons([...selectedAddons, addon])
-      trackEvent({
-        event: 'add_addon',
-        addon_id: addon.id,
-        addon_name: addon.name,
-        addon_price: addon.price,
-        hotel_id: scarletHotelConfig.hotelId
-      })
-    }
-  }
-
-  const handleRemoveAddon = (addonId: string) => {
-    setSelectedAddons(selectedAddons.filter(a => a.id !== addonId))
-  }
-
-  const getTotalPrice = () => {
-    const room = scarletRoomTypes.find(r => r.id === selectedRoom)
-    const roomPrice = room?.basePrice || 0
-    const addonsTotal = selectedAddons.reduce((sum, addon) => sum + addon.price, 0)
-    const nights = checkIn && checkOut ? Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60 * 24)) : 1
-    return (roomPrice * nights) + addonsTotal - discount
-  }
-
-  const getCheckInDate = () => checkIn ? new Date(checkIn) : addDays(new Date(), 1)
-  const getCheckOutDate = () => checkOut ? new Date(checkOut) : addDays(new Date(), 2)
-  const getNights = () => checkIn && checkOut ? Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60 * 24)) : 1
-
-  const handlePromoApplied = (code: string, discountAmount: number) => {
-    setPromoCode(code)
-    setDiscount(discountAmount)
-    
-    trackEvent({
-      event: 'apply_promotion',
-      promotion_name: code,
-      discount_amount: discountAmount,
-      hotel_id: scarletHotelConfig.hotelId
-    })
   }
 
   return (
@@ -622,12 +500,15 @@ function ScarletTemplateContent() {
                     </div>
                   )}
 
-                  <Button
-                    onClick={() => handleBookRoom(room.id)}
-                    className="w-full h-14 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-lg rounded-lg shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-all"
+                  <Link
+                    href={`/templates/scarlet/booking?room=${room.id}&checkIn=${checkIn || addDays(new Date(), 1).toISOString()}&checkOut=${checkOut || addDays(new Date(), 3).toISOString()}&guests=${guests}`}
                   >
-                    {t('bookNow')}
-                  </Button>
+                    <Button
+                      className="w-full h-14 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-lg rounded-lg shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-all"
+                    >
+                      {t('bookNow')}
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </Card>
@@ -675,18 +556,9 @@ function ScarletTemplateContent() {
                 <Sparkles className="h-5 w-5 text-red-400" />
                 {t('promoCode')}
               </h3>
-              <PromoCodeInput
-                onPromoApplied={handlePromoApplied}
-                hotelId={scarletHotelConfig.hotelId}
-                variant="dark"
-              />
-              {discount > 0 && (
-                <div className="mt-4 p-3 bg-green-900/30 rounded-lg border border-green-500/30">
-                  <p className="text-green-400 text-sm font-semibold">
-                    {t('promoApplied', { discount })}
-                  </p>
-                </div>
-              )}
+              <p className="text-gray-300 text-sm mb-4" style={{ fontFamily: 'var(--font-assistant)' }}>
+                {t('promoCodeAvailableInBooking')}
+              </p>
             </Card>
 
             {/* Loyalty Club */}
@@ -756,31 +628,9 @@ function ScarletTemplateContent() {
                 <p className="text-gray-300 mb-6" style={{ fontFamily: 'var(--font-assistant)' }}>
                   {t('usePromoCodeDescription')}
                 </p>
-                <Button 
-                  onClick={() => setShowPromoInput(!showPromoInput)}
-                  className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold"
-                  style={{ fontFamily: 'var(--font-assistant)' }}
-                >
-                  {showPromoInput ? t('hide') : t('enterPromoCode')}
-                </Button>
-                {showPromoInput && (
-                  <div className="mt-4">
-                    <PromoCodeInput 
-                      hotelId={scarletHotelConfig.hotelId}
-                      variant="default"
-                      onPromoApplied={(promo: any) => {
-                        console.log('Promo applied:', promo)
-                        if (typeof promo === 'string') {
-                          alert(`קוד קופון הופעל! ${promo}`)
-                        } else if (promo?.discountPercent) {
-                          alert(`קוד קופון הופעל! הנחה של ${promo.discountPercent}%`)
-                        } else {
-                          alert('קוד קופון הופעל בהצלחה!')
-                        }
-                      }}
-                    />
-                  </div>
-                )}
+                <p className="text-gray-300 text-sm mb-2" style={{ fontFamily: 'var(--font-assistant)' }}>
+                  {t('promoCodeAvailableInBooking')}
+                </p>
                 <ul className="text-right text-sm text-gray-400 mt-4 space-y-2" style={{ fontFamily: 'var(--font-assistant)' }}>
                   <li>✨ הנחות עד 30%</li>
                   <li>🎁 מבצעים עונתיים</li>
@@ -858,15 +708,16 @@ function ScarletTemplateContent() {
               <p className="text-xl text-gray-300 mb-6" style={{ fontFamily: 'var(--font-assistant)' }}>
                 {t('clickBookNowToSee')}
               </p>
-              <Button 
-                onClick={() => handleBookRoom('classic-double')}
-                size="lg"
-                className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-xl px-12 py-6 shadow-2xl shadow-red-500/50"
-                style={{ fontFamily: 'var(--font-assistant)' }}
-              >
-                <Sparkles className="ml-2 h-6 w-6" />
-                {t('discoverOffers')}
-              </Button>
+              <Link href={`/templates/scarlet/booking?room=classic-double&checkIn=${checkIn || addDays(new Date(), 1).toISOString()}&checkOut=${checkOut || addDays(new Date(), 3).toISOString()}&guests=${guests}`}>
+                <Button 
+                  size="lg"
+                  className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-xl px-12 py-6 shadow-2xl shadow-red-500/50"
+                  style={{ fontFamily: 'var(--font-assistant)' }}
+                >
+                  <Sparkles className="ml-2 h-6 w-6" />
+                  {t('discoverOffers')}
+                </Button>
+              </Link>
             </div>
           </Card>
         </div>
@@ -911,347 +762,6 @@ function ScarletTemplateContent() {
           </p>
         </div>
       </footer>
-
-      {/* Scarlet Booking Process */}
-      <Dialog open={showBookingDialog} onOpenChange={setShowBookingDialog}>
-        <DialogContent 
-          className="!max-w-[95vw] !w-[95vw] max-h-[95vh] overflow-y-auto bg-gradient-to-b from-black to-gray-900 border-red-500/20 p-0"
-          style={{ maxWidth: '95vw', width: '95vw' }}
-        >
-          <DialogHeader className="border-b border-white/10 pb-4 px-6 pt-6">
-            <div className="flex items-center justify-center gap-3">
-              <Heart className="h-8 w-8 text-red-500 animate-pulse" />
-              <DialogTitle className="text-3xl font-bold text-white">{t('completeBooking')}</DialogTitle>
-              <Heart className="h-8 w-8 text-pink-500 animate-pulse" />
-            </div>
-            {/* Progress Steps */}
-            <div className="flex justify-center gap-2 mt-6 flex-wrap">
-              {[
-                { id: 'summary', label: t('summary') },
-                { id: 'addons', label: t('addons') },
-                { id: 'details', label: t('details') },
-                { id: 'payment', label: t('payment') },
-                { id: 'confirmation', label: t('confirmation') },
-              ].map((step, idx) => (
-                <div key={step.id} className="flex items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
-                    bookingStep === step.id
-                      ? 'bg-gradient-to-r from-red-600 to-pink-600 text-white'
-                      : ['summary', 'addons', 'details', 'payment'].indexOf(bookingStep) > idx
-                      ? 'bg-green-600 text-white'
-                      : 'bg-gray-700 text-gray-400'
-                  }`}>
-                    {idx + 1}
-                  </div>
-                  {idx < 4 && <div className="w-12 h-1 bg-gray-700 mx-1" />}
-                </div>
-              ))}
-            </div>
-          </DialogHeader>
-
-          <div className="p-6 max-w-[1400px] mx-auto w-full" dir="rtl">
-            {/* STEP 1: Summary */}
-            {bookingStep === 'summary' && selectedRoom && (
-              <div className="flex flex-col lg:flex-row gap-6">
-                <div className="lg:w-80 flex-shrink-0">
-                  <ScarletBookingSidebar
-                    checkIn={getCheckInDate()}
-                    checkOut={getCheckOutDate()}
-                    nights={getNights()}
-                    rooms={1}
-                    guests={guests}
-                    selectedRoom={{
-                      name: scarletRoomTypes.find(r => r.id === selectedRoom)?.name || '',
-                      price: scarletRoomTypes.find(r => r.id === selectedRoom)?.basePrice || 0,
-                    }}
-                    addons={selectedAddons}
-                    totalPrice={getTotalPrice()}
-                    currency="₪"
-                  />
-                </div>
-
-                <div className="flex-1">
-                  <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-8 border border-red-500/20">
-                    <h2 className="text-3xl font-bold text-white mb-6 text-center">
-                      <Sparkles className="inline h-8 w-8 text-yellow-400 ml-2" />
-                      {t('yourBookingReady')}
-                    </h2>
-                    
-                    {/* Room Details */}
-                    {(() => {
-                      const room = scarletRoomTypes.find(r => r.id === selectedRoom)
-                      return room ? (
-                        <div className="space-y-4">
-                          <div className="aspect-video rounded-lg overflow-hidden">
-                            <img src={room.images[0]} alt={room.name} className="w-full h-full object-cover" />
-                          </div>
-                          <h3 className="text-2xl font-bold text-white">{room.name}</h3>
-                          <p className="text-gray-300">{room.description}</p>
-                          
-                          <div className="grid grid-cols-2 gap-4 pt-4">
-                            <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-                              <Users className="h-5 w-5 text-pink-400 mb-2" />
-                              <p className="text-gray-400 text-sm">{t('suitableFor')}</p>
-                              <p className="text-white font-bold">{room.suitableFor}</p>
-                            </div>
-                            <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-                              <Bath className="h-5 w-5 text-red-400 mb-2" />
-                              <p className="text-gray-400 text-sm">{t('special')}</p>
-                              <p className="text-white font-bold">{room.special}</p>
-                            </div>
-                          </div>
-
-                          <Button
-                            onClick={() => setBookingStep('addons')}
-                            className="w-full h-14 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-lg mt-6"
-                          >
-                            <Heart className="ml-2" />
-                            {t('continueToAddons')}
-                          </Button>
-                        </div>
-                      ) : null
-                    })()}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 2: Addons */}
-            {bookingStep === 'addons' && (
-              <div className="flex flex-col lg:flex-row gap-6">
-                <div className="lg:w-80 flex-shrink-0">
-                  <ScarletBookingSidebar
-                    checkIn={getCheckInDate()}
-                    checkOut={getCheckOutDate()}
-                    nights={getNights()}
-                    rooms={1}
-                    guests={guests}
-                    selectedRoom={{
-                      name: scarletRoomTypes.find(r => r.id === selectedRoom)?.name || '',
-                      price: scarletRoomTypes.find(r => r.id === selectedRoom)?.basePrice || 0,
-                    }}
-                    addons={selectedAddons}
-                    totalPrice={getTotalPrice()}
-                    currency="₪"
-                  />
-                </div>
-
-                <div className="flex-1">
-                  <ScarletAddonsCarousel
-                    addons={scarletAddons}
-                    onAddAddon={handleAddAddon}
-                    currency="₪"
-                  />
-                  
-                  {/* Selected Addons List */}
-                  {selectedAddons.length > 0 && (
-                    <div className="mt-6 bg-gradient-to-br from-gray-900 to-black rounded-xl p-6 border border-green-500/20">
-                      <h3 className="text-xl font-bold text-white mb-4">{t('selectedAddons')}</h3>
-                      <div className="space-y-2">
-                        {selectedAddons.map((addon) => (
-                          <div key={addon.id} className="flex justify-between items-center bg-white/5 rounded-lg p-3 border border-white/10">
-                            <span className="text-white">{addon.name}</span>
-                            <div className="flex items-center gap-3">
-                              <span className="text-green-400 font-bold">{addon.price} ₪</span>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleRemoveAddon(addon.id)}
-                                className="text-red-400 hover:text-red-300"
-                              >
-                                <X className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex gap-4 mt-6">
-                    <Button
-                      onClick={() => setBookingStep('summary')}
-                      variant="outline"
-                      className="flex-1 h-12 border-white/20 text-white hover:bg-white/10"
-                    >
-                      {t('back')}
-                    </Button>
-                    <Button
-                      onClick={() => setBookingStep('details')}
-                      className="flex-1 h-12 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold"
-                    >
-                      {t('continueToDetails')}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 3: Guest Details */}
-            {bookingStep === 'details' && (
-              <div className="flex flex-col lg:flex-row gap-6">
-                <div className="lg:w-80 flex-shrink-0">
-                  <ScarletBookingSidebar
-                  checkIn={getCheckInDate()}
-                  checkOut={getCheckOutDate()}
-                  nights={getNights()}
-                  rooms={1}
-                  guests={guests}
-                  selectedRoom={{
-                    name: scarletRoomTypes.find(r => r.id === selectedRoom)?.name || '',
-                    price: scarletRoomTypes.find(r => r.id === selectedRoom)?.basePrice || 0,
-                  }}
-                  addons={selectedAddons}
-                  totalPrice={getTotalPrice()}
-                  currency="₪"
-                  />
-                </div>
-
-                <div className="flex-1">
-                  <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-8 border border-red-500/20">
-                    <h2 className="text-3xl font-bold text-white mb-6 text-center">
-                      <User className="inline h-8 w-8 text-pink-400 ml-2" />
-                      {t('guestDetailsTitle')}
-                    </h2>
-                    <div className="bg-white/5 rounded-xl p-6 border border-white/10">
-                      <GuestDetailsForm
-                        onSubmit={(data) => {
-                          bookingEngine.setGuestInfo(data)
-                          setBookingStep('payment')
-                        }}
-                        isLoading={false}
-                      />
-                    </div>
-                    <Button
-                      onClick={() => setBookingStep('addons')}
-                      variant="outline"
-                      className="w-full h-12 mt-4 border-white/20 text-white hover:bg-white/10"
-                    >
-                      {t('back')}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 4: Payment */}
-            {bookingStep === 'payment' && (
-              <div className="flex flex-col lg:flex-row gap-6">
-                <div className="lg:w-80 flex-shrink-0">
-                  <ScarletBookingSidebar
-                    checkIn={getCheckInDate()}
-                    checkOut={getCheckOutDate()}
-                    nights={getNights()}
-                    rooms={1}
-                    guests={guests}
-                    selectedRoom={{
-                      name: scarletRoomTypes.find(r => r.id === selectedRoom)?.name || '',
-                      price: scarletRoomTypes.find(r => r.id === selectedRoom)?.basePrice || 0,
-                    }}
-                    addons={selectedAddons}
-                    totalPrice={getTotalPrice()}
-                    currency="₪"
-                  />
-                </div>
-
-                <div className="flex-1">
-                  <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-8 border border-red-500/20">
-                    <h2 className="text-3xl font-bold text-white mb-6 text-center">
-                      {t('paymentDetails')}
-                    </h2>
-                    <div className="bg-white/5 rounded-xl p-6 border border-white/10">
-                      <PaymentForm
-                        totalPrice={getTotalPrice()}
-                        currency="ILS"
-                        onSubmit={async (data) => {
-                          // Simulate booking completion
-                          await new Promise(resolve => setTimeout(resolve, 2000))
-                          setBookingStep('confirmation')
-                          trackEvent({
-                            event: 'purchase',
-                            transaction_id: `SCARLET-${Date.now()}`,
-                            value: getTotalPrice(),
-                            currency: 'ILS',
-                            hotel_id: scarletHotelConfig.hotelId
-                          })
-                        }}
-                        isLoading={false}
-                      />
-                    </div>
-                    <Button
-                      onClick={() => setBookingStep('details')}
-                      variant="outline"
-                      className="w-full h-12 mt-4 border-white/20 text-white hover:bg-white/10"
-                    >
-                      {t('back')}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 5: Confirmation */}
-            {bookingStep === 'confirmation' && (
-              <div className="max-w-3xl mx-auto">
-                <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-12 border border-green-500/30 text-center">
-                  <div className="mb-8">
-                    <Heart className="h-20 w-20 text-red-500 mx-auto mb-4 animate-pulse" />
-                    <h2 className="text-4xl font-bold text-white mb-2">{t('bookingConfirmed')}</h2>
-                    <p className="text-gray-300 text-lg">{t('lookingForwardToSeeYou', { hotelName: locale === 'he' ? scarletHotelConfig.hebrewName : t('scarletHotelName') })}</p>
-                  </div>
-
-                  <div className="bg-white/5 rounded-xl p-6 border border-white/10 text-right space-y-4 mb-8">
-                    <div className="flex justify-between pb-4 border-b border-white/10">
-                      <span className="text-gray-400">{t('bookingNumber')}</span>
-                      <span className="text-white font-bold">SCARLET-{Date.now()}</span>
-                    </div>
-                    <div className="flex justify-between pb-4 border-b border-white/10">
-                      <span className="text-gray-400">{t('room')}</span>
-                      <span className="text-white font-bold">{scarletRoomTypes.find(r => r.id === selectedRoom)?.name}</span>
-                    </div>
-                    <div className="flex justify-between pb-4 border-b border-white/10">
-                      <span className="text-gray-400">{t('dates')}</span>
-                      <span className="text-white font-bold">
-                        {checkIn && checkOut && `${format(new Date(checkIn), 'd בMMM', { locale: he })} - ${format(new Date(checkOut), 'd בMMM yyyy', { locale: he })}`}
-                      </span>
-                    </div>
-                    <div className="flex justify-between pb-4 border-b border-white/10">
-                      <span className="text-gray-400">{t('nights')}</span>
-                      <span className="text-white font-bold">{getNights()}</span>
-                    </div>
-                    {selectedAddons.length > 0 && (
-                      <div className="flex justify-between pb-4 border-b border-white/10">
-                        <span className="text-gray-400">{t('addons')}</span>
-                        <span className="text-white font-bold">{selectedAddons.length} {t('items')}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between pt-2">
-                      <span className="text-gray-400 text-lg">{t('totalPaidAmount')}</span>
-                      <span className="text-green-400 font-bold text-2xl">{getTotalPrice()} ₪</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <Button
-                      onClick={() => {
-                        setShowBookingDialog(false)
-                        setBookingStep('summary')
-                      }}
-                      className="w-full h-14 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-lg"
-                    >
-                      <Heart className="ml-2" />
-                      {t('closeAndReturn')}
-                    </Button>
-                    <p className="text-gray-400 text-sm">
-                      {t('confirmationSentEmail')}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* AI Chat Widget */}
       <div className="fixed bottom-6 left-6 z-50">

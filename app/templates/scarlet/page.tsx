@@ -914,15 +914,15 @@ function ScarletTemplateContent() {
 
       {/* Scarlet Booking Process */}
       <Dialog open={showBookingDialog} onOpenChange={setShowBookingDialog}>
-        <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto bg-gradient-to-b from-black to-gray-900 border-red-500/20">
-          <DialogHeader className="border-b border-white/10 pb-4">
+        <DialogContent className="max-w-[95vw] w-full max-h-[95vh] overflow-y-auto bg-gradient-to-b from-black to-gray-900 border-red-500/20 p-0">
+          <DialogHeader className="border-b border-white/10 pb-4 px-6 pt-6">
             <div className="flex items-center justify-center gap-3">
               <Heart className="h-8 w-8 text-red-500 animate-pulse" />
               <DialogTitle className="text-3xl font-bold text-white">{t('completeBooking')}</DialogTitle>
               <Heart className="h-8 w-8 text-pink-500 animate-pulse" />
             </div>
             {/* Progress Steps */}
-            <div className="flex justify-center gap-2 mt-6">
+            <div className="flex justify-center gap-2 mt-6 flex-wrap">
               {[
                 { id: 'summary', label: t('summary') },
                 { id: 'addons', label: t('addons') },
@@ -931,7 +931,7 @@ function ScarletTemplateContent() {
                 { id: 'confirmation', label: t('confirmation') },
               ].map((step, idx) => (
                 <div key={step.id} className="flex items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
                     bookingStep === step.id
                       ? 'bg-gradient-to-r from-red-600 to-pink-600 text-white'
                       : ['summary', 'addons', 'details', 'payment'].indexOf(bookingStep) > idx
@@ -946,24 +946,26 @@ function ScarletTemplateContent() {
             </div>
           </DialogHeader>
 
-          <div className="p-6" dir="rtl">
+          <div className="p-6 max-w-[1400px] mx-auto w-full" dir="rtl">
             {/* STEP 1: Summary */}
             {bookingStep === 'summary' && selectedRoom && (
-              <div className="flex gap-6">
-                <ScarletBookingSidebar
-                  checkIn={getCheckInDate()}
-                  checkOut={getCheckOutDate()}
-                  nights={getNights()}
-                  rooms={1}
-                  guests={guests}
-                  selectedRoom={{
-                    name: scarletRoomTypes.find(r => r.id === selectedRoom)?.name || '',
-                    price: scarletRoomTypes.find(r => r.id === selectedRoom)?.basePrice || 0,
-                  }}
-                  addons={selectedAddons}
-                  totalPrice={getTotalPrice()}
-                  currency="₪"
-                />
+              <div className="flex flex-col lg:flex-row gap-6">
+                <div className="lg:w-80 flex-shrink-0">
+                  <ScarletBookingSidebar
+                    checkIn={getCheckInDate()}
+                    checkOut={getCheckOutDate()}
+                    nights={getNights()}
+                    rooms={1}
+                    guests={guests}
+                    selectedRoom={{
+                      name: scarletRoomTypes.find(r => r.id === selectedRoom)?.name || '',
+                      price: scarletRoomTypes.find(r => r.id === selectedRoom)?.basePrice || 0,
+                    }}
+                    addons={selectedAddons}
+                    totalPrice={getTotalPrice()}
+                    currency="₪"
+                  />
+                </div>
 
                 <div className="flex-1">
                   <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-8 border border-red-500/20">
@@ -1013,21 +1015,23 @@ function ScarletTemplateContent() {
 
             {/* STEP 2: Addons */}
             {bookingStep === 'addons' && (
-              <div className="flex gap-6">
-                <ScarletBookingSidebar
-                  checkIn={getCheckInDate()}
-                  checkOut={getCheckOutDate()}
-                  nights={getNights()}
-                  rooms={1}
-                  guests={guests}
-                  selectedRoom={{
-                    name: scarletRoomTypes.find(r => r.id === selectedRoom)?.name || '',
-                    price: scarletRoomTypes.find(r => r.id === selectedRoom)?.basePrice || 0,
-                  }}
-                  addons={selectedAddons}
-                  totalPrice={getTotalPrice()}
-                  currency="₪"
-                />
+              <div className="flex flex-col lg:flex-row gap-6">
+                <div className="lg:w-80 flex-shrink-0">
+                  <ScarletBookingSidebar
+                    checkIn={getCheckInDate()}
+                    checkOut={getCheckOutDate()}
+                    nights={getNights()}
+                    rooms={1}
+                    guests={guests}
+                    selectedRoom={{
+                      name: scarletRoomTypes.find(r => r.id === selectedRoom)?.name || '',
+                      price: scarletRoomTypes.find(r => r.id === selectedRoom)?.basePrice || 0,
+                    }}
+                    addons={selectedAddons}
+                    totalPrice={getTotalPrice()}
+                    currency="₪"
+                  />
+                </div>
 
                 <div className="flex-1">
                   <ScarletAddonsCarousel
@@ -1082,8 +1086,9 @@ function ScarletTemplateContent() {
 
             {/* STEP 3: Guest Details */}
             {bookingStep === 'details' && (
-              <div className="flex gap-6">
-                <ScarletBookingSidebar
+              <div className="flex flex-col lg:flex-row gap-6">
+                <div className="lg:w-80 flex-shrink-0">
+                  <ScarletBookingSidebar
                   checkIn={getCheckInDate()}
                   checkOut={getCheckOutDate()}
                   nights={getNights()}
@@ -1096,7 +1101,8 @@ function ScarletTemplateContent() {
                   addons={selectedAddons}
                   totalPrice={getTotalPrice()}
                   currency="₪"
-                />
+                  />
+                </div>
 
                 <div className="flex-1">
                   <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-8 border border-red-500/20">
@@ -1127,21 +1133,23 @@ function ScarletTemplateContent() {
 
             {/* STEP 4: Payment */}
             {bookingStep === 'payment' && (
-              <div className="flex gap-6">
-                <ScarletBookingSidebar
-                  checkIn={getCheckInDate()}
-                  checkOut={getCheckOutDate()}
-                  nights={getNights()}
-                  rooms={1}
-                  guests={guests}
-                  selectedRoom={{
-                    name: scarletRoomTypes.find(r => r.id === selectedRoom)?.name || '',
-                    price: scarletRoomTypes.find(r => r.id === selectedRoom)?.basePrice || 0,
-                  }}
-                  addons={selectedAddons}
-                  totalPrice={getTotalPrice()}
-                  currency="₪"
-                />
+              <div className="flex flex-col lg:flex-row gap-6">
+                <div className="lg:w-80 flex-shrink-0">
+                  <ScarletBookingSidebar
+                    checkIn={getCheckInDate()}
+                    checkOut={getCheckOutDate()}
+                    nights={getNights()}
+                    rooms={1}
+                    guests={guests}
+                    selectedRoom={{
+                      name: scarletRoomTypes.find(r => r.id === selectedRoom)?.name || '',
+                      price: scarletRoomTypes.find(r => r.id === selectedRoom)?.basePrice || 0,
+                    }}
+                    addons={selectedAddons}
+                    totalPrice={getTotalPrice()}
+                    currency="₪"
+                  />
+                </div>
 
                 <div className="flex-1">
                   <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl p-8 border border-red-500/20">

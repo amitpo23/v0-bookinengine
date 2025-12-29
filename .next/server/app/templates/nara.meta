@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/templates/layout,_N_T_/templates/nara/layout,_N_T_/templates/nara/page,_N_T_/templates/nara"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/templates/nara/__PAGE__",
+    "/templates/nara",
+    "/templates",
+    "/_index",
+    "/_head"
+  ]
+}

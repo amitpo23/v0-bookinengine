@@ -7,11 +7,17 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// Initialize Supabase client lazily
+const getSupabaseClient = () => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (!url || !key) {
+    throw new Error('Supabase credentials not configured');
+  }
+  
+  return createClient(url, key);
+};
 
 export default function UploadImagesPage() {
   const [hotelId, setHotelId] = useState('scarlet-hotel');
@@ -38,6 +44,8 @@ export default function UploadImagesPage() {
     const urls: string[] = [];
 
     try {
+      const supabase = getSupabaseClient();
+      
       for (const file of selectedFiles) {
         // Generate unique filename
       const fileExt = file.name.split('.').pop();

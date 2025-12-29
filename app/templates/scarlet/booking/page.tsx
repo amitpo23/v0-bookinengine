@@ -10,7 +10,6 @@ import { Card } from "@/components/ui/card"
 import { scarletRoomTypes, scarletHotelConfig } from "@/lib/hotels/scarlet-config"
 import { LoyaltyBadge } from "@/components/promotions/loyalty-badge"
 import { trackEvent, trackPageView } from "@/lib/analytics/ga4"
-import { ScarletBookingSidebar } from "@/components/booking/templates/scarlet-style"
 import { GuestDetailsForm } from "@/components/booking/templates/shared/guest-details-form"
 import { PaymentForm } from "@/components/booking/templates/shared/payment-form"
 import { I18nProvider, useI18n } from "@/lib/i18n/context"
@@ -291,30 +290,66 @@ function ScarletBookingContent() {
 
           {/* Sidebar */}
           <div className="lg:w-80">
-            <ScarletBookingSidebar
-              checkIn={checkIn}
-              checkOut={checkOut}
-              nights={nights}
-              rooms={1}
-              guests={guests}
-              selectedRoom={{
-                name: roomType.hebrewName,
-                price: roomType.basePrice,
-              }}
-              addons={selectedAddons}
-              totalPrice={total}
-              currency="₪"
-            />
+            <Card className="bg-gradient-to-b from-gray-900 to-black border-red-500/20 p-6 sticky top-24">
+              <h3 className="text-xl font-bold text-white mb-4" style={{ fontFamily: 'var(--font-assistant)' }}>
+                {t('bookingSummary')}
+              </h3>
+              
+              <div className="space-y-4 mb-6">
+                <div className="flex items-center gap-3 text-gray-300">
+                  <Heart className="h-5 w-5 text-red-500" />
+                  <div>
+                    <p className="text-sm text-gray-400">{t('room')}</p>
+                    <p className="font-semibold text-white">{roomType.hebrewName}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3 text-gray-300">
+                  <Calendar className="h-5 w-5 text-red-500" />
+                  <div>
+                    <p className="text-sm text-gray-400">{t('dates')}</p>
+                    <p className="font-semibold text-white">
+                      {format(checkIn, 'd בMMM', { locale: he })} - {format(checkOut, 'd בMMM', { locale: he })}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3 text-gray-300">
+                  <Users className="h-5 w-5 text-red-500" />
+                  <div>
+                    <p className="text-sm text-gray-400">{t('guests')}</p>
+                    <p className="font-semibold text-white">{guests} {t('guests')}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="border-t border-white/10 pt-4 space-y-2">
+                <div className="flex justify-between text-gray-300">
+                  <span>{roomType.hebrewName} × {nights} {t('nights')}</span>
+                  <span className="font-semibold">₪{roomTotal.toLocaleString()}</span>
+                </div>
+                
+                {selectedAddons.length > 0 && (
+                  <div className="flex justify-between text-gray-300">
+                    <span>{t('addons')} ({selectedAddons.length})</span>
+                    <span className="font-semibold">₪{addonsTotal.toLocaleString()}</span>
+                  </div>
+                )}
+                
+                <div className="border-t border-white/10 pt-2 mt-2">
+                  <div className="flex justify-between text-white text-lg font-bold">
+                    <span>{t('totalToPay')}</span>
+                    <span className="text-red-500">₪{total.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
             
             <Card className="mt-4 bg-gray-900/80 border-red-500/30 p-4">
-              <PromoCodeInput
-                hotelId={scarletHotelConfig.hotelId}
-                onApplySuccess={() => {
-                  trackEvent({
-                    event: 'promo_code_applied',
-                  })
-                }}
-              />
+              <div className="text-center text-gray-300 text-sm">
+                <Sparkles className="h-5 w-5 mx-auto mb-2 text-red-400" />
+                קוד הנחה זמין בצעד התשלום
+              </div>
             </Card>
 
             <Card className="mt-4 bg-gradient-to-br from-purple-900/30 to-pink-900/30 border-purple-500/30 p-4">

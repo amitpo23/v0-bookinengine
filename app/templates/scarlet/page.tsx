@@ -914,7 +914,10 @@ function ScarletTemplateContent() {
 
       {/* Scarlet Booking Process */}
       <Dialog open={showBookingDialog} onOpenChange={setShowBookingDialog}>
-        <DialogContent className="max-w-[95vw] w-full max-h-[95vh] overflow-y-auto bg-gradient-to-b from-black to-gray-900 border-red-500/20 p-0">
+        <DialogContent 
+          className="!max-w-[95vw] !w-[95vw] max-h-[95vh] overflow-y-auto bg-gradient-to-b from-black to-gray-900 border-red-500/20 p-0"
+          style={{ maxWidth: '95vw', width: '95vw' }}
+        >
           <DialogHeader className="border-b border-white/10 pb-4 px-6 pt-6">
             <div className="flex items-center justify-center gap-3">
               <Heart className="h-8 w-8 text-red-500 animate-pulse" />

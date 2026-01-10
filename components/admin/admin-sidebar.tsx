@@ -168,11 +168,19 @@ interface AdminSidebarProps {
   onCollapsedChange?: (collapsed: boolean) => void
 }
 
+const EyeIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+)
+
 const menuItems = [
   { id: "dashboard", label: "לוח בקרה", icon: LayoutDashboardIcon },
   { id: "bookings", label: "הזמנות", icon: CalendarIcon, badge: 3 },
   { id: "rooms", label: "חדרים", icon: BedIcon },
   { id: "roomtypes", label: "סוגי חדרים", icon: ImageIcon, isNew: true },
+  { id: "showcase", label: "תצוגת חדרים", icon: EyeIcon, isNew: true },
   { id: "pricing", label: "תמחור", icon: DollarSignIcon },
   { id: "promotions", label: "מבצעים", icon: PercentIcon, isNew: true },
   { id: "marketing", label: "שיווק ומכירות", icon: SparklesIcon, isNew: true },

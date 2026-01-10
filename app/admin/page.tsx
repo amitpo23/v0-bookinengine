@@ -97,6 +97,7 @@ function AdminDashboardContent() {
     bookings: { title: "ניהול הזמנות", subtitle: "צפה ונהל את כל ההזמנות במלון" },
     rooms: { title: "ניהול חדרים", subtitle: "נהל את סוגי החדרים והזמינות" },
     roomtypes: { title: "סוגי חדרים", subtitle: "הגדר תמונות, תיאורים ומתקנים לכל סוג חדר" },
+    showcase: { title: "תצוגת חדרים מתקדמת", subtitle: "תצוגה מקצועית של חדרים עם תמונות ומידע (Sunday)" },
     pricing: { title: "ניהול תמחור", subtitle: "הגדר מחירים דינמיים לפי תאריכים" },
     promotions: { title: "ניהול מבצעים", subtitle: "צור ונהל מבצעים ומבצעים מיוחדים למובייל" },
     engines: { title: "הגדרות מנועים", subtitle: "הפעל וכבה מנועי הזמנות והגדר את ה-API" },
@@ -186,6 +187,7 @@ function AdminDashboardContent() {
           {activeTab === "bookings" && <BookingsTable bookings={bookings} />}
           {activeTab === "rooms" && <RoomsManagement rooms={mockRooms} />}
           {activeTab === "roomtypes" && <RoomTypesManagement />}
+          {activeTab === "showcase" && <RoomsShowcase />}
           {activeTab === "pricing" && <PricingCalendar rooms={mockRooms} />}
           {activeTab === "promotions" && <PromotionsManagement />}
           {activeTab === "engines" && <EngineSettings />}

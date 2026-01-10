@@ -58,6 +58,17 @@ const templates = [
     href: "/templates/family",
     features: ["עיצוב צבעוני ושמח", "אייקוני פעילויות", "מותאם למשפחות", "פינות ילדים"],
   },
+  {
+    id: "sunday",
+    name: "Sunday Professional",
+    description: "תצוגה מקצועית של מלונות עם 8 רכיבי UI מתקדמים, אינטגרציית Tavily והעשרת מידע מהרשת",
+    image: "/sunday-professional-hotel-display.jpg",
+    tags: ["מקצועי", "Tavily", "UI מתקדם", "חדש"],
+    color: "bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600",
+    href: "/templates/sunday",
+    features: ["8 רכיבי UI מקצועיים", "אינטגרציית Tavily", "גלריות תמונות אינטראקטיביות", "Cache חכם"],
+    isNew: true,
+  },
 ]
 
 export default function TemplatesPage() {
@@ -137,10 +148,17 @@ export default function TemplatesPage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                   <div className="absolute top-4 left-4">
-                    <Badge className="bg-green-500 text-white border-0">
-                      <Zap className="w-3 h-3 ml-1" />
-                      מוכן לשימוש
-                    </Badge>
+                    {template.isNew ? (
+                      <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 animate-pulse">
+                        <Zap className="w-3 h-3 ml-1" />
+                        חדש!
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-green-500 text-white border-0">
+                        <Zap className="w-3 h-3 ml-1" />
+                        מוכן לשימוש
+                      </Badge>
+                    )}
                   </div>
                   <div className="absolute bottom-4 right-4">
                     <h3 className="text-2xl font-bold text-white">{template.name}</h3>

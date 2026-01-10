@@ -12,7 +12,7 @@
 - 🔍 **Search** - חיפוש מלונות וחדרים
 - ⏱️ **PreBook** - שמירת חדר למשך 30 דקות
 - ✅ **Book** - הזמנה סופית עם אישור מיידי
-- 🎨 **5 Templates** - ממשקי משתמש שונים (NARA, Modern Dark, Luxury, Family, Scarlet)
+- 🎨 **6 Templates** - ממשקי משתמש שונים (NARA, Modern Dark, Luxury, Family, Scarlet, Sunday)
 - 🤖 **AI Chat** - בוט הזמנות חכם עם מספר engines
 - 🏨 **Sunday Components** - 8 רכיבי UI מקצועיים לתצוגת חדרים
 
@@ -359,13 +359,14 @@ import { HotelResults, HotelDetailsEnhanced } from '@/components/hotels'
 
 ## 🎨 Templates
 
-הפרויקט כולל 5 טמפלטים שונים:
+הפרויקט כולל 6 טמפלטים שונים:
 
 1. **NARA** - `/templates/nara` - מודרני עם carousel
 2. **Modern Dark** - `/templates/modern-dark` - עיצוב כהה מינימליסטי
 3. **Luxury** - `/templates/luxury` - יוקרתי ואלגנטי
 4. **Family** - `/templates/family` - ידידותי למשפחות
 5. **Scarlet** - `/templates/scarlet` - מלון Scarlet עם גלריות תמונות
+6. **Sunday** 🆕 - `/templates/sunday` - תצוגה מקצועית עם כל רכיבי Sunday + Tavily
 
 ## 🏗️ Project Structure
 

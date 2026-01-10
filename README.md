@@ -12,7 +12,10 @@
 - 🔍 **Search** - חיפוש מלונות וחדרים
 - ⏱️ **PreBook** - שמירת חדר למשך 30 דקות
 - ✅ **Book** - הזמנה סופית עם אישור מיידי
-- 🎨 **6 Templates** - ממשקי משתמש שונים (NARA, Modern Dark, Luxury, Family, Scarlet, Sunday)
+- 🎨 **10 Templates** - ממשקי משתמש שונים לכל צורך
+  - 🏨 **Hotel Booking**: NARA, Modern Dark, Luxury, Family, Scarlet, Sunday
+  - 🤖 **AI Chat Platforms**: AI Travel Agent, ChatBot UI, Knowaachat
+  - 🌟 **Hotel Showcase**: Sunday Hotels
 - 🤖 **AI Chat** - בוט הזמנות חכם עם מספר engines
 - 🏨 **Sunday Components** - 8 רכיבי UI מקצועיים לתצוגת חדרים
 
@@ -169,12 +172,23 @@ export default function BookingPage() {
 
 ## 🎨 Templates
 
-הפרויקט כולל 4 טמפלטים שונים:
+הפרויקט כולל 10 טמפלטים שונים המבוססים על פרויקטים אמיתיים:
 
-1. **NARA** - `/templates/nara` - מודרני עם carousel
-2. **Modern Dark** - `/templates/modern-dark` - עיצוב כהה מינימליסטי
-3. **Luxury** - `/templates/luxury` - יוקרתי ואלגנטי
-4. **Family** - `/templates/family` - ידידותי למשפחות
+### 🏨 Hotel Booking Templates
+1. **Scarlet** - `/templates/scarlet` 🆕 - מלון בוטיק רומנטי ומודרני
+2. **NARA** - `/templates/nara` - סגנון NARA Hotels מקצועי
+3. **Modern Dark** - `/templates/modern-dark` - עיצוב כהה מינימליסטי
+4. **Luxury** - `/templates/luxury` - יוקרתי ואלגנטי
+5. **Family** - `/templates/family` - ידידותי למשפחות
+6. **Sunday Professional** - `/templates/sunday` 🆕 - תצוגה מקצועית עם 8 רכיבי UI
+
+### 🤖 AI Chat Platform Templates
+7. **AI Travel Agent** - `/templates/ai-travel-agent` 🆕 - פלטפורמת סוכני נסיעות AI
+8. **ChatBot UI** - `/templates/chatbot-ui` 🆕 - ממשק צ'אט קוד פתוח
+9. **Knowaachat** - `/templates/knowaachat` 🆕 - מערכת ניהול ידע עם AI
+
+### 🌟 Hotel Showcase Template
+10. **Sunday Hotels** - `/templates/sunday-hotel` 🆕 - אתר הזמנת מלונות מלא
 
 ## 🔑 Environment Variables
 

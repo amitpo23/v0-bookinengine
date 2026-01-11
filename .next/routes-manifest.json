@@ -129,6 +129,18 @@
       "namedRegex": "^/ai\\-chat(?:/)?$"
     },
     {
+      "page": "/ai-engines",
+      "regex": "^/ai\\-engines(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/ai\\-engines(?:/)?$"
+    },
+    {
+      "page": "/ai-engines/chat",
+      "regex": "^/ai\\-engines/chat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/ai\\-engines/chat(?:/)?$"
+    },
+    {
       "page": "/api/admin/activity",
       "regex": "^/api/admin/activity(?:/)?$",
       "routeKeys": {},
@@ -219,6 +231,18 @@
       "namedRegex": "^/api/ai/hotel\\-info(?:/)?$"
     },
     {
+      "page": "/api/ai-engines",
+      "regex": "^/api/ai\\-engines(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/ai\\-engines(?:/)?$"
+    },
+    {
+      "page": "/api/ai-engines/chat",
+      "regex": "^/api/ai\\-engines/chat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/ai\\-engines/chat(?:/)?$"
+    },
+    {
       "page": "/api/auth/login",
       "regex": "^/api/auth/login(?:/)?$",
       "routeKeys": {},
@@ -271,6 +295,24 @@
       "regex": "^/api/booking/search\\-protected(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/booking/search\\-protected(?:/)?$"
+    },
+    {
+      "page": "/api/hotel-booking-ai",
+      "regex": "^/api/hotel\\-booking\\-ai(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/hotel\\-booking\\-ai(?:/)?$"
+    },
+    {
+      "page": "/api/hotel-booking-ai/chat",
+      "regex": "^/api/hotel\\-booking\\-ai/chat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/hotel\\-booking\\-ai/chat(?:/)?$"
+    },
+    {
+      "page": "/api/hotel-booking-ai/stream",
+      "regex": "^/api/hotel\\-booking\\-ai/stream(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/hotel\\-booking\\-ai/stream(?:/)?$"
     },
     {
       "page": "/api/hotels/book",
@@ -351,6 +393,12 @@
       "namedRegex": "^/api/loyalty/update\\-booking(?:/)?$"
     },
     {
+      "page": "/api/mcp/hotel-booking",
+      "regex": "^/api/mcp/hotel\\-booking(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/mcp/hotel\\-booking(?:/)?$"
+    },
+    {
       "page": "/api/mcp/sql",
       "regex": "^/api/mcp/sql(?:/)?$",
       "routeKeys": {},
@@ -385,6 +433,12 @@
       "regex": "^/api/stripe/webhook(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/stripe/webhook(?:/)?$"
+    },
+    {
+      "page": "/api/tavily/hotel-search",
+      "regex": "^/api/tavily/hotel\\-search(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/tavily/hotel\\-search(?:/)?$"
     },
     {
       "page": "/api/test-medici-direct",
@@ -429,6 +483,12 @@
       "namedRegex": "^/api\\-test(?:/)?$"
     },
     {
+      "page": "/hotel-booking-ai",
+      "regex": "^/hotel\\-booking\\-ai(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/hotel\\-booking\\-ai(?:/)?$"
+    },
+    {
       "page": "/my-account",
       "regex": "^/my\\-account(?:/)?$",
       "routeKeys": {},
@@ -447,10 +507,28 @@
       "namedRegex": "^/templates(?:/)?$"
     },
     {
+      "page": "/templates/ai-travel-agent",
+      "regex": "^/templates/ai\\-travel\\-agent(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/templates/ai\\-travel\\-agent(?:/)?$"
+    },
+    {
+      "page": "/templates/chatbot-ui",
+      "regex": "^/templates/chatbot\\-ui(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/templates/chatbot\\-ui(?:/)?$"
+    },
+    {
       "page": "/templates/family",
       "regex": "^/templates/family(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/templates/family(?:/)?$"
+    },
+    {
+      "page": "/templates/knowaachat",
+      "regex": "^/templates/knowaachat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/templates/knowaachat(?:/)?$"
     },
     {
       "page": "/templates/luxury",
@@ -481,6 +559,18 @@
       "regex": "^/templates/scarlet/booking(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/templates/scarlet/booking(?:/)?$"
+    },
+    {
+      "page": "/templates/sunday",
+      "regex": "^/templates/sunday(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/templates/sunday(?:/)?$"
+    },
+    {
+      "page": "/templates/sunday-hotel",
+      "regex": "^/templates/sunday\\-hotel(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/templates/sunday\\-hotel(?:/)?$"
     },
     {
       "page": "/widget",

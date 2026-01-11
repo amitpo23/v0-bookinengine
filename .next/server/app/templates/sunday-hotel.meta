@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/templates/layout,_N_T_/templates/sunday-hotel/layout,_N_T_/templates/sunday-hotel/page,_N_T_/templates/sunday-hotel"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/templates/sunday-hotel/__PAGE__",
+    "/templates/sunday-hotel",
+    "/templates",
+    "/_index",
+    "/_head"
+  ]
+}

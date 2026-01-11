@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/templates/layout,_N_T_/templates/ai-travel-agent/layout,_N_T_/templates/ai-travel-agent/page,_N_T_/templates/ai-travel-agent"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/templates/ai-travel-agent/__PAGE__",
+    "/templates/ai-travel-agent",
+    "/templates",
+    "/_index",
+    "/_head"
+  ]
+}

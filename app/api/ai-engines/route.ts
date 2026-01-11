@@ -64,9 +64,21 @@ export async function GET(request: NextRequest) {
         });
 
       case 'stats':
+        const allEngines = manager.getAllEngines();
+        const activeEnginesCount = allEngines.filter(e => e.status === 'active').length;
+        const totalConvs = allEngines.reduce((sum, e) => sum + e.totalConversations, 0);
+        const activeConvs = allEngines.reduce((sum, e) => sum + e.activeConversations, 0);
+        
         return NextResponse.json({
           success: true,
-          stats: manager.getEngineStats()
+          stats: {
+            totalEngines: allEngines.length,
+            activeEngines: activeEnginesCount,
+            totalConversations: totalConvs,
+            activeConversations: activeConvs,
+            totalMessages: manager.getConversationAnalytics().totalMessages || 0,
+            ...manager.getEngineStats()
+          }
         });
 
       default:

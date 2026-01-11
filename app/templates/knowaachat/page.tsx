@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useI18n } from "@/lib/i18n/context";
+import { I18nProvider, useI18n } from "@/lib/i18n/context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,14 @@ interface Message {
 }
 
 export default function KnowaachatTemplate() {
+  return (
+    <I18nProvider>
+      <KnowaachatContent />
+    </I18nProvider>
+  );
+}
+
+function KnowaachatContent() {
   const { t } = useI18n();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");

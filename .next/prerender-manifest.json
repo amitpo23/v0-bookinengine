@@ -252,6 +252,56 @@
         "x-next-revalidate-tag-token"
       ]
     },
+    "/ai-engines/chat": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/ai-engines/chat",
+      "dataRoute": "/ai-engines/chat.rsc",
+      "prefetchDataRoute": null,
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/ai-engines": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/ai-engines",
+      "dataRoute": "/ai-engines.rsc",
+      "prefetchDataRoute": null,
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
     "/api-test": {
       "experimentalBypassFor": [
         {
@@ -267,6 +317,31 @@
       "initialRevalidateSeconds": false,
       "srcRoute": "/api-test",
       "dataRoute": "/api-test.rsc",
+      "prefetchDataRoute": null,
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/hotel-booking-ai": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/hotel-booking-ai",
+      "dataRoute": "/hotel-booking-ai.rsc",
       "prefetchDataRoute": null,
       "allowHeader": [
         "host",
@@ -352,6 +427,56 @@
         "x-next-revalidate-tag-token"
       ]
     },
+    "/templates/ai-travel-agent": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/templates/ai-travel-agent",
+      "dataRoute": "/templates/ai-travel-agent.rsc",
+      "prefetchDataRoute": null,
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/templates/chatbot-ui": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/templates/chatbot-ui",
+      "dataRoute": "/templates/chatbot-ui.rsc",
+      "prefetchDataRoute": null,
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
     "/templates/family": {
       "experimentalBypassFor": [
         {
@@ -367,6 +492,31 @@
       "initialRevalidateSeconds": false,
       "srcRoute": "/templates/family",
       "dataRoute": "/templates/family.rsc",
+      "prefetchDataRoute": null,
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/templates/knowaachat": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/templates/knowaachat",
+      "dataRoute": "/templates/knowaachat.rsc",
       "prefetchDataRoute": null,
       "allowHeader": [
         "host",
@@ -527,6 +677,56 @@
         "x-next-revalidate-tag-token"
       ]
     },
+    "/templates/sunday-hotel": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/templates/sunday-hotel",
+      "dataRoute": "/templates/sunday-hotel.rsc",
+      "prefetchDataRoute": null,
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/templates/sunday": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/templates/sunday",
+      "dataRoute": "/templates/sunday.rsc",
+      "prefetchDataRoute": null,
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
     "/widget": {
       "experimentalBypassFor": [
         {
@@ -556,8 +756,8 @@
   "dynamicRoutes": {},
   "notFoundRoutes": [],
   "preview": {
-    "previewModeId": "09c1fefd461d3c9f4d83ec5fee338bb3",
-    "previewModeSigningKey": "7f9bbe3d46a9c107f702ae17604cea1140d4c9cbe1e5bd1ef3e6cdf488316d54",
-    "previewModeEncryptionKey": "14e409061fe2f612ae4b04a3274fa407727d2f22caee9df7aed36b256858fc21"
+    "previewModeId": "5993c0da826a5795e63e830f8640bf49",
+    "previewModeSigningKey": "2eb0114e7244af35a2961ef297a08b2215e1acee34b104b23e2e8ad76dee049c",
+    "previewModeEncryptionKey": "ddc456557c80489be2b56485a4f90d8f15ee7716edae6862b5c1ff48ecbebf3b"
   }
 }

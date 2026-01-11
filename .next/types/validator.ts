@@ -119,6 +119,24 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../app/ai-engines/chat/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/ai-engines/chat">> = Specific
+  const handler = {} as typeof import("../../app/ai-engines/chat/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/ai-engines/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/ai-engines">> = Specific
+  const handler = {} as typeof import("../../app/ai-engines/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../app/api-test/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/api-test">> = Specific
@@ -155,6 +173,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../app/hotel-booking-ai/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/hotel-booking-ai">> = Specific
+  const handler = {} as typeof import("../../app/hotel-booking-ai/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../app/my-account/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/my-account">> = Specific
@@ -182,10 +209,37 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../app/templates/ai-travel-agent/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/templates/ai-travel-agent">> = Specific
+  const handler = {} as typeof import("../../app/templates/ai-travel-agent/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/templates/chatbot-ui/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/templates/chatbot-ui">> = Specific
+  const handler = {} as typeof import("../../app/templates/chatbot-ui/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../app/templates/family/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/templates/family">> = Specific
   const handler = {} as typeof import("../../app/templates/family/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/templates/knowaachat/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/templates/knowaachat">> = Specific
+  const handler = {} as typeof import("../../app/templates/knowaachat/page.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check
@@ -240,6 +294,24 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   type __IsExpected<Specific extends AppPageConfig<"/templates/scarlet">> = Specific
   const handler = {} as typeof import("../../app/templates/scarlet/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/templates/sunday-hotel/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/templates/sunday-hotel">> = Specific
+  const handler = {} as typeof import("../../app/templates/sunday-hotel/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/templates/sunday/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/templates/sunday">> = Specific
+  const handler = {} as typeof import("../../app/templates/sunday/page.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check
@@ -339,6 +411,24 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/affiliate/track">> = Specific
   const handler = {} as typeof import("../../app/api/affiliate/track/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/api/ai-engines/chat/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/ai-engines/chat">> = Specific
+  const handler = {} as typeof import("../../app/api/ai-engines/chat/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/api/ai-engines/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/ai-engines">> = Specific
+  const handler = {} as typeof import("../../app/api/ai-engines/route.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check
@@ -488,6 +578,33 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../app/api/hotel-booking-ai/chat/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/hotel-booking-ai/chat">> = Specific
+  const handler = {} as typeof import("../../app/api/hotel-booking-ai/chat/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/api/hotel-booking-ai/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/hotel-booking-ai">> = Specific
+  const handler = {} as typeof import("../../app/api/hotel-booking-ai/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/api/hotel-booking-ai/stream/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/hotel-booking-ai/stream">> = Specific
+  const handler = {} as typeof import("../../app/api/hotel-booking-ai/stream/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../app/api/hotels/book/route.ts
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/hotels/book">> = Specific
@@ -605,6 +722,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../app/api/mcp/hotel-booking/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/mcp/hotel-booking">> = Specific
+  const handler = {} as typeof import("../../app/api/mcp/hotel-booking/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../app/api/mcp/sql/route.ts
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/mcp/sql">> = Specific
@@ -654,6 +780,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/stripe/webhook">> = Specific
   const handler = {} as typeof import("../../app/api/stripe/webhook/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/api/tavily/hotel-search/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/tavily/hotel-search">> = Specific
+  const handler = {} as typeof import("../../app/api/tavily/hotel-search/route.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check

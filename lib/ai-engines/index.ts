@@ -54,6 +54,32 @@ export {
 // Handlers
 export * from './handlers';
 
+// Database integration
+export {
+  AIEngineDB,
+  ConversationDB,
+  MessageDB,
+  AnalyticsDB,
+  TemplateDB,
+  SkillDB,
+  getEngineDB,
+  getConversationDB,
+  getMessageDB,
+  getAnalyticsDB,
+  getTemplateDB,
+  getSkillDB,
+  db
+} from './database';
+
+export type {
+  DbAIEngine,
+  DbConversation,
+  DbMessage,
+  DbToolCall,
+  DbTemplate,
+  DbSkill
+} from './database';
+
 /**
  * Quick start - get the engine manager singleton
  */

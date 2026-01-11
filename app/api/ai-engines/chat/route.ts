@@ -6,11 +6,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAIEngineManager } from '@/lib/ai-engines/engine-manager';
 import { executeHandler } from '@/lib/ai-engines/handlers';
-import Groq from 'groq-sdk';
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY
-});
+// Lazy initialization of Groq client
+let groqClient: any = null;
+
+function getGroqClient() {
+  if (!groqClient && process.env.GROQ_API_KEY) {
+    const Groq = require('groq-sdk').default;
+    groqClient = new Groq({
+      apiKey: process.env.GROQ_API_KEY
+    });
+  }
+  return groqClient;
+}
 
 interface ChatMessage {
   role: 'user' | 'assistant' | 'system' | 'tool';
@@ -94,6 +102,14 @@ export async function POST(request: NextRequest) {
 
     // Call LLM with tools
     const modelConfig = engine.template.modelConfig;
+    const groq = getGroqClient();
+    
+    if (!groq) {
+      return NextResponse.json({
+        success: false,
+        error: 'GROQ_API_KEY not configured. Please add it to environment variables.'
+      }, { status: 500 });
+    }
     
     let completion;
     try {
@@ -163,7 +179,8 @@ export async function POST(request: NextRequest) {
         }));
 
         try {
-          const finalCompletion = await groq.chat.completions.create({
+          const groqFinal = getGroqClient();
+          const finalCompletion = await groqFinal.chat.completions.create({
             model: modelConfig.model,
             messages: [
               ...messages,

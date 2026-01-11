@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useI18n } from "@/lib/i18n/context";
+import { useState, type ReactNode } from "react";
+import { I18nProvider, useI18n } from "@/lib/i18n/context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,14 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function SundayHotelTemplate() {
+  return (
+    <I18nProvider>
+      <SundayHotelContent />
+    </I18nProvider>
+  );
+}
+
+function SundayHotelContent() {
   const { t } = useI18n();
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
@@ -69,7 +77,7 @@ export default function SundayHotelTemplate() {
     },
   ];
 
-  const amenitiesIcons: { [key: string]: JSX.Element } = {
+  const amenitiesIcons: { [key: string]: ReactNode } = {
     Wifi: <Wifi className="w-4 h-4" />,
     Pool: <Wind className="w-4 h-4" />,
     Spa: <Heart className="w-4 h-4" />,

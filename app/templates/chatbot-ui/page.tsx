@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useI18n } from "@/lib/i18n/context";
+import { I18nProvider, useI18n } from "@/lib/i18n/context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -42,7 +42,7 @@ interface ChatSession {
   createdAt: Date;
 }
 
-export default function ChatbotUITemplate() {
+function ChatbotUIContent() {
   const { t } = useI18n();
   const [sessions, setSessions] = useState<ChatSession[]>([
     {
@@ -375,5 +375,13 @@ export default function ChatbotUITemplate() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ChatbotUITemplate() {
+  return (
+    <I18nProvider>
+      <ChatbotUIContent />
+    </I18nProvider>
   );
 }

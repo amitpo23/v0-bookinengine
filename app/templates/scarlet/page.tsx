@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react"
 import { format } from "date-fns"
 import { he } from "date-fns/locale"
-import { Calendar, Users, Heart, Sparkles, Bath, Home, Crown, User, ChevronLeft, ChevronRight, MessageCircle, X } from "lucide-react"
+import { Calendar, Users, Heart, Sparkles, Bath, Home, Crown, User, ChevronLeft, ChevronRight, MessageCircle, X, Loader2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { SocialShare } from "@/components/ui/social-share"
 import { scarletRoomTypes, scarletHotelConfig } from "@/lib/hotels/scarlet-config"
 import { LoyaltySignup } from "@/components/promotions/loyalty-signup"
@@ -17,6 +18,9 @@ import { trackEvent, trackPageView, trackSelectItem, trackSearch } from "@/lib/a
 import { LoginButton } from "@/components/auth/login-button"
 import { I18nProvider, useI18n } from "@/lib/i18n/context"
 import { LanguageSwitcher } from "@/components/booking/language-switcher"
+import { useBookingEngine } from "@/hooks/use-booking-engine"
+import { BookingSteps, GuestDetailsForm, PaymentForm, BookingConfirmation } from "@/components/booking/templates/shared"
+import { PreBookTimer } from "@/components/booking/prebook-timer"
 import { addDays } from "date-fns"
 import Link from "next/link"
 import { ErrorBoundary } from "@/components/error-boundary"
@@ -108,12 +112,18 @@ function ScarletTemplateContent() {
     }
     scriptTag.textContent = JSON.stringify(structuredData)
   }, [locale])
+
+  // Booking Engine Hook - for real API integration
+  const booking = useBookingEngine()
+
   const [checkIn, setCheckIn] = useState("")
   const [checkOut, setCheckOut] = useState("")
   const [guests, setGuests] = useState(2)
   const [roomImageIndexes, setRoomImageIndexes] = useState<Record<string, number>>({})
   const [backgroundImageIndex, setBackgroundImageIndex] = useState(0)
   const [showAiChat, setShowAiChat] = useState(false)
+  const [showApiResults, setShowApiResults] = useState(false)
+  const [prebookExpiry, setPrebookExpiry] = useState<Date | null>(null)
 
   // Track page view on mount
   useEffect(() => {
@@ -144,14 +154,104 @@ function ScarletTemplateContent() {
     return () => clearInterval(interval)
   }, [])
 
-  const handleSearch = () => {
+  // Real API Search
+  const handleSearch = async () => {
+    if (!checkIn || !checkOut) {
+      showToast?.("אנא בחר תאריכי צ'ק-אין וצ'ק-אאוט", "error")
+      return
+    }
+
     trackSearch(`${checkIn} to ${checkOut}, ${guests} guests`, {
       check_in: checkIn,
       check_out: checkOut,
       guests,
       hotel_id: scarletHotelConfig.hotelId
     })
-    console.log("Searching:", { checkIn, checkOut, guests })
+
+    // Call real Medici API
+    await booking.searchHotels({
+      checkIn: new Date(checkIn),
+      checkOut: new Date(checkOut),
+      adults: guests,
+      children: [],
+      city: "Tel Aviv", // Search Tel Aviv hotels
+    })
+
+    setShowApiResults(true)
+  }
+
+  // Handle room selection with PreBook
+  const handleSelectRoom = async (room: any) => {
+    if (!checkIn || !checkOut) {
+      // Use static room data if no dates selected
+      window.location.href = `/templates/scarlet/booking?room=${room.id}&checkIn=${addDays(new Date(), 1).toISOString()}&checkOut=${addDays(new Date(), 3).toISOString()}&guests=${guests}`
+      return
+    }
+
+    // If we have API results, do a real prebook
+    if (booking.searchResults.length > 0) {
+      const hotel = booking.searchResults[0]
+      const apiRoom = hotel.rooms.find((r: any) => r.roomName.includes(room.name) || r.roomCategory?.includes(room.id)) || hotel.rooms[0]
+      
+      if (apiRoom) {
+        const hotelResult = {
+          hotelId: hotel.hotelId,
+          hotelName: hotel.hotelName,
+          city: hotel.city || "Tel Aviv",
+          stars: hotel.stars || 4,
+          address: hotel.address || "",
+          imageUrl: hotel.hotelImage || room.images[0],
+          images: hotel.images || room.images,
+          description: hotel.description || room.description,
+          facilities: hotel.facilities || [],
+          rooms: [],
+        }
+
+        const roomResult = {
+          code: apiRoom.code,
+          roomId: apiRoom.roomId,
+          roomName: apiRoom.roomName,
+          roomCategory: apiRoom.roomCategory || room.id,
+          categoryId: apiRoom.categoryId || 1,
+          boardId: apiRoom.boardId || 2,
+          boardType: apiRoom.boardType || "BB",
+          buyPrice: apiRoom.buyPrice || room.basePrice,
+          originalPrice: apiRoom.originalPrice || room.basePrice * 1.2,
+          currency: apiRoom.currency || "ILS",
+          maxOccupancy: room.maxGuests,
+          size: room.size,
+          view: "",
+          bedding: "",
+          amenities: room.features || [],
+          images: room.images,
+          cancellationPolicy: apiRoom.cancellationPolicy || "free",
+          available: 5,
+        }
+
+        const success = await booking.selectRoom(hotelResult, roomResult)
+        if (success) {
+          // Set prebook expiry (30 minutes)
+          setPrebookExpiry(new Date(Date.now() + 30 * 60 * 1000))
+          trackEvent({
+            event: 'room_selected',
+            room_name: room.hebrewName,
+            price: roomResult.buyPrice,
+            hotel_id: scarletHotelConfig.hotelId
+          })
+        }
+        return
+      }
+    }
+
+    // Fallback to static booking page
+    window.location.href = `/templates/scarlet/booking?room=${room.id}&checkIn=${checkIn || addDays(new Date(), 1).toISOString()}&checkOut=${checkOut || addDays(new Date(), 3).toISOString()}&guests=${guests}`
+  }
+
+  // Handle prebook expiry
+  const handlePrebookExpired = () => {
+    setPrebookExpiry(null)
+    booking.reset()
+    showToast?.("זמן ההזמנה פג. אנא חפש שוב.", "error")
   }
 
   return (
@@ -275,12 +375,37 @@ function ScarletTemplateContent() {
               <div className="flex items-end">
                 <Button
                   onClick={handleSearch}
-                  className="w-full h-[52px] bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg shadow-red-500/50"
+                  disabled={booking.isLoading}
+                  className="w-full h-[52px] bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg shadow-red-500/50 disabled:opacity-50"
                 >
-                  {t('searchRooms')}
+                  {booking.isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                      {t('searching') || 'מחפש...'}
+                    </>
+                  ) : (
+                    t('searchRooms')
+                  )}
                 </Button>
               </div>
             </div>
+
+            {/* Error Message */}
+            {booking.error && (
+              <Alert variant="destructive" className="mt-4 bg-red-900/50 border-red-500/50">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{booking.error}</AlertDescription>
+              </Alert>
+            )}
+
+            {/* API Search Results Summary */}
+            {showApiResults && booking.searchResults.length > 0 && (
+              <div className="mt-4 p-4 bg-green-900/30 border border-green-500/30 rounded-lg">
+                <p className="text-green-400 text-center">
+                  ✅ נמצאו {booking.searchResults.reduce((acc, h) => acc + h.rooms.length, 0)} חדרים זמינים בתאריכים שבחרת!
+                </p>
+              </div>
+            )}
           </Card>
         </div>
 
@@ -291,6 +416,75 @@ function ScarletTemplateContent() {
           </div>
         </div>
       </section>
+
+      {/* PreBook Timer - shows when room is selected */}
+      {booking.step === 'details' && prebookExpiry && (
+        <div className="fixed top-20 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50">
+          <Card className="bg-gray-900/95 border-red-500/50 p-4">
+            <PreBookTimer 
+              expiresAt={prebookExpiry}
+              onExpired={handlePrebookExpired}
+              warningMinutes={5}
+            />
+          </Card>
+        </div>
+      )}
+
+      {/* Guest Details Step */}
+      {booking.step === 'details' && (
+        <section className="py-12 px-4 max-w-4xl mx-auto">
+          <Card className="bg-gray-900/80 border-red-500/30 p-8">
+            <h2 className="text-3xl font-bold mb-6 text-center bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">
+              פרטי האורח
+            </h2>
+            <GuestDetailsForm 
+              onSubmit={(details) => {
+                booking.setGuestInfo(details)
+              }}
+              isLoading={booking.isLoading}
+            />
+          </Card>
+        </section>
+      )}
+
+      {/* Payment Step */}
+      {booking.step === 'payment' && (
+        <section className="py-12 px-4 max-w-4xl mx-auto">
+          <Card className="bg-gray-900/80 border-red-500/30 p-8">
+            <h2 className="text-3xl font-bold mb-6 text-center bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">
+              תשלום
+            </h2>
+            <PaymentForm
+              totalPrice={booking.totalPrice}
+              currency={booking.selectedRoom?.currency || "ILS"}
+              onSubmit={booking.completeBooking}
+              isLoading={booking.isLoading}
+            />
+          </Card>
+        </section>
+      )}
+
+      {/* Confirmation Step */}
+      {booking.step === 'confirmation' && booking.bookingConfirmation && booking.selectedHotel && booking.selectedRoom && booking.searchParams && booking.guestInfo && (
+        <section className="py-12 px-4 max-w-4xl mx-auto">
+          <BookingConfirmation
+            bookingId={booking.bookingConfirmation.bookingId}
+            supplierReference={booking.bookingConfirmation.supplierReference}
+            hotel={booking.selectedHotel}
+            room={booking.selectedRoom}
+            searchParams={booking.searchParams}
+            totalPrice={booking.totalPrice}
+            currency={booking.selectedRoom.currency}
+            guestName={`${booking.guestInfo.firstName} ${booking.guestInfo.lastName}`}
+            guestEmail={booking.guestInfo.email}
+            onNewBooking={() => {
+              booking.reset()
+              setPrebookExpiry(null)
+              setShowApiResults(false)
+            }}
+          />
+        </section>
+      )}
 
       {/* Active Promotions Banner */}
       {scarletHotelConfig.activePromotions && scarletHotelConfig.activePromotions.length > 0 && (
@@ -503,15 +697,20 @@ function ScarletTemplateContent() {
                     </div>
                   )}
 
-                  <Link
-                    href={`/templates/scarlet/booking?room=${room.id}&checkIn=${checkIn || addDays(new Date(), 1).toISOString()}&checkOut=${checkOut || addDays(new Date(), 3).toISOString()}&guests=${guests}`}
+                  <Button
+                    onClick={() => handleSelectRoom(room)}
+                    disabled={booking.isLoading}
+                    className="w-full h-14 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-lg rounded-lg shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-all disabled:opacity-50"
                   >
-                    <Button
-                      className="w-full h-14 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-lg rounded-lg shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-all"
-                    >
-                      {t('bookNow')}
-                    </Button>
-                  </Link>
+                    {booking.isLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                        {t('processing') || 'מעבד...'}
+                      </>
+                    ) : (
+                      t('bookNow')
+                    )}
+                  </Button>
                 </div>
               </div>
             </Card>
@@ -711,16 +910,20 @@ function ScarletTemplateContent() {
               <p className="text-xl text-gray-300 mb-6" style={{ fontFamily: 'var(--font-assistant)' }}>
                 {t('clickBookNowToSee')}
               </p>
-              <Link href={`/templates/scarlet/booking?room=classic-double&checkIn=${checkIn || addDays(new Date(), 1).toISOString()}&checkOut=${checkOut || addDays(new Date(), 3).toISOString()}&guests=${guests}`}>
-                <Button 
-                  size="lg"
-                  className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-xl px-12 py-6 shadow-2xl shadow-red-500/50"
-                  style={{ fontFamily: 'var(--font-assistant)' }}
-                >
+              <Button 
+                onClick={handleSearch}
+                disabled={booking.isLoading}
+                size="lg"
+                className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-xl px-12 py-6 shadow-2xl shadow-red-500/50 disabled:opacity-50"
+                style={{ fontFamily: 'var(--font-assistant)' }}
+              >
+                {booking.isLoading ? (
+                  <Loader2 className="h-6 w-6 animate-spin ml-2" />
+                ) : (
                   <Sparkles className="ml-2 h-6 w-6" />
-                  {t('discoverOffers')}
-                </Button>
-              </Link>
+                )}
+                {t('discoverOffers')}
+              </Button>
             </div>
           </Card>
         </div>

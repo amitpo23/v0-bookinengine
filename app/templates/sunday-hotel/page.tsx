@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { I18nProvider, useI18n } from "@/lib/i18n/context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   Hotel,
   MapPin,
@@ -26,12 +27,20 @@ import {
   Globe,
   Heart,
   Share2,
-  ChevronRight
+  ChevronRight,
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { AnimatedCard, showToast } from "@/components/templates/enhanced-ui";
 import { motion } from "framer-motion";
+import { useBookingEngine } from "@/hooks/use-booking-engine";
+import { GuestDetailsForm } from "@/components/booking/guest-details-form";
+import { PaymentForm } from "@/components/booking/payment-form";
+import { BookingConfirmation } from "@/components/booking/booking-confirmation";
+import { PreBookTimer } from "@/components/booking/prebook-timer";
+import { format } from "date-fns";
 
 export default function SundayHotelTemplate() {
   return (
@@ -45,42 +54,100 @@ export default function SundayHotelTemplate() {
 
 function SundayHotelContent() {
   const { t } = useI18n();
-  const [checkIn, setCheckIn] = useState("");
-  const [checkOut, setCheckOut] = useState("");
+  const [checkIn, setCheckIn] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [checkOut, setCheckOut] = useState(format(new Date(Date.now() + 86400000 * 2), "yyyy-MM-dd"));
   const [guests, setGuests] = useState("2");
-
-  const hotels = [
-    {
-      id: 1,
-      name: "Grand Sunset Resort",
-      location: "Miami Beach, Florida",
-      rating: 4.8,
-      reviews: 1250,
-      price: 299,
-      image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
-      amenities: ["Wifi", "Pool", "Spa", "Gym", "Restaurant"],
-    },
-    {
-      id: 2,
-      name: "Mountain View Lodge",
-      location: "Aspen, Colorado",
-      rating: 4.6,
-      reviews: 890,
-      price: 349,
-      image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
-      amenities: ["Wifi", "Parking", "Breakfast", "Gym", "Ski Access"],
-    },
-    {
-      id: 3,
-      name: "Seaside Paradise Hotel",
-      location: "Malibu, California",
-      rating: 4.9,
-      reviews: 1580,
-      price: 449,
-      image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
-      amenities: ["Wifi", "Beach", "Pool", "Spa", "Bar"],
-    },
-  ];
+  const [destination, setDestination] = useState("Tel Aviv");
+  const [prebookExpiry, setPrebookExpiry] = useState<Date | null>(null);
+  
+  // Real API booking engine
+  const booking = useBookingEngine();
+  
+  // Convert API search results to display format
+  const hotels = booking.searchResults.length > 0 
+    ? booking.searchResults.map((result: any, index: number) => ({
+        id: index + 1,
+        name: result.hotelName || "Hotel",
+        location: result.city || destination,
+        rating: result.stars || 4.5,
+        reviews: Math.floor(Math.random() * 1000) + 500,
+        price: result.rooms[0]?.price || 299,
+        image: result.images?.[0] || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        amenities: result.facilities?.slice(0, 5) || ["Wifi", "Pool", "Spa"],
+        apiData: result, // Keep original API data for booking
+      }))
+    : [
+        {
+          id: 1,
+          name: "Grand Sunset Resort",
+          location: "Miami Beach, Florida",
+          rating: 4.8,
+          reviews: 1250,
+          price: 299,
+          image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+          amenities: ["Wifi", "Pool", "Spa", "Gym", "Restaurant"],
+        },
+        {
+          id: 2,
+          name: "Mountain View Lodge",
+          location: "Aspen, Colorado",
+          rating: 4.6,
+          reviews: 890,
+          price: 349,
+          image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+          amenities: ["Wifi", "Parking", "Breakfast", "Gym", "Ski Access"],
+        },
+        {
+          id: 3,
+          name: "Seaside Paradise Hotel",
+          location: "Malibu, California",
+          rating: 4.9,
+          reviews: 1580,
+          price: 449,
+          image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+          amenities: ["Wifi", "Beach", "Pool", "Spa", "Bar"],
+        },
+      ];
+  
+  const handleSearch = async () => {
+    await booking.searchHotels({
+      checkIn: new Date(checkIn),
+      checkOut: new Date(checkOut),
+      adults: parseInt(guests),
+      children: [],
+      city: destination,
+    });
+    
+    if (booking.searchResults.length > 0) {
+      showToast.success('Hotels found!', `${booking.searchResults.length} options available`);
+    }
+  };
+  
+  const handleSelectRoom = async (hotel: any) => {
+    if (!hotel.apiData) {
+      showToast.error('Error', 'Please search for hotels first');
+      return;
+    }
+    
+    const apiHotel = hotel.apiData;
+    const firstRoom = apiHotel.rooms[0];
+    
+    await booking.selectRoom(apiHotel, {
+      code: firstRoom.code,
+      roomName: firstRoom.roomName || firstRoom.roomCategory || "Standard Room",
+      roomCategory: firstRoom.roomCategory || "Standard",
+      boardType: firstRoom.boardType || "RO",
+      price: firstRoom.price,
+      currency: firstRoom.currency || "USD",
+      adults: parseInt(guests),
+      children: 0,
+      cancellationPolicies: firstRoom.cancellationPolicies || [],
+      amenities: firstRoom.amenities || [],
+      images: firstRoom.images || [],
+    });
+    
+    setPrebookExpiry(new Date(Date.now() + 30 * 60 * 1000));
+  };
 
   const amenitiesIcons: { [key: string]: ReactNode } = {
     Wifi: <Wifi className="w-4 h-4" />,
@@ -177,12 +244,42 @@ function SundayHotelContent() {
                   />
                 </div>
                 <div className="md:col-span-1 flex items-end">
-                  <Button className="w-full h-11 bg-gradient-to-r from-orange-500 to-pink-600 hover:from-orange-600 hover:to-pink-700 text-white font-semibold">
-                    <Search className="w-4 h-4 mr-2" />
-                    Search
+                  <Button 
+                    onClick={handleSearch}
+                    disabled={booking.isLoading}
+                    className="w-full h-11 bg-gradient-to-r from-orange-500 to-pink-600 hover:from-orange-600 hover:to-pink-700 text-white font-semibold disabled:opacity-50"
+                  >
+                    {booking.isLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Searching...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="w-4 h-4 mr-2" />
+                        Search
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
+              
+              {/* Error Message */}
+              {booking.error && (
+                <Alert variant="destructive" className="mt-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{booking.error}</AlertDescription>
+                </Alert>
+              )}
+              
+              {/* Success Message */}
+              {booking.searchResults.length > 0 && (
+                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-center">
+                  <p className="text-green-700 font-medium">
+                    ✅ Found {booking.searchResults.length} hotels with available rooms!
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -272,9 +369,19 @@ function SundayHotelContent() {
                     </p>
                     <p className="text-xs text-slate-500">per night</p>
                   </div>
-                  <Button className="bg-gradient-to-r from-orange-500 to-pink-600 hover:from-orange-600 hover:to-pink-700 text-white">
-                    View Details
-                    <ChevronRight className="w-4 h-4 ml-1" />
+                  <Button 
+                    onClick={() => handleSelectRoom(hotel)}
+                    disabled={booking.isLoading || !hotel.apiData}
+                    className="bg-gradient-to-r from-orange-500 to-pink-600 hover:from-orange-600 hover:to-pink-700 text-white disabled:opacity-50"
+                  >
+                    {booking.isLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        {hotel.apiData ? 'Book Now' : 'View Details'}
+                        <ChevronRight className="w-4 h-4 ml-1" />
+                      </>
+                    )}
                   </Button>
                 </div>
               </CardContent>

@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react"
 import { format } from "date-fns"
-import { Calendar, MapPin, Star, Sparkles, Search, Grid3x3, List } from "lucide-react"
+import { Calendar, MapPin, Star, Sparkles, Search, Grid3x3, List, Loader2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
 import { I18nProvider, useI18n } from "@/lib/i18n/context"
 import { LanguageSwitcher } from "@/components/booking/language-switcher"
@@ -25,6 +26,11 @@ import type { HotelData } from "@/types/hotel-types"
 import { ErrorBoundary } from "@/components/error-boundary"
 import { EnhancedLoadingOverlay, AnimatedCard, showToast } from "@/components/templates/enhanced-ui"
 import { motion, AnimatePresence } from "framer-motion"
+import { useBookingEngine } from "@/hooks/use-booking-engine"
+import { GuestDetailsForm } from "@/components/booking/guest-details-form"
+import { PaymentForm } from "@/components/booking/payment-form"
+import { BookingConfirmation } from "@/components/booking/booking-confirmation"
+import { PreBookTimer } from "@/components/booking/prebook-timer"
 
 // Demo hotels data
 const demoHotels: HotelData[] = [
@@ -83,28 +89,83 @@ function SundayTemplateContent() {
   const [guests, setGuests] = useState(2)
   const [destination, setDestination] = useState("Tel Aviv")
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [isSearching, setIsSearching] = useState(false)
-  const [hotels, setHotels] = useState<HotelData[]>([])
   const [selectedHotel, setSelectedHotel] = useState<HotelData | null>(null)
+  const [prebookExpiry, setPrebookExpiry] = useState<Date | null>(null)
+  
+  // Real API booking engine
+  const booking = useBookingEngine()
+  
+  // Convert API search results to HotelData format
+  const hotels: HotelData[] = booking.searchResults.map((result, index) => ({
+    hotelId: index + 1,
+    hotelName: result.hotelName || "Hotel",
+    city: result.city || destination,
+    stars: result.stars || 4,
+    address: result.address || "",
+    imageUrl: result.images?.[0] || "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+    images: result.images || ["https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800"],
+    description: result.description || "",
+    facilities: result.facilities || [],
+    rooms: result.rooms.map((room: any) => ({
+      roomId: room.code,
+      roomName: room.roomName || room.roomCategory || "Standard Room",
+      price: room.price,
+      currency: room.currency || "ILS",
+      boardType: room.boardType || "RO",
+      adults: room.adults || guests,
+      children: room.children || 0,
+    }))
+  }))
 
   useEffect(() => {
     document.title = locale === 'he' ? 'Sunday - תצוגה מקצועית של מלונות' : 'Sunday - Professional Hotel Display'
   }, [locale])
 
   const handleSearch = async () => {
-    setIsSearching(true)
     setSelectedHotel(null)
     
-    // Simulate search
-    setTimeout(() => {
-      setHotels(demoHotels)
-      setIsSearching(false)
-      showToast.success('נמצאו מלונות!', `${demoHotels.length} אפשרויות`)
-    }, 1500)
+    await booking.searchHotels({
+      checkIn: new Date(checkIn),
+      checkOut: new Date(checkOut),
+      adults: guests,
+      children: [],
+      city: destination,
+    })
+    
+    if (booking.searchResults.length > 0) {
+      showToast.success(locale === 'he' ? 'נמצאו מלונות!' : 'Hotels found!', `${booking.searchResults.length} ${locale === 'he' ? 'אפשרויות' : 'options'}`)
+    }
   }
 
-  const handleSelectHotel = (hotel: HotelData) => {
+  const handleSelectHotel = async (hotel: HotelData) => {
     setSelectedHotel(hotel)
+    
+    // Find corresponding API hotel and select first room
+    const apiHotel = booking.searchResults.find((h: any) => 
+      h.hotelName === hotel.hotelName || h.city === hotel.city
+    )
+    
+    if (apiHotel && apiHotel.rooms.length > 0) {
+      const firstRoom = apiHotel.rooms[0]
+      
+      await booking.selectRoom(apiHotel, {
+        code: firstRoom.code,
+        roomName: firstRoom.roomName || firstRoom.roomCategory || "Standard Room",
+        roomCategory: firstRoom.roomCategory || "Standard",
+        boardType: firstRoom.boardType || "RO",
+        price: firstRoom.price,
+        currency: firstRoom.currency || "ILS",
+        adults: guests,
+        children: 0,
+        cancellationPolicies: firstRoom.cancellationPolicies || [],
+        amenities: firstRoom.amenities || [],
+        images: firstRoom.images || [],
+      })
+      
+      // Set prebook expiry (30 minutes from now)
+      setPrebookExpiry(new Date(Date.now() + 30 * 60 * 1000))
+    }
+    
     const detailsElement = document.getElementById('hotel-details')
     if (detailsElement) {
       detailsElement.scrollIntoView({ behavior: 'smooth' })
@@ -244,12 +305,12 @@ function SundayTemplateContent() {
 
               <Button
                 onClick={handleSearch}
-                disabled={isSearching}
+                disabled={booking.isLoading}
                 className="w-full mt-6 h-12 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white font-semibold"
               >
-                {isSearching ? (
+                {booking.isLoading ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
                     {locale === 'he' ? 'מחפש...' : 'Searching...'}
                   </>
                 ) : (
@@ -259,13 +320,21 @@ function SundayTemplateContent() {
                   </>
                 )}
               </Button>
+              
+              {/* Error Message */}
+              {booking.error && (
+                <Alert variant="destructive" className="mt-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{booking.error}</AlertDescription>
+                </Alert>
+              )}
             </CardContent>
           </Card>
         </div>
       </section>
 
       {/* Results Section */}
-      {(hotels.length > 0 || isSearching) && (
+      {(hotels.length > 0 || booking.isLoading) && (
         <section className="py-12 px-4">
           <div className="container mx-auto">
             {/* Results Header */}
@@ -306,16 +375,16 @@ function SundayTemplateContent() {
             </div>
 
             {/* Hotels Results using Sunday Components */}
-            {isSearching ? (
+            {booking.isLoading ? (
               <div className="flex items-center justify-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+                <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
               </div>
             ) : (
               <HotelResults
                 hotels={hotels}
                 viewMode={viewMode}
                 onSelectHotel={handleSelectHotel}
-                isLoading={isSearching}
+                isLoading={booking.isLoading}
               />
             )}
           </div>

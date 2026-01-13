@@ -2,8 +2,11 @@
 
 import { useState, useEffect } from "react"
 import { HotelConfigProvider, useHotelConfig } from "@/lib/hotel-config-context"
+import { ErrorBoundary } from "@/components/error-boundary"
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
+import { AdminDrawer } from "@/components/admin/admin-drawer"
 import { AdminHeader } from "@/components/admin/admin-header"
+import { toast } from "sonner"
 import { StatsCard } from "@/components/admin/stats-card"
 import { BookingsTable } from "@/components/admin/bookings-table"
 import { RoomsManagement } from "@/components/admin/rooms-management"
@@ -19,6 +22,11 @@ import { ChatInterface } from "@/components/ai-chat/chat-interface"
 import { AiSettings } from "@/components/admin/ai-settings"
 import { AgentsManagement } from "@/components/admin/agents-management"
 import { RoomTypesManagement } from "@/components/admin/room-types-management"
+import { TemplatesManagement } from "@/components/admin/templates-management"
+import { ActivityLogsManagement } from "@/components/admin/activity-logs-management"
+import { SessionsManagement } from "@/components/admin/sessions-management"
+import { KnowledgeBaseManagement } from "@/components/admin/knowledge-base-management"
+import { RoomsShowcase } from "@/components/admin/rooms-showcase"
 import dynamic from "next/dynamic"
 import { getBookings, getDashboardStats } from "@/lib/admin-data"
 import { mockHotel, mockRooms } from "@/lib/mock-data"
@@ -89,7 +97,7 @@ function AdminDashboardContent() {
 
   const handleSaveHotel = (updatedHotel: Hotel) => {
     setHotel(updatedHotel)
-    alert("הגדרות נשמרו בהצלחה!")
+    toast.success("הגדרות נשמרו בהצלחה!")
   }
 
   const tabConfig: Record<string, { title: string; subtitle: string }> = {
@@ -100,6 +108,12 @@ function AdminDashboardContent() {
     showcase: { title: "תצוגת חדרים מתקדמת", subtitle: "תצוגה מקצועית של חדרים עם תמונות ומידע (Sunday)" },
     pricing: { title: "ניהול תמחור", subtitle: "הגדר מחירים דינמיים לפי תאריכים" },
     promotions: { title: "ניהול מבצעים", subtitle: "צור ונהל מבצעים ומבצעים מיוחדים למובייל" },
+    templates: { title: "ניהול טמפלטים", subtitle: "שליטה מלאה על כל הטמפלטים, סטטוס והרשאות" },
+    activitylogs: { title: "יומן פעילות", subtitle: "מעקב אחר כל הפעילות במערכת" },
+    sessions: { title: "כניסות משתמשים", subtitle: "ניהול סשנים פעילים והיסטוריה" },
+    systemlogs: { title: "לוגים", subtitle: "לוגים טכניים ושגיאות מערכת" },
+    knowledge: { title: "מרכז ידע והנחיות", subtitle: "מדריכים, הנחיות ומדיניות מערכת" },
+    permissions: { title: "ניהול הרשאות", subtitle: "הגדר הרשאות לטמפלטים ומשתמשים" },
     engines: { title: "הגדרות מנועים", subtitle: "הפעל וכבה מנועי הזמנות והגדר את ה-API" },
     agents: { title: "ניהול סוכנים", subtitle: "צור ונהל סוכני AI בעלי התמחויות שונות" },
     aiconfig: { title: "הגדרות AI", subtitle: "הנחיות, ידע וסגנון לצ'אט AI" },
@@ -110,7 +124,13 @@ function AdminDashboardContent() {
 
   return (
     <div className="min-h-screen bg-background dark" dir="rtl">
-      {!isMobile && (
+      {isMobile ? (
+        <AdminDrawer
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          hotelName={currentHotel?.name || hotel.name}
+        />
+      ) : (
         <AdminSidebar
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -137,21 +157,21 @@ function AdminDashboardContent() {
                 <StatsCard
                   title="צ'ק-אין היום"
                   value={stats.todayCheckIns}
-                  icon={DoorOpenIcon}
+                  icon={<DoorOpenIcon className="h-5 w-5" />}
                   subtitle="הגעות צפויות"
                   iconClassName="bg-green-500/10"
                 />
                 <StatsCard
                   title="צ'ק-אאוט היום"
                   value={stats.todayCheckOuts}
-                  icon={DoorClosedIcon}
+                  icon={<DoorClosedIcon className="h-5 w-5" />}
                   subtitle="עזיבות צפויות"
                   iconClassName="bg-blue-500/10"
                 />
                 <StatsCard
                   title="תפוסה"
                   value={`${stats.occupancyRate}%`}
-                  icon={TrendingUpIcon}
+                  icon={<TrendingUpIcon className="h-5 w-5" />}
                   subtitle={`${stats.totalRooms - stats.availableRooms}/${stats.totalRooms} חדרים`}
                   trend={{ value: 12, isPositive: true }}
                   iconClassName="bg-purple-500/10"
@@ -159,7 +179,7 @@ function AdminDashboardContent() {
                 <StatsCard
                   title="הכנסות חודשיות"
                   value={formatPrice(stats.monthlyRevenue)}
-                  icon={DollarSignIcon}
+                  icon={<DollarSignIcon className="h-5 w-5" />}
                   subtitle={`${stats.monthlyBookings} הזמנות`}
                   trend={{ value: 8, isPositive: true }}
                   iconClassName="bg-yellow-500/10"
@@ -190,6 +210,12 @@ function AdminDashboardContent() {
           {activeTab === "showcase" && <RoomsShowcase />}
           {activeTab === "pricing" && <PricingCalendar rooms={mockRooms} />}
           {activeTab === "promotions" && <PromotionsManagement />}
+          {activeTab === "templates" && <TemplatesManagement />}
+          {activeTab === "activitylogs" && <ActivityLogsManagement />}
+          {activeTab === "sessions" && <SessionsManagement />}
+          {activeTab === "systemlogs" && <div className="text-center py-12 text-muted-foreground">לוגים טכניים - בקרוב</div>}
+          {activeTab === "knowledge" && <KnowledgeBaseManagement />}
+          {activeTab === "permissions" && <div className="text-center py-12 text-muted-foreground">ניהול הרשאות - בקרוב</div>}
           {activeTab === "engines" && <EngineSettings />}
           {activeTab === "agents" && <AgentsManagement />}
           {activeTab === "aiconfig" && <AiSettings />}
@@ -230,8 +256,10 @@ function AdminDashboardContent() {
 
 export default function AdminDashboard() {
   return (
-    <HotelConfigProvider>
-      <AdminDashboardContent />
-    </HotelConfigProvider>
+    <ErrorBoundary>
+      <HotelConfigProvider>
+        <AdminDashboardContent />
+      </HotelConfigProvider>
+    </ErrorBoundary>
   )
 }

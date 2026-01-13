@@ -1,0 +1,464 @@
+// Prisma Schema for Booking Engine
+// Database: PostgreSQL (Supabase)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER MANAGEMENT
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  image         String?
+  googleId      String?   @map("google_id")
+  role          Role      @default(USER)
+  emailVerified DateTime? @map("email_verified")
+  
+  // Relations
+  hotels        Hotel[]
+  bookings      Booking[]
+  sessions      Session[]
+  activityLogs  ActivityLog[]
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+  HOTEL_MANAGER
+}
+
+// ============================================
+// HOTEL MANAGEMENT
+// ============================================
+
+model Hotel {
+  id            String    @id @default(cuid())
+  name          String
+  slug          String    @unique
+  description   String?
+  address       String?
+  city          String?
+  country       String?
+  phone         String?
+  email         String?
+  website       String?
+  currency      String    @default("ILS")
+  timezone      String    @default("Asia/Jerusalem")
+  
+  // Settings as JSON
+  settings      Json?
+  
+  // Medici Integration
+  mediciHotelId String?   @map("medici_hotel_id")
+  mediciEnabled Boolean   @default(false) @map("medici_enabled")
+  
+  // Owner
+  userId        String    @map("user_id")
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Relations
+  rooms         Room[]
+  bookings      Booking[]
+  promotions    Promotion[]
+  templates     TemplateConfig[]
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("hotels")
+}
+
+// ============================================
+// ROOMS & AVAILABILITY
+// ============================================
+
+model Room {
+  id            String    @id @default(cuid())
+  hotelId       String    @map("hotel_id")
+  hotel         Hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  
+  name          String
+  type          String
+  description   String?
+  maxOccupancy  Int       @default(2) @map("max_occupancy")
+  basePrice     Float     @map("base_price")
+  
+  // Room details
+  size          Int?      // Square meters
+  bedType       String?   @map("bed_type")
+  amenities     String[]  // Array of amenities
+  images        String[]  // Array of image URLs
+  
+  // Status
+  isActive      Boolean   @default(true) @map("is_active")
+  
+  // Relations
+  availability  RoomAvailability[]
+  bookings      Booking[]
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("rooms")
+}
+
+model RoomAvailability {
+  id            String    @id @default(cuid())
+  roomId        String    @map("room_id")
+  room          Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  date          DateTime  @db.Date
+  available     Boolean   @default(true)
+  price         Float?    // Override price for this date
+  minStay       Int?      @map("min_stay") // Minimum nights
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@unique([roomId, date])
+  @@index([roomId, date])
+  @@map("room_availability")
+}
+
+// ============================================
+// BOOKINGS
+// ============================================
+
+model Booking {
+  id                String        @id @default(cuid())
+  bookingReference  String        @unique @map("booking_reference")
+  
+  // User & Hotel
+  userId            String        @map("user_id")
+  user              User          @relation(fields: [userId], references: [id])
+  hotelId           String        @map("hotel_id")
+  hotel             Hotel         @relation(fields: [hotelId], references: [id])
+  roomId            String        @map("room_id")
+  room              Room          @relation(fields: [roomId], references: [id])
+  
+  // Dates
+  checkIn           DateTime      @map("check_in") @db.Date
+  checkOut          DateTime      @map("check_out") @db.Date
+  nights            Int
+  
+  // Guests
+  adults            Int           @default(1)
+  children          Int           @default(0)
+  guestName         String        @map("guest_name")
+  guestEmail        String        @map("guest_email")
+  guestPhone        String?       @map("guest_phone")
+  guestDetails      Json?         @map("guest_details")
+  
+  // Pricing
+  roomPrice         Float         @map("room_price")
+  taxesAndFees      Float         @default(0) @map("taxes_and_fees")
+  totalPrice        Float         @map("total_price")
+  currency          String        @default("ILS")
+  
+  // Status
+  status            BookingStatus @default(PENDING)
+  
+  // Payment
+  paymentId         String?       @map("payment_id")
+  paymentStatus     PaymentStatus @default(PENDING) @map("payment_status")
+  paidAmount        Float?        @map("paid_amount")
+  
+  // Medici Integration
+  mediciBookingId   String?       @map("medici_booking_id")
+  supplierReference String?       @map("supplier_reference")
+  
+  // Special requests
+  specialRequests   String?       @map("special_requests")
+  
+  // Cancellation
+  cancelledAt       DateTime?     @map("cancelled_at")
+  cancellationReason String?      @map("cancellation_reason")
+  refundAmount      Float?        @map("refund_amount")
+  
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([hotelId])
+  @@index([status])
+  @@index([checkIn, checkOut])
+  @@map("bookings")
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  CHECKED_OUT
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+// ============================================
+// SESSIONS & ACTIVITY
+// ============================================
+
+model Session {
+  id            String    @id @default(cuid())
+  userId        String    @map("user_id")
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  token         String    @unique
+  expiresAt     DateTime  @map("expires_at")
+  
+  // Details
+  ipAddress     String?   @map("ip_address")
+  userAgent     String?   @map("user_agent")
+  device        String?
+  browser       String?
+  location      String?
+  
+  // Activity
+  lastActivity  DateTime  @default(now()) @map("last_activity")
+  pageViews     Int       @default(0) @map("page_views")
+  actions       Int       @default(0)
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model ActivityLog {
+  id            String    @id @default(cuid())
+  userId        String?   @map("user_id")
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // Action details
+  type          String    // login, logout, booking, cancellation, etc.
+  action        String
+  description   String?
+  
+  // Context
+  templateId    String?   @map("template_id")
+  resourceId    String?   @map("resource_id")
+  resourceType  String?   @map("resource_type")
+  
+  // Request details
+  ipAddress     String?   @map("ip_address")
+  userAgent     String?   @map("user_agent")
+  
+  // Result
+  success       Boolean   @default(true)
+  duration      Int?      // milliseconds
+  errorMessage  String?   @map("error_message")
+  
+  // Metadata
+  metadata      Json?
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+// ============================================
+// PROMOTIONS & LOYALTY
+// ============================================
+
+model Promotion {
+  id            String    @id @default(cuid())
+  hotelId       String    @map("hotel_id")
+  hotel         Hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  
+  code          String    @unique
+  name          String
+  description   String?
+  
+  // Discount
+  discountType  DiscountType @map("discount_type")
+  discountValue Float     @map("discount_value")
+  
+  // Conditions
+  minNights     Int?      @map("min_nights")
+  minAmount     Float?    @map("min_amount")
+  maxUses       Int?      @map("max_uses")
+  usedCount     Int       @default(0) @map("used_count")
+  
+  // Validity
+  validFrom     DateTime  @map("valid_from")
+  validUntil    DateTime  @map("valid_until")
+  
+  // Status
+  isActive      Boolean   @default(true) @map("is_active")
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([code])
+  @@index([hotelId])
+  @@map("promotions")
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  FREE_NIGHT
+}
+
+// ============================================
+// TEMPLATES & CONFIGURATION
+// ============================================
+
+model TemplateConfig {
+  id            String    @id @default(cuid())
+  hotelId       String?   @map("hotel_id")
+  hotel         Hotel?    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  
+  templateId    String    @map("template_id") // e.g., "sunday", "nara"
+  name          String
+  displayName   String    @map("display_name")
+  
+  // Status
+  status        TemplateStatus @default(INACTIVE)
+  isEnabled     Boolean   @default(false) @map("is_enabled")
+  
+  // Configuration
+  settings      Json?
+  permissions   Json?
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@unique([hotelId, templateId])
+  @@map("template_configs")
+}
+
+enum TemplateStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+  DEVELOPMENT
+}
+
+// ============================================
+// KNOWLEDGE BASE
+// ============================================
+
+model KnowledgeArticle {
+  id            String    @id @default(cuid())
+  title         String
+  slug          String    @unique
+  content       String    @db.Text
+  summary       String?
+  
+  // Organization
+  category      String
+  tags          String[]
+  difficulty    String?   // beginner, intermediate, advanced
+  
+  // Templates related
+  relatedTemplates String[] @map("related_templates")
+  
+  // Stats
+  views         Int       @default(0)
+  helpfulCount  Int       @default(0) @map("helpful_count")
+  notHelpfulCount Int     @default(0) @map("not_helpful_count")
+  
+  // Publishing
+  published     Boolean   @default(false)
+  publishedAt   DateTime? @map("published_at")
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([slug])
+  @@index([category])
+  @@map("knowledge_articles")
+}
+
+model SystemGuideline {
+  id            String    @id @default(cuid())
+  title         String
+  content       String    @db.Text
+  
+  // Classification
+  category      String
+  priority      String    @default("medium")
+  mandatory     Boolean   @default(false)
+  
+  // Enforcement
+  enforcedRules String[]  @map("enforced_rules")
+  applicableRoles String[] @map("applicable_roles")
+  applicableTemplates String[] @map("applicable_templates")
+  
+  // Status
+  isActive      Boolean   @default(true) @map("is_active")
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("system_guidelines")
+}
+
+// ============================================
+// SYSTEM LOGS
+// ============================================
+
+model SystemLog {
+  id            String    @id @default(cuid())
+  
+  level         LogLevel
+  category      String
+  message       String
+  
+  // Details
+  details       Json?
+  stackTrace    String?   @db.Text @map("stack_trace")
+  
+  // Context
+  userId        String?   @map("user_id")
+  requestId     String?   @map("request_id")
+  
+  // Resolution
+  resolved      Boolean   @default(false)
+  resolvedAt    DateTime? @map("resolved_at")
+  resolvedBy    String?   @map("resolved_by")
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([level])
+  @@index([category])
+  @@index([createdAt])
+  @@map("system_logs")
+}
+
+enum LogLevel {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+}

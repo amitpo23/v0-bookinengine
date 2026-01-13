@@ -27,6 +27,9 @@ import {
   Globe,
   Shield
 } from "lucide-react";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { AnimatedCard, showToast } from "@/components/templates/enhanced-ui";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
   id: string;
@@ -37,9 +40,11 @@ interface Message {
 
 export default function KnowaachatTemplate() {
   return (
-    <I18nProvider>
-      <KnowaachatContent />
-    </I18nProvider>
+    <ErrorBoundary>
+      <I18nProvider>
+        <KnowaachatContent />
+      </I18nProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -80,6 +80,22 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 # Tavily API (Optional - for enhanced hotel information via Sunday components)
 TAVILY_API_KEY=your_tavily_api_key_here
+
+# Google Trends & Flights (Optional - NEW!)
+SERPAPI_KEY=your_serpapi_key_here                    # For both Trends + Flights
+# OR use Amadeus for flights:
+AMADEUS_CLIENT_ID=your_amadeus_client_id
+AMADEUS_CLIENT_SECRET=your_amadeus_client_secret
+AMADEUS_API_URL=https://test.api.amadeus.com        # or production
+FLIGHT_API_PROVIDER=amadeus                          # or 'serpapi'
+
+# AI/LLM Providers (Optional)
+OPENAI_API_KEY=your_openai_key                       # For GPT-4
+ANTHROPIC_API_KEY=your_anthropic_key                 # For Claude
+GROQ_API_KEY=your_groq_key                           # For Llama (Fast & Free!)
+AI_PROVIDER=groq                                      # Default: groq
+```
+
 ## 📚 Documentation
 
 ### קבצי תיעוד מרכזיים:
@@ -312,6 +328,9 @@ New "תצוגת חדרים" tab with:
 2. **[MEDICI_API_EXAMPLES.md](docs/MEDICI_API_EXAMPLES.md)** - דוגמאות אמיתיות מה-API
 3. **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** - סיכום מקיף של הפרויקט
 4. **[SUNDAY_INTEGRATION.md](docs/SUNDAY_INTEGRATION.md)** - מדריך אינטגרציית Sunday
+5. **[TAVILY_INTEGRATION.md](docs/TAVILY_INTEGRATION.md)** - הגדרת Tavily API
+6. **[GOOGLE_TRENDS_FLIGHTS_API.md](GOOGLE_TRENDS_FLIGHTS_API.md)** - 🆕 Google Trends & Flights API
+7. **[PRIVACY_LAW_COMPLIANCE.md](PRIVACY_LAW_COMPLIANCE.md)** - תיקון 14 לחוק הגנת הפרטיות
 5. **[TAVILY_INTEGRATION.md](docs/TAVILY_INTEGRATION.md)** - הגדרת Tavily API
 6. **[VERCEL_DEPLOYMENT.md](docs/VERCEL_DEPLOYMENT.md)** - מדריך פריסה לפרודקשיין
 

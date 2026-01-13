@@ -1,0 +1,12 @@
+var R=require("../../../../chunks/[turbopack]_runtime.js")("server/app/api/admin/audit-logs/route.js")
+R.c("server/chunks/[root-of-the-server]__1fdf0119._.js")
+R.c("server/chunks/52597_next_dist_esm_build_templates_app-route_cf2eb6a3.js")
+R.c("server/chunks/52597_next_f57568cd._.js")
+R.c("server/chunks/52597_next_d7937d3f._.js")
+R.c("server/chunks/[root-of-the-server]__34a6df23._.js")
+R.c("server/chunks/[root-of-the-server]__c6d61354._.js")
+R.c("server/chunks/v0-bookinengine_lib_supabase_ts_d07ddccc._.js")
+R.c("server/chunks/52597_next_dist_399ad263._.js")
+R.c("server/chunks/a8a25__next-internal_server_app_api_admin_audit-logs_route_actions_26f3068f.js")
+R.m(51803)
+module.exports=R.m(51803).exports

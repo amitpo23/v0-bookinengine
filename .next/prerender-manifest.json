@@ -227,6 +227,31 @@
         "x-next-revalidate-tag-token"
       ]
     },
+    "/ai-booking": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/ai-booking",
+      "dataRoute": "/ai-booking.rsc",
+      "prefetchDataRoute": null,
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
     "/ai-chat": {
       "experimentalBypassFor": [
         {
@@ -317,6 +342,56 @@
       "initialRevalidateSeconds": false,
       "srcRoute": "/api-test",
       "dataRoute": "/api-test.rsc",
+      "prefetchDataRoute": null,
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/booking-flow": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/booking-flow",
+      "dataRoute": "/booking-flow.rsc",
+      "prefetchDataRoute": null,
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/flights-trends": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/flights-trends",
+      "dataRoute": "/flights-trends.rsc",
       "prefetchDataRoute": null,
       "allowHeader": [
         "host",
@@ -702,6 +777,31 @@
         "x-next-revalidate-tag-token"
       ]
     },
+    "/templates/sunday/components-demo": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/templates/sunday/components-demo",
+      "dataRoute": "/templates/sunday/components-demo.rsc",
+      "prefetchDataRoute": null,
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
     "/templates/sunday": {
       "experimentalBypassFor": [
         {
@@ -756,8 +856,8 @@
   "dynamicRoutes": {},
   "notFoundRoutes": [],
   "preview": {
-    "previewModeId": "5993c0da826a5795e63e830f8640bf49",
-    "previewModeSigningKey": "2eb0114e7244af35a2961ef297a08b2215e1acee34b104b23e2e8ad76dee049c",
-    "previewModeEncryptionKey": "ddc456557c80489be2b56485a4f90d8f15ee7716edae6862b5c1ff48ecbebf3b"
+    "previewModeId": "bb2c05a53b60cac1609107cbca080ea3",
+    "previewModeSigningKey": "4a4677ee04664cd67c9a2d807ac28e9919c5779e3a6cef5fc4435290bb1bec00",
+    "previewModeEncryptionKey": "f118400d09fb794a7e3da75d21787f7e2f07854f6f7381ab7d6452e86a39fe48"
   }
 }

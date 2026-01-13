@@ -16,6 +16,10 @@ import { addDays } from "date-fns"
 import { Loader2, AlertCircle, ArrowRight, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { ErrorBoundary } from "@/components/error-boundary"
+import { HotelCardSkeleton } from "@/components/ui/skeleton"
+import { toast } from "sonner"
+import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import { LoginButton } from "@/components/auth/login-button"
 
@@ -52,7 +56,7 @@ const addons = [
   },
 ]
 
-export default function NaraTemplatePage() {
+function NaraTemplateContent() {
   const booking = useBookingEngine()
   const [showCalendar, setShowCalendar] = useState(false)
   const [selectedAddons, setSelectedAddons] = useState<string[]>([])
@@ -200,15 +204,29 @@ export default function NaraTemplatePage() {
         </div>
       )}
 
-      {/* Loading Overlay */}
-      {booking.isLoading && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 flex flex-col items-center gap-4">
-            <Loader2 className="w-8 h-8 animate-spin text-[#0a3d62]" />
-            <p className="text-lg">טוען...</p>
-          </div>
-        </div>
-      )}
+      {/* Loading Overlay with Skeleton */}
+      <AnimatePresence>
+        {booking.isLoading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-white rounded-lg p-8 flex flex-col items-center gap-4 max-w-md"
+            >
+              <Loader2 className="w-12 h-12 animate-spin text-[#0a3d62]" />
+              <p className="text-lg font-medium">מחפש חדרים זמינים...</p>
+              <div className="w-full space-y-3 mt-4">
+                <HotelCardSkeleton />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* STEP: Search */}
       {booking.step === "search" && (
@@ -377,5 +395,13 @@ export default function NaraTemplatePage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function NaraTemplatePage() {
+  return (
+    <ErrorBoundary>
+      <NaraTemplateContent />
+    </ErrorBoundary>
   )
 }

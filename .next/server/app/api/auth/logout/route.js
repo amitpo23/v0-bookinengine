@@ -1,8 +1,8 @@
 var R=require("../../../../chunks/[turbopack]_runtime.js")("server/app/api/auth/logout/route.js")
-R.c("server/chunks/[root-of-the-server]__5c2cda44._.js")
-R.c("server/chunks/67b5b_next_dist_8cd8ec1c._.js")
-R.c("server/chunks/67b5b_next_49bff4e6._.js")
-R.c("server/chunks/[root-of-the-server]__c52bcab3._.js")
-R.c("server/chunks/_next-internal_server_app_api_auth_logout_route_actions_5aa6c6ca.js")
-R.m(87950)
-module.exports=R.m(87950).exports
+R.c("server/chunks/[root-of-the-server]__fbf6ed85._.js")
+R.c("server/chunks/52597_next_dist_399ad263._.js")
+R.c("server/chunks/52597_next_f57568cd._.js")
+R.c("server/chunks/[root-of-the-server]__34a6df23._.js")
+R.c("server/chunks/v0-bookinengine__next-internal_server_app_api_auth_logout_route_actions_5e730a34.js")
+R.m(15624)
+module.exports=R.m(15624).exports

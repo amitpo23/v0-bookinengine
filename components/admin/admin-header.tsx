@@ -107,6 +107,7 @@ interface AdminHeaderProps {
   searchPlaceholder?: string
   onSearch?: (query: string) => void
   actions?: React.ReactNode
+  children?: React.ReactNode
 }
 
 export function AdminHeader({
@@ -117,6 +118,7 @@ export function AdminHeader({
   searchPlaceholder = "חיפוש...",
   onSearch,
   actions,
+  children,
 }: AdminHeaderProps) {
   const [searchQuery, setSearchQuery] = useState("")
 
@@ -201,6 +203,7 @@ export function AdminHeader({
           </DropdownMenu>
 
           {actions}
+          {children}
 
           <Button size="sm" className="gap-2 hidden sm:flex">
             <PlusIcon className="h-4 w-4" />

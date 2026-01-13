@@ -1,5 +1,6 @@
 "use client"
 
+import { ErrorBoundary } from "@/components/error-boundary"
 import { PromotionBanner } from "@/components/promotions/promotion-banner"
 import { LuxurySearchBar } from "@/components/booking/templates/luxury"
 import { EnhancedSearchResults } from "@/components/booking/enhanced-search-results"
@@ -10,6 +11,8 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
 import { LoginButton } from "@/components/auth/login-button"
+import { EnhancedLoadingOverlay, AnimatedBookingSteps, showToast } from "@/components/templates/enhanced-ui"
+import { motion, AnimatePresence } from "framer-motion"
 
 const STEPS = [
   { id: "search", label: "חיפוש" },
@@ -19,18 +22,23 @@ const STEPS = [
   { id: "confirmation", label: "אישור" },
 ]
 
-export default function LuxuryTemplatePage() {
+function LuxuryTemplateContent() {
   const booking = useBookingEngine()
   const today = new Date()
 
   const handleSearch = async (data: any) => {
-    await booking.searchHotels({
-      checkIn: data.checkIn,
-      checkOut: data.checkOut,
-      adults: data.guests,
-      children: [],
-      hotelName: "Dizengoff Inn",
-    })
+    try {
+      await booking.searchHotels({
+        checkIn: data.checkIn,
+        checkOut: data.checkOut,
+        adults: data.guests,
+        children: [],
+        hotelName: "Dizengoff Inn",
+      })
+      showToast.success('נמצאו סוויטות!', `${booking.searchResults.length} אפשרויות יוקרתיות`)
+    } catch (error) {
+      showToast.error('שגיאה בחיפוש', 'נסה שוב מאוחר יותר')
+    }
   }
 
   // Transform API results to template format
@@ -94,7 +102,7 @@ export default function LuxuryTemplatePage() {
       {/* Booking Steps */}
       <div className="bg-white border-b border-stone-200">
         <div className="max-w-5xl mx-auto px-6">
-          <BookingSteps steps={STEPS} currentStep={booking.step} variant="luxury" />
+          <AnimatedBookingSteps steps={STEPS} currentStep={booking.step} />
         </div>
       </div>
 
@@ -112,14 +120,10 @@ export default function LuxuryTemplatePage() {
       )}
 
       {/* Loading */}
-      {booking.isLoading && (
-        <div className="fixed inset-0 bg-stone-900/30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 flex flex-col items-center gap-4 shadow-xl">
-            <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
-            <p className="text-stone-800 text-lg font-serif">טוען...</p>
-          </div>
-        </div>
-      )}
+      <EnhancedLoadingOverlay
+        isLoading={booking.isLoading}
+        variant="light"
+      />
 
       {/* STEP: Search */}
       {booking.step === "search" && (
@@ -221,5 +225,13 @@ export default function LuxuryTemplatePage() {
           </div>
         )}
     </div>
+  )
+}
+
+export default function LuxuryTemplatePage() {
+  return (
+    <ErrorBoundary>
+      <LuxuryTemplateContent />
+    </ErrorBoundary>
   )
 }

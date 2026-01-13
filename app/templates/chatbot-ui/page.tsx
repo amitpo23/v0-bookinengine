@@ -27,6 +27,9 @@ import {
   Zap
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { AnimatedCard, showToast } from "@/components/templates/enhanced-ui";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
   id: string;
@@ -380,8 +383,10 @@ function ChatbotUIContent() {
 
 export default function ChatbotUITemplate() {
   return (
-    <I18nProvider>
-      <ChatbotUIContent />
-    </I18nProvider>
+    <ErrorBoundary>
+      <I18nProvider>
+        <ChatbotUIContent />
+      </I18nProvider>
+    </ErrorBoundary>
   );
 }

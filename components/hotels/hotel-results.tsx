@@ -27,6 +27,7 @@ type HotelResultsProps = {
   searchQuery?: SearchQuery;
   onSelectHotel: (hotel: HotelData) => void;
   isLoading?: boolean;
+  viewMode?: 'grid' | 'list';
 };
 
 export function HotelResults({
@@ -34,6 +35,7 @@ export function HotelResults({
   searchQuery,
   onSelectHotel,
   isLoading = false,
+  viewMode = 'list',
 }: HotelResultsProps) {
   const [progress, setProgress] = useState(0);
 
@@ -165,7 +167,7 @@ export function HotelResults({
     : 2;
 
   return (
-    <div className="@container/hotels w-full space-y-2 md:space-y-3">
+    <div className={`@container/hotels w-full ${viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6' : 'space-y-2 md:space-y-3'}`}>
       {/* Hotels */}
       {hotels.map((hotel, index) => (
         <HotelCard

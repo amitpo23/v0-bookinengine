@@ -8,6 +8,16 @@ import { useBookingEngine } from "@/hooks/use-booking-engine"
 import { Loader2, AlertCircle, ArrowRight, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { ErrorBoundary } from "@/components/error-boundary"
+import {
+  EnhancedLoadingOverlay,
+  AnimatedBookingSteps,
+  AnimatedSearchResults,
+  AnimatedCard,
+  EmptyState,
+  ErrorState,
+  showToast,
+} from "@/components/templates/enhanced-ui"
 import Link from "next/link"
 import { LoginButton } from "@/components/auth/login-button"
 
@@ -19,18 +29,25 @@ const STEPS = [
   { id: "confirmation", label: "סיום" },
 ]
 
-export default function FamilyTemplatePage() {
+function FamilyTemplateContent() {
   const booking = useBookingEngine()
   const today = new Date()
 
   const handleSearch = async (data: any) => {
-    await booking.searchHotels({
-      checkIn: data.checkIn,
-      checkOut: data.checkOut,
-      adults: data.adults,
-      children: data.childrenAges || [],
-      hotelName: "Dizengoff Inn", // שימוש בשם מלון אמיתי Dizengoff Inn במקום נארה
-    })
+    try {
+      await booking.searchHotels({
+        checkIn: data.checkIn,
+        checkOut: data.checkOut,
+        adults: data.adults,
+        children: data.childrenAges || [],
+        hotelName: "Dizengoff Inn",
+      })
+      if (booking.searchResults.length > 0) {
+        showToast.success('נמצאו חדרים!', `${booking.searchResults.length} אפשרויות זמינות`)
+      }
+    } catch (error) {
+      showToast.error('שגיאה בחיפוש', 'נסה שוב מאוחר יותר')
+    }
   }
 
   // Transform API results to template format
@@ -152,12 +169,6 @@ export default function FamilyTemplatePage() {
           <div className="max-w-5xl mx-auto px-6 py-8">
             <FamilySearchBar
               onSearch={handleSearch}
-              initialData={{
-                checkIn: booking.searchParams?.checkIn,
-                checkOut: booking.searchParams?.checkOut,
-                adults: booking.searchParams?.adults,
-                children: booking.searchParams?.children.length || 0,
-              }}
             />
           </div>
           <div className="max-w-6xl mx-auto px-6 pb-16">
@@ -226,5 +237,13 @@ export default function FamilyTemplatePage() {
           </div>
         )}
     </div>
+  )
+}
+
+export default function FamilyTemplatePage() {
+  return (
+    <ErrorBoundary>
+      <FamilyTemplateContent />
+    </ErrorBoundary>
   )
 }

@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { SessionProvider } from '@/components/providers/session-provider'
 import { FeaturesProvider } from '@/lib/features-context'
+import { SaaSProvider } from '@/lib/saas-context'
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
 import { AffiliateTracker } from '@/components/analytics/AffiliateTracker'
 
@@ -45,7 +46,9 @@ export default function RootLayout({
         <AffiliateTracker />
         <SessionProvider>
           <FeaturesProvider>
-            {children}
+            <SaaSProvider>
+              {children}
+            </SaaSProvider>
           </FeaturesProvider>
         </SessionProvider>
       </body>    </html>

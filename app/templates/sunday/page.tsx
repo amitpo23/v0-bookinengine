@@ -12,8 +12,19 @@ import { I18nProvider, useI18n } from "@/lib/i18n/context"
 import { LanguageSwitcher } from "@/components/booking/language-switcher"
 import { LoginButton } from "@/components/auth/login-button"
 import { SocialShare } from "@/components/ui/social-share"
-import { HotelDetailsEnhanced } from "@/components/hotels/hotel-details-enhanced"
+import { 
+  HotelDetailsEnhanced,
+  HotelCard,
+  HotelResults,
+  HotelRating,
+  HotelAmenities,
+  HotelInfo,
+  HotelImageGallery
+} from "@/components/hotels"
 import type { HotelData } from "@/types/hotel-types"
+import { ErrorBoundary } from "@/components/error-boundary"
+import { EnhancedLoadingOverlay, AnimatedCard, showToast } from "@/components/templates/enhanced-ui"
+import { motion, AnimatePresence } from "framer-motion"
 
 // Demo hotels data
 const demoHotels: HotelData[] = [
@@ -88,6 +99,7 @@ function SundayTemplateContent() {
     setTimeout(() => {
       setHotels(demoHotels)
       setIsSearching(false)
+      showToast.success('נמצאו מלונות!', `${demoHotels.length} אפשרויות`)
     }, 1500)
   }
 
@@ -110,6 +122,12 @@ function SundayTemplateContent() {
             </Link>
             
             <div className="flex items-center gap-4">
+              <Link href="/templates/sunday/components-demo">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Grid3x3 className="w-3 h-3" />
+                  {locale === 'he' ? 'דוגמאות רכיבים' : 'Components Demo'}
+                </Button>
+              </Link>
               <Badge variant="outline" className="bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0">
                 <Sparkles className="w-3 h-3 mr-1" />
                 {locale === 'he' ? 'Sunday פרימיום' : 'Sunday Premium'}
@@ -287,54 +305,18 @@ function SundayTemplateContent() {
               </div>
             </div>
 
-            {/* Hotels Grid */}
+            {/* Hotels Results using Sunday Components */}
             {isSearching ? (
               <div className="flex items-center justify-center py-20">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
               </div>
             ) : (
-              <div className={`grid gap-6 ${viewMode === 'grid' ? 'md:grid-cols-3' : 'md:grid-cols-1'}`}>
-                {hotels.map((hotel) => (
-                  <Card 
-                    key={hotel.hotelId}
-                    className="overflow-hidden hover:shadow-xl transition-all cursor-pointer"
-                    onClick={() => handleSelectHotel(hotel)}
-                  >
-                    <div className="relative h-48 overflow-hidden">
-                      <img 
-                        src={hotel.imageUrl} 
-                        alt={hotel.hotelName}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute top-3 right-3">
-                        <Badge className="bg-white text-gray-900">
-                          {hotel.stars} <Star className="w-3 h-3 ml-1 fill-yellow-400 text-yellow-400" />
-                        </Badge>
-                      </div>
-                    </div>
-                    <CardContent className="p-4">
-                      <h3 className="text-xl font-bold mb-2">{hotel.hotelName}</h3>
-                      <div className="flex items-center gap-2 text-gray-600 mb-3">
-                        <MapPin className="h-4 w-4" />
-                        <span className="text-sm">{hotel.address}</span>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-3">{hotel.description}</p>
-                      <div className="flex flex-wrap gap-1">
-                        {hotel.facilities.slice(0, 3).map((facility) => (
-                          <Badge key={facility} variant="outline" className="text-xs">
-                            {facility}
-                          </Badge>
-                        ))}
-                        {hotel.facilities.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{hotel.facilities.length - 3}
-                          </Badge>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              <HotelResults
+                hotels={hotels}
+                viewMode={viewMode}
+                onSelectHotel={handleSelectHotel}
+                isLoading={isSearching}
+              />
             )}
           </div>
         </section>
@@ -367,14 +349,112 @@ function SundayTemplateContent() {
         <div className="container mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">
-              {locale === 'he' ? 'תכונות מתקדמות' : 'Advanced Features'}
+              {locale === 'he' ? 'רכיבי Sunday המקצועיים' : 'Sunday Professional Components'}
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               {locale === 'he'
-                ? 'טמפלט Sunday משתמש ברכיבי UI המתקדמים ביותר'
-                : 'Sunday template uses the most advanced UI components'
+                ? 'טמפלט Sunday משתמש ב-8 רכיבי UI מתקדמים לחווית משתמש מושלמת'
+                : 'Sunday template uses 8 advanced UI components for perfect user experience'
               }
             </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-12">
+            <Card className="p-4 hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <Grid3x3 className="h-5 w-5 text-blue-600" />
+                </div>
+                <h4 className="font-bold">HotelCard</h4>
+              </div>
+              <p className="text-xs text-gray-600">
+                {locale === 'he' ? 'כרטיס מלון מקצועי עם תמונות ומחירים' : 'Professional hotel card with images and pricing'}
+              </p>
+            </Card>
+
+            <Card className="p-4 hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                  <List className="h-5 w-5 text-purple-600" />
+                </div>
+                <h4 className="font-bold">HotelResults</h4>
+              </div>
+              <p className="text-xs text-gray-600">
+                {locale === 'he' ? 'תצוגת תוצאות עם אנימציות טעינה' : 'Results display with loading animations'}
+              </p>
+            </Card>
+
+            <Card className="p-4 hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center">
+                  <Star className="h-5 w-5 text-yellow-600" />
+                </div>
+                <h4 className="font-bold">HotelRating</h4>
+              </div>
+              <p className="text-xs text-gray-600">
+                {locale === 'he' ? 'דירוג כוכבים גמיש' : 'Flexible star rating'}
+              </p>
+            </Card>
+
+            <Card className="p-4 hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                  <MapPin className="h-5 w-5 text-green-600" />
+                </div>
+                <h4 className="font-bold">HotelInfo</h4>
+              </div>
+              <p className="text-xs text-gray-600">
+                {locale === 'he' ? 'פרטי מלון מפורטים' : 'Detailed hotel information'}
+              </p>
+            </Card>
+
+            <Card className="p-4 hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-pink-100 flex items-center justify-center">
+                  <Sparkles className="h-5 w-5 text-pink-600" />
+                </div>
+                <h4 className="font-bold">HotelAmenities</h4>
+              </div>
+              <p className="text-xs text-gray-600">
+                {locale === 'he' ? 'תצוגת שירותים עם אייקונים' : 'Amenities display with icons'}
+              </p>
+            </Card>
+
+            <Card className="p-4 hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-indigo-600" />
+                </div>
+                <h4 className="font-bold">ImageGallery</h4>
+              </div>
+              <p className="text-xs text-gray-600">
+                {locale === 'he' ? 'גלריית תמונות רספונסיבית' : 'Responsive image gallery'}
+              </p>
+            </Card>
+
+            <Card className="p-4 hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                  <Search className="h-5 w-5 text-orange-600" />
+                </div>
+                <h4 className="font-bold">ImageModal</h4>
+              </div>
+              <p className="text-xs text-gray-600">
+                {locale === 'he' ? 'מודל תמונות מלא מסך' : 'Full-screen image modal'}
+              </p>
+            </Card>
+
+            <Card className="p-4 hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center">
+                  <Sparkles className="h-5 w-5 text-teal-600" />
+                </div>
+                <h4 className="font-bold">DetailsEnhanced</h4>
+              </div>
+              <p className="text-xs text-gray-600">
+                {locale === 'he' ? 'פרטים מתקדמים עם Tavily' : 'Advanced details with Tavily'}
+              </p>
+            </Card>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -455,8 +535,10 @@ function SundayTemplateContent() {
 
 export default function SundayTemplate() {
   return (
-    <I18nProvider>
-      <SundayTemplateContent />
-    </I18nProvider>
+    <ErrorBoundary>
+      <I18nProvider>
+        <SundayTemplateContent />
+      </I18nProvider>
+    </ErrorBoundary>
   )
 }

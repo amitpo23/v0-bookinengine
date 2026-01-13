@@ -21,6 +21,9 @@ import {
   Calendar,
   Loader2
 } from "lucide-react";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { AnimatedCard, showToast } from "@/components/templates/enhanced-ui";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
   id: string;
@@ -31,9 +34,11 @@ interface Message {
 
 export default function AITravelAgentTemplate() {
   return (
-    <I18nProvider>
-      <AITravelAgentContent />
-    </I18nProvider>
+    <ErrorBoundary>
+      <I18nProvider>
+        <AITravelAgentContent />
+      </I18nProvider>
+    </ErrorBoundary>
   );
 }
 

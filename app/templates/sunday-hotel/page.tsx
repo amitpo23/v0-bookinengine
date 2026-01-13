@@ -29,12 +29,17 @@ import {
   ChevronRight
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { AnimatedCard, showToast } from "@/components/templates/enhanced-ui";
+import { motion } from "framer-motion";
 
 export default function SundayHotelTemplate() {
   return (
-    <I18nProvider>
-      <SundayHotelContent />
-    </I18nProvider>
+    <ErrorBoundary>
+      <I18nProvider>
+        <SundayHotelContent />
+      </I18nProvider>
+    </ErrorBoundary>
   );
 }
 

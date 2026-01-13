@@ -1,0 +1,10 @@
+var R=require("../../../../chunks/[turbopack]_runtime.js")("server/app/api/booking/prebook-enhanced/route.js")
+R.c("server/chunks/[root-of-the-server]__85f6c367._.js")
+R.c("server/chunks/52597_date-fns_format_eff4308d.js")
+R.c("server/chunks/52597_next_dist_esm_build_templates_app-route_1702a306.js")
+R.c("server/chunks/[root-of-the-server]__34a6df23._.js")
+R.c("server/chunks/52597_next_dist_399ad263._.js")
+R.c("server/chunks/52597_next_f57568cd._.js")
+R.c("server/chunks/a8a25__next-internal_server_app_api_booking_prebook-enhanced_route_actions_5636313a.js")
+R.m(75428)
+module.exports=R.m(75428).exports

@@ -19,6 +19,9 @@ import { I18nProvider, useI18n } from "@/lib/i18n/context"
 import { LanguageSwitcher } from "@/components/booking/language-switcher"
 import { addDays } from "date-fns"
 import Link from "next/link"
+import { ErrorBoundary } from "@/components/error-boundary"
+import { AnimatedCard, showToast } from "@/components/templates/enhanced-ui"
+import { motion, AnimatePresence } from "framer-motion"
 
 function ScarletTemplateContent() {
   const { t, locale, dir } = useI18n()
@@ -805,8 +808,10 @@ function ScarletTemplateContent() {
 
 export default function ScarletTemplate() {
   return (
-    <I18nProvider defaultLocale="he">
-      <ScarletTemplateContent />
-    </I18nProvider>
+    <ErrorBoundary>
+      <I18nProvider defaultLocale="he">
+        <ScarletTemplateContent />
+      </I18nProvider>
+    </ErrorBoundary>
   )
 }

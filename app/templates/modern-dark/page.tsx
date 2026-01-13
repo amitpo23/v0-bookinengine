@@ -8,6 +8,10 @@ import { useBookingEngine } from "@/hooks/use-booking-engine"
 import { Loader2, AlertCircle, ArrowRight, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { ErrorBoundary } from "@/components/error-boundary"
+import { HotelCardSkeleton } from "@/components/ui/skeleton"
+import { toast } from "sonner"
+import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import { LoginButton } from "@/components/auth/login-button"
 
@@ -19,7 +23,7 @@ const STEPS = [
   { id: "confirmation", label: "אישור" },
 ]
 
-export default function ModernDarkTemplatePage() {
+function ModernDarkTemplateContent() {
   const booking = useBookingEngine()
   const today = new Date()
 
@@ -216,5 +220,12 @@ export default function ModernDarkTemplatePage() {
           </div>
         )}
     </div>
+  )
+}
+export default function ModernDarkPage() {
+  return (
+    <ErrorBoundary>
+      <ModernDarkTemplateContent />
+    </ErrorBoundary>
   )
 }

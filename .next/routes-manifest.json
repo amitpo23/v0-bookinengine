@@ -123,6 +123,12 @@
       "namedRegex": "^/admin/upload\\-images(?:/)?$"
     },
     {
+      "page": "/ai-booking",
+      "regex": "^/ai\\-booking(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/ai\\-booking(?:/)?$"
+    },
+    {
       "page": "/ai-chat",
       "regex": "^/ai\\-chat(?:/)?$",
       "routeKeys": {},
@@ -163,6 +169,12 @@
       "regex": "^/api/admin/audit/stats(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/admin/audit/stats(?:/)?$"
+    },
+    {
+      "page": "/api/admin/audit-logs",
+      "regex": "^/api/admin/audit\\-logs(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/audit\\-logs(?:/)?$"
     },
     {
       "page": "/api/admin/email",
@@ -231,6 +243,12 @@
       "namedRegex": "^/api/ai/hotel\\-info(?:/)?$"
     },
     {
+      "page": "/api/ai-chat",
+      "regex": "^/api/ai\\-chat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/ai\\-chat(?:/)?$"
+    },
+    {
       "page": "/api/ai-engines",
       "regex": "^/api/ai\\-engines(?:/)?$",
       "routeKeys": {},
@@ -241,6 +259,12 @@
       "regex": "^/api/ai\\-engines/chat(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/ai\\-engines/chat(?:/)?$"
+    },
+    {
+      "page": "/api/analytics/dashboard",
+      "regex": "^/api/analytics/dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/analytics/dashboard(?:/)?$"
     },
     {
       "page": "/api/auth/login",
@@ -279,6 +303,12 @@
       "namedRegex": "^/api/booking/prebook(?:/)?$"
     },
     {
+      "page": "/api/booking/prebook-enhanced",
+      "regex": "^/api/booking/prebook\\-enhanced(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/booking/prebook\\-enhanced(?:/)?$"
+    },
+    {
       "page": "/api/booking/quote",
       "regex": "^/api/booking/quote(?:/)?$",
       "routeKeys": {},
@@ -295,6 +325,24 @@
       "regex": "^/api/booking/search\\-protected(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/booking/search\\-protected(?:/)?$"
+    },
+    {
+      "page": "/api/bookings",
+      "regex": "^/api/bookings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/bookings(?:/)?$"
+    },
+    {
+      "page": "/api/bookings/cancel",
+      "regex": "^/api/bookings/cancel(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/bookings/cancel(?:/)?$"
+    },
+    {
+      "page": "/api/flights",
+      "regex": "^/api/flights(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/flights(?:/)?$"
     },
     {
       "page": "/api/hotel-booking-ai",
@@ -435,6 +483,12 @@
       "namedRegex": "^/api/stripe/webhook(?:/)?$"
     },
     {
+      "page": "/api/system-logs",
+      "regex": "^/api/system\\-logs(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/system\\-logs(?:/)?$"
+    },
+    {
       "page": "/api/tavily/hotel-search",
       "regex": "^/api/tavily/hotel\\-search(?:/)?$",
       "routeKeys": {},
@@ -459,6 +513,12 @@
       "namedRegex": "^/api/tools(?:/)?$"
     },
     {
+      "page": "/api/trends",
+      "regex": "^/api/trends(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/trends(?:/)?$"
+    },
+    {
       "page": "/api/upload/images",
       "regex": "^/api/upload/images(?:/)?$",
       "routeKeys": {},
@@ -481,6 +541,18 @@
       "regex": "^/api\\-test(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api\\-test(?:/)?$"
+    },
+    {
+      "page": "/booking-flow",
+      "regex": "^/booking\\-flow(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/booking\\-flow(?:/)?$"
+    },
+    {
+      "page": "/flights-trends",
+      "regex": "^/flights\\-trends(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/flights\\-trends(?:/)?$"
     },
     {
       "page": "/hotel-booking-ai",
@@ -565,6 +637,12 @@
       "regex": "^/templates/sunday(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/templates/sunday(?:/)?$"
+    },
+    {
+      "page": "/templates/sunday/components-demo",
+      "regex": "^/templates/sunday/components\\-demo(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/templates/sunday/components\\-demo(?:/)?$"
     },
     {
       "page": "/templates/sunday-hotel",

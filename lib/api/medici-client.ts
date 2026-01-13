@@ -159,7 +159,7 @@ export class MediciApiClient {
       jsonRequest: params.jsonRequest,
     }
 
-    const response = await this.request<any>("/pre-book", {
+    const response = await this.request<any>("/api/hotels/PreBook", {
       method: "POST",
       body: JSON.stringify(preBookBody),
     })
@@ -217,7 +217,7 @@ export class MediciApiClient {
     }
 
     try {
-      const response = await this.request<any>("/book", {
+      const response = await this.request<any>("/api/hotels/Book", {
         method: "POST",
         body: JSON.stringify(bookBody),
       })

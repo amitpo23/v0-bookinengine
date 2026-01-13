@@ -15,6 +15,33 @@ export interface HotelSearchResult {
   rooms: RoomResult[]
   requestJson?: string // Original requestJson from API response - used for PreBook
   responseJson?: any // Original responseJson from API response
+  // Extended data from ShowExtendedData: true
+  phone?: string
+  fax?: string
+  lat?: number
+  lon?: number
+  seoname?: string
+  destinations?: { destinationId: number; type: string }[]
+  surroundings?: { destinationId: number; type: string }[]
+}
+
+export interface CancellationFrame {
+  from: string
+  to: string
+  penalty: {
+    amount: number
+    currency: string
+  }
+}
+
+export interface CancellationInfo {
+  type: "fully-refundable" | "non-refundable" | "partially-refundable"
+  frames: CancellationFrame[]
+}
+
+export interface Provider {
+  id: number
+  name: string
 }
 
 export interface RoomResult {
@@ -38,9 +65,15 @@ export interface RoomResult {
   originalPrice: number
   currency: string
   cancellationPolicy: string
+  cancellation?: CancellationInfo | null
   available: number
   requestJson?: string // Room code for prebook
   pax?: { adults: number; children: number[] } // Occupancy info
+  // Extended data from ShowExtendedData: true
+  confirmation?: string // "immediate" | "on_request"
+  paymentType?: string // "pre" | "post"
+  providers?: Provider[]
+  specialOffers?: any[]
 }
 
 export interface PreBookResponse {

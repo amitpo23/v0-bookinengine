@@ -493,9 +493,23 @@ export class MediciApiClient {
     const hotelMap = new Map<number, HotelSearchResult>()
 
     for (const item of items) {
-      const hotelIdRaw = item.id || item.hotelId || item.hotelCode || item.HotelId || item.hotel_id || 0
+      // Support new Medici format with ShowExtendedData
+      const hotelIdRaw = item.id || item.hotelId || item.hotelCode || item.HotelId || item.hotel_id || 
+        (item.items?.[0]?.hotelId) || 0
       const hotelId = typeof hotelIdRaw === "number" ? hotelIdRaw : Number.parseInt(String(hotelIdRaw), 10) || 0
-      const hotelName = item.name || item.hotelName || item.HotelName || "Unknown Hotel"
+      const hotelName = item.name || item.hotelName || item.HotelName || item.items?.[0]?.hotelName || "Unknown Hotel"
+
+      // Extract facilities from new format (facilities.list or facilities.tags)
+      let facilitiesList: string[] = []
+      if (item.facilities) {
+        if (Array.isArray(item.facilities)) {
+          facilitiesList = item.facilities
+        } else if (item.facilities.list && Array.isArray(item.facilities.list)) {
+          facilitiesList = item.facilities.list
+        } else if (item.facilities.tags && Array.isArray(item.facilities.tags)) {
+          facilitiesList = item.facilities.tags
+        }
+      }
 
       if (!hotelMap.has(hotelId)) {
         hotelMap.set(hotelId, {
@@ -504,11 +518,16 @@ export class MediciApiClient {
           hotelImage: getHotelMainImage(item),
           images: buildImagesArray(item),
           location: item.address || item.location || "",
-          city: item.city || "",
+          city: item.city || extractCityFromDestinations(item) || "",
           stars: item.stars || item.rating || 0,
           address: item.address || "",
           description: item.description || "",
-          facilities: item.facilities || item.amenities || [],
+          facilities: facilitiesList,
+          phone: item.phone || "",
+          fax: item.fax || "",
+          lat: item.lat || 0,
+          lon: item.lon || 0,
+          seoname: item.seoname || "",
           rooms: [],
         })
       }
@@ -561,7 +580,7 @@ export class MediciApiClient {
           roomName: roomItem.name || roomItem.roomName || "Standard Room",
           roomCategory: roomItem.category || roomItem.roomType || "standard",
           categoryId: roomItem.categoryId || roomItem.category_id || 1,
-          roomImage: getRoomMainImage(roomItem),
+          roomImage: getRoomMainImage(roomItem) || hotel.hotelImage, // Fallback to hotel image
           images: buildRoomImagesArray(roomItem),
           bedding: roomItem.bedding || "",
           board: roomItem.board || "RO",
@@ -574,11 +593,16 @@ export class MediciApiClient {
           price: price,
           buyPrice: price,
           originalPrice: price > 0 ? Math.round(price * 1.15) : 0,
-          currency: roomItem.currency || "ILS",
-          cancellationPolicy: roomItem.cancellationPolicy || roomItem.cancellation || "free",
+          currency: roomItem.currency || item.price?.currency || item.netPrice?.currency || "USD",
+          cancellationPolicy: formatCancellationPolicy(item.cancellation) || roomItem.cancellationPolicy || "free",
+          cancellation: item.cancellation || null,
           available: roomItem.quantity?.max || roomItem.available || 1,
-          requestJson: roomItem.code || roomCode, // Store the room code for prebook
+          requestJson: item.code || roomItem.code || roomCode, // Use hotel-level code for prebook
           pax: roomItem.pax || { adults: 2, children: [] },
+          confirmation: item.confirmation || "on_request",
+          paymentType: item.paymentType || "pre",
+          providers: item.providers || [],
+          specialOffers: item.specialOffers || [],
         })
       }
     }
@@ -725,4 +749,47 @@ function getBoardIdFromCode(boardCode: string): number {
     }
   }
   return 0
+}
+
+// Extract city from destinations array (new Medici format)
+function extractCityFromDestinations(item: any): string {
+  if (item.destinations && Array.isArray(item.destinations)) {
+    const cityDest = item.destinations.find((d: any) => d.type === "city")
+    if (cityDest?.destinationId) {
+      return `City-${cityDest.destinationId}` // Will be resolved by enrichment
+    }
+  }
+  if (item.surroundings && Array.isArray(item.surroundings)) {
+    const citySurr = item.surroundings.find((s: any) => s.type === "city")
+    if (citySurr?.destinationId) {
+      return `City-${citySurr.destinationId}`
+    }
+  }
+  return ""
+}
+
+// Format cancellation policy from new Medici format
+function formatCancellationPolicy(cancellation: any): string {
+  if (!cancellation) return "free"
+  
+  if (cancellation.type === "fully-refundable") {
+    return "free"
+  } else if (cancellation.type === "non-refundable") {
+    return "non-refundable"
+  } else if (cancellation.type === "partially-refundable") {
+    return "partial"
+  }
+  
+  // Check frames for deadline
+  if (cancellation.frames && Array.isArray(cancellation.frames)) {
+    const freeFrame = cancellation.frames.find((f: any) => 
+      f.penalty?.amount === 0
+    )
+    if (freeFrame) {
+      const deadline = new Date(freeFrame.to)
+      return `Free cancellation until ${deadline.toLocaleDateString()}`
+    }
+  }
+  
+  return cancellation.type || "free"
 }

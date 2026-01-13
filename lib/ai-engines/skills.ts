@@ -530,6 +530,289 @@ export const loyaltyProgramSkill: AISkill = {
 // EXPORT ALL SKILLS
 // ========================================
 
+// ========================================
+// NEW ADVANCED SKILLS (V2)
+// ========================================
+
+export const promoCodeSkill: AISkill = {
+  id: 'promo-code',
+  name: 'Promo Code Manager',
+  nameHe: 'ניהול קודי קופון',
+  description: 'Validate and apply promotional codes to bookings',
+  descriptionHe: 'אימות והחלת קודי קופון על הזמנות',
+  category: 'booking',
+  capabilities: ['promo', 'discount'],
+  isEnabled: true,
+  priority: 5,
+  requiredPermissions: ['promo:read', 'promo:apply'],
+  tools: [
+    {
+      name: 'validate_promo_code',
+      description: 'Check if a promo code is valid and get discount details.',
+      parameters: [
+        { name: 'code', type: 'string', description: 'Promotional code to validate', required: true },
+        { name: 'totalPrice', type: 'number', description: 'Total booking price for percentage calculation', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/promo.validatePromoCode',
+      isAsync: true,
+      timeout: 5000
+    },
+    {
+      name: 'apply_promo_code',
+      description: 'Apply a validated promo code to a booking.',
+      parameters: [
+        { name: 'code', type: 'string', description: 'Promotional code', required: true },
+        { name: 'bookingId', type: 'string', description: 'Booking ID to apply discount', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/promo.applyPromoCode',
+      isAsync: true
+    },
+    {
+      name: 'get_available_promos',
+      description: 'Get all currently available promotions for the user.',
+      parameters: [
+        { name: 'userId', type: 'string', description: 'User ID for personalized promos', required: false },
+        { name: 'isMobile', type: 'boolean', description: 'Is mobile device', required: false, default: false }
+      ],
+      handler: 'lib/ai-engines/handlers/promo.getAvailablePromos',
+      isAsync: true
+    }
+  ]
+};
+
+export const smartDateSuggestionSkill: AISkill = {
+  id: 'smart-date-suggestion',
+  name: 'Smart Date Suggestion',
+  nameHe: 'הצעת תאריכים חכמה',
+  description: 'Suggest optimal dates based on price, availability, and demand patterns',
+  descriptionHe: 'הצעת תאריכים אופטימליים על בסיס מחיר, זמינות ודפוסי ביקוש',
+  category: 'analysis',
+  capabilities: ['recommendation', 'optimization'],
+  isEnabled: true,
+  priority: 6,
+  requiredPermissions: ['booking:read', 'analytics:read'],
+  tools: [
+    {
+      name: 'suggest_cheaper_dates',
+      description: 'Find cheaper dates near the requested dates for the same hotel.',
+      parameters: [
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: true },
+        { name: 'requestedCheckIn', type: 'date', description: 'Originally requested check-in', required: true },
+        { name: 'requestedCheckOut', type: 'date', description: 'Originally requested check-out', required: true },
+        { name: 'flexibility', type: 'number', description: 'Days of flexibility (e.g., 3 = ±3 days)', required: false, default: 3 },
+        { name: 'adults', type: 'number', description: 'Number of adults', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/dates.suggestCheaperDates',
+      isAsync: true,
+      timeout: 30000
+    },
+    {
+      name: 'get_price_calendar',
+      description: 'Get a calendar view of prices for a hotel over a date range.',
+      parameters: [
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: true },
+        { name: 'startDate', type: 'date', description: 'Calendar start date', required: true },
+        { name: 'endDate', type: 'date', description: 'Calendar end date', required: true },
+        { name: 'nights', type: 'number', description: 'Number of nights per stay', required: false, default: 1 }
+      ],
+      handler: 'lib/ai-engines/handlers/dates.getPriceCalendar',
+      isAsync: true
+    }
+  ]
+};
+
+export const roomComparisonSkill: AISkill = {
+  id: 'room-comparison',
+  name: 'Room Comparison',
+  nameHe: 'השוואת חדרים',
+  description: 'Compare multiple rooms side-by-side with detailed analysis',
+  descriptionHe: 'השוואת מספר חדרים זה מול זה עם ניתוח מפורט',
+  category: 'analysis',
+  capabilities: ['comparison', 'recommendation'],
+  isEnabled: true,
+  priority: 7,
+  requiredPermissions: ['booking:read'],
+  tools: [
+    {
+      name: 'compare_rooms',
+      description: 'Compare selected rooms with detailed feature comparison.',
+      parameters: [
+        { name: 'roomCodes', type: 'array', description: 'Array of room codes to compare (2-5 rooms)', required: true },
+        { name: 'priorityFactors', type: 'array', description: 'What to prioritize: price, size, view, amenities', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/rooms.compareRooms',
+      isAsync: true
+    },
+    {
+      name: 'recommend_best_room',
+      description: 'Recommend the best room based on user preferences.',
+      parameters: [
+        { name: 'searchResults', type: 'object', description: 'Search results with rooms', required: true },
+        { name: 'preferences', type: 'object', description: 'User preferences { budget, roomSize, view, amenities }', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/rooms.recommendBestRoom',
+      isAsync: true
+    }
+  ]
+};
+
+export const bundleDealsSkill: AISkill = {
+  id: 'bundle-deals',
+  name: 'Bundle Deals',
+  nameHe: 'חבילות משולבות',
+  description: 'Create and suggest hotel + flight bundles, packages, and combo deals',
+  descriptionHe: 'יצירה והצעת חבילות מלון + טיסה, פקג\'ים ומבצעים משולבים',
+  category: 'booking',
+  capabilities: ['bundling', 'upsell'],
+  isEnabled: true,
+  priority: 8,
+  requiredPermissions: ['booking:read', 'flights:read'],
+  tools: [
+    {
+      name: 'search_flight_hotel_bundle',
+      description: 'Search for combined flight + hotel packages.',
+      parameters: [
+        { name: 'origin', type: 'string', description: 'Origin city/airport code', required: true },
+        { name: 'destination', type: 'string', description: 'Destination city', required: true },
+        { name: 'departureDate', type: 'date', description: 'Outbound flight date', required: true },
+        { name: 'returnDate', type: 'date', description: 'Return flight date', required: true },
+        { name: 'adults', type: 'number', description: 'Number of adults', required: true },
+        { name: 'children', type: 'array', description: 'Children ages', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/bundles.searchFlightHotelBundle',
+      isAsync: true,
+      timeout: 60000
+    },
+    {
+      name: 'suggest_add_ons',
+      description: 'Suggest add-ons for a booking (transfers, tours, insurance).',
+      parameters: [
+        { name: 'bookingDetails', type: 'object', description: 'Current booking details', required: true },
+        { name: 'destination', type: 'string', description: 'Destination city', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/bundles.suggestAddOns',
+      isAsync: true
+    }
+  ]
+};
+
+export const waitlistSkill: AISkill = {
+  id: 'waitlist',
+  name: 'Waitlist Manager',
+  nameHe: 'ניהול רשימת המתנה',
+  description: 'Manage waitlists for sold-out dates, notify when available',
+  descriptionHe: 'ניהול רשימות המתנה לתאריכים אזלו, הודעה בזמינות',
+  category: 'booking',
+  capabilities: ['waitlist', 'notification'],
+  isEnabled: true,
+  priority: 9,
+  requiredPermissions: ['booking:read', 'notification:send'],
+  tools: [
+    {
+      name: 'join_waitlist',
+      description: 'Add user to waitlist for sold-out dates.',
+      parameters: [
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: true },
+        { name: 'roomCategory', type: 'string', description: 'Room category', required: true },
+        { name: 'checkIn', type: 'date', description: 'Requested check-in', required: true },
+        { name: 'checkOut', type: 'date', description: 'Requested check-out', required: true },
+        { name: 'email', type: 'string', description: 'Email for notification', required: true },
+        { name: 'phone', type: 'string', description: 'Phone for SMS notification', required: false },
+        { name: 'maxPrice', type: 'number', description: 'Maximum price willing to pay', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/waitlist.joinWaitlist',
+      isAsync: true
+    },
+    {
+      name: 'check_waitlist_status',
+      description: 'Check current position in waitlist.',
+      parameters: [
+        { name: 'waitlistId', type: 'string', description: 'Waitlist entry ID', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/waitlist.checkStatus',
+      isAsync: true
+    }
+  ]
+};
+
+export const groupBookingSkill: AISkill = {
+  id: 'group-booking',
+  name: 'Group Booking',
+  nameHe: 'הזמנות קבוצתיות',
+  description: 'Handle group bookings with multiple rooms and special pricing',
+  descriptionHe: 'טיפול בהזמנות קבוצתיות עם מספר חדרים ותמחור מיוחד',
+  category: 'booking',
+  capabilities: ['group', 'bulk'],
+  isEnabled: true,
+  priority: 10,
+  requiredPermissions: ['booking:write', 'group:manage'],
+  tools: [
+    {
+      name: 'create_group_booking',
+      description: 'Create a group booking with multiple rooms.',
+      parameters: [
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: true },
+        { name: 'checkIn', type: 'date', description: 'Check-in date', required: true },
+        { name: 'checkOut', type: 'date', description: 'Check-out date', required: true },
+        { name: 'rooms', type: 'array', description: 'Array of room requirements [{ type, count, guests }]', required: true },
+        { name: 'groupName', type: 'string', description: 'Group/event name', required: true },
+        { name: 'contactPerson', type: 'object', description: 'Main contact details', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/groups.createGroupBooking',
+      isAsync: true,
+      timeout: 60000
+    },
+    {
+      name: 'get_group_pricing',
+      description: 'Get special pricing for group bookings.',
+      parameters: [
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: true },
+        { name: 'roomCount', type: 'number', description: 'Number of rooms needed', required: true },
+        { name: 'nights', type: 'number', description: 'Number of nights', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/groups.getGroupPricing',
+      isAsync: true
+    }
+  ]
+};
+
+export const affiliateSkill: AISkill = {
+  id: 'affiliate',
+  name: 'Affiliate Management',
+  nameHe: 'ניהול שותפים',
+  description: 'Track and manage affiliate referrals and commissions',
+  descriptionHe: 'מעקב וניהול הפניות שותפים ועמלות',
+  category: 'marketing',
+  capabilities: ['affiliate', 'tracking'],
+  isEnabled: true,
+  priority: 11,
+  requiredPermissions: ['affiliate:read', 'affiliate:write'],
+  tools: [
+    {
+      name: 'track_affiliate_click',
+      description: 'Track an affiliate referral click.',
+      parameters: [
+        { name: 'affiliateCode', type: 'string', description: 'Affiliate code', required: true },
+        { name: 'hotelId', type: 'string', description: 'Hotel viewed', required: false },
+        { name: 'source', type: 'string', description: 'Traffic source', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/affiliate.trackClick',
+      isAsync: true
+    },
+    {
+      name: 'convert_affiliate',
+      description: 'Record an affiliate conversion (booking completed).',
+      parameters: [
+        { name: 'affiliateCode', type: 'string', description: 'Affiliate code', required: true },
+        { name: 'bookingId', type: 'string', description: 'Booking ID', required: true },
+        { name: 'amount', type: 'number', description: 'Booking amount', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/affiliate.convertAffiliate',
+      isAsync: true
+    }
+  ]
+};
+
 export const allSkills: AISkill[] = [
   // Booking
   hotelSearchSkill,
@@ -548,7 +831,15 @@ export const allSkills: AISkill[] = [
   marketAnalysisSkill,
   // Personalization
   userPreferencesSkill,
-  loyaltyProgramSkill
+  loyaltyProgramSkill,
+  // NEW V2 Skills
+  promoCodeSkill,
+  smartDateSuggestionSkill,
+  roomComparisonSkill,
+  bundleDealsSkill,
+  waitlistSkill,
+  groupBookingSkill,
+  affiliateSkill
 ];
 
 export const getSkillById = (id: string): AISkill | undefined => {

@@ -813,6 +813,348 @@ export const affiliateSkill: AISkill = {
   ]
 };
 
+// ========================================
+// ADVANCED RESEARCH & INTELLIGENCE SKILLS (V3)
+// ========================================
+
+export const destinationInfoSkill: AISkill = {
+  id: 'destination-info',
+  name: 'Destination Intelligence',
+  nameHe: 'מודיעין יעדים',
+  description: 'Real-time destination information including weather, events, attractions, safety and local tips using Tavily AI search',
+  descriptionHe: 'מידע יעדים בזמן אמת כולל מזג אוויר, אירועים, אטרקציות, בטיחות וטיפים מקומיים',
+  category: 'research',
+  capabilities: ['web-search', 'destination-info', 'real-time'],
+  isEnabled: true,
+  priority: 12,
+  requiredPermissions: ['search:web', 'destination:read'],
+  tools: [
+    {
+      name: 'get_destination_info',
+      description: 'Get comprehensive destination information including weather, events, attractions, safety and local tips.',
+      parameters: [
+        { name: 'destination', type: 'string', description: 'Destination city or area name', required: true },
+        { name: 'travelDates', type: 'object', description: 'Travel dates { checkIn, checkOut }', required: false },
+        { name: 'interests', type: 'array', description: 'User interests: culture, food, nightlife, nature, family, etc.', required: false }
+      ],
+      handler: 'lib/services/destination-info-service.getDestinationInfo',
+      isAsync: true,
+      timeout: 30000
+    },
+    {
+      name: 'get_destination_weather',
+      description: 'Get weather forecast and climate info for a destination.',
+      parameters: [
+        { name: 'destination', type: 'string', description: 'Destination name', required: true },
+        { name: 'dates', type: 'object', description: 'Date range { from, to }', required: false }
+      ],
+      handler: 'lib/services/destination-info-service.getDestinationWeather',
+      isAsync: true
+    },
+    {
+      name: 'get_destination_events',
+      description: 'Get upcoming events, festivals, and happenings at destination.',
+      parameters: [
+        { name: 'destination', type: 'string', description: 'Destination name', required: true },
+        { name: 'dateRange', type: 'object', description: 'Date range { from, to }', required: true },
+        { name: 'eventTypes', type: 'array', description: 'Event types: music, sports, culture, food, etc.', required: false }
+      ],
+      handler: 'lib/services/destination-info-service.getDestinationEvents',
+      isAsync: true
+    },
+    {
+      name: 'get_destination_attractions',
+      description: 'Get top attractions and things to do at destination.',
+      parameters: [
+        { name: 'destination', type: 'string', description: 'Destination name', required: true },
+        { name: 'limit', type: 'number', description: 'Number of attractions', required: false, default: 10 },
+        { name: 'categories', type: 'array', description: 'Attraction categories: museums, nature, landmarks, etc.', required: false }
+      ],
+      handler: 'lib/services/destination-info-service.getDestinationAttractions',
+      isAsync: true
+    }
+  ]
+};
+
+export const customerMemorySkill: AISkill = {
+  id: 'customer-memory',
+  name: 'Customer Memory',
+  nameHe: 'זיכרון לקוח',
+  description: 'Long-term customer memory for preferences, history, and personalized recommendations using intelligent profile learning',
+  descriptionHe: 'זיכרון לקוח ארוך טווח להעדפות, היסטוריה והמלצות מותאמות אישית',
+  category: 'personalization',
+  capabilities: ['memory', 'personalization', 'learning'],
+  isEnabled: true,
+  priority: 13,
+  requiredPermissions: ['user:read', 'user:write', 'memory:read', 'memory:write'],
+  tools: [
+    {
+      name: 'get_customer_profile',
+      description: 'Get complete customer profile including preferences, history, and inferred insights.',
+      parameters: [
+        { name: 'customerId', type: 'string', description: 'Customer ID', required: true }
+      ],
+      handler: 'lib/services/customer-memory-service.getCustomerProfile',
+      isAsync: true
+    },
+    {
+      name: 'save_preference',
+      description: 'Save a customer preference learned from interaction.',
+      parameters: [
+        { name: 'customerId', type: 'string', description: 'Customer ID', required: true },
+        { name: 'category', type: 'string', description: 'Preference category: accommodation, dining, activities, travel_style, budget', required: true },
+        { name: 'key', type: 'string', description: 'Preference key (e.g., "preferred_room_type")', required: true },
+        { name: 'value', type: 'string', description: 'Preference value', required: true },
+        { name: 'confidence', type: 'number', description: 'Confidence score 0-1', required: false, default: 0.8 }
+      ],
+      handler: 'lib/services/customer-memory-service.savePreference',
+      isAsync: true
+    },
+    {
+      name: 'record_customer_event',
+      description: 'Record a customer event (booking, search, cancellation) for history.',
+      parameters: [
+        { name: 'customerId', type: 'string', description: 'Customer ID', required: true },
+        { name: 'eventType', type: 'string', description: 'Event type: booking, search, cancellation, inquiry, review', required: true },
+        { name: 'eventData', type: 'object', description: 'Event details', required: true }
+      ],
+      handler: 'lib/services/customer-memory-service.recordCustomerEvent',
+      isAsync: true
+    },
+    {
+      name: 'get_personalized_recommendations',
+      description: 'Get personalized recommendations based on customer profile and history.',
+      parameters: [
+        { name: 'customerId', type: 'string', description: 'Customer ID', required: true },
+        { name: 'context', type: 'object', description: 'Current search context { destination, dates, budget }', required: true },
+        { name: 'limit', type: 'number', description: 'Number of recommendations', required: false, default: 5 }
+      ],
+      handler: 'lib/services/customer-memory-service.getPersonalizedRecommendations',
+      isAsync: true
+    },
+    {
+      name: 'delete_customer_data',
+      description: 'Delete all customer data (GDPR compliance).',
+      parameters: [
+        { name: 'customerId', type: 'string', description: 'Customer ID', required: true },
+        { name: 'confirmation', type: 'boolean', description: 'Confirm deletion', required: true }
+      ],
+      handler: 'lib/services/customer-memory-service.deleteCustomerData',
+      isAsync: true
+    }
+  ]
+};
+
+export const priceComparisonSkill: AISkill = {
+  id: 'price-comparison',
+  name: 'Price Comparison Engine',
+  nameHe: 'מנוע השוואת מחירים',
+  description: 'Compare hotel prices across multiple booking platforms, find best deals, and track price changes',
+  descriptionHe: 'השוואת מחירי מלונות בפלטפורמות הזמנה מרובות, איתור עסקאות הטובות ומעקב שינויי מחיר',
+  category: 'analysis',
+  capabilities: ['price-comparison', 'analytics', 'monitoring'],
+  isEnabled: true,
+  priority: 14,
+  requiredPermissions: ['booking:read', 'monitoring:read', 'monitoring:write'],
+  tools: [
+    {
+      name: 'compare_prices',
+      description: 'Compare hotel prices across multiple booking platforms.',
+      parameters: [
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: true },
+        { name: 'checkIn', type: 'date', description: 'Check-in date', required: true },
+        { name: 'checkOut', type: 'date', description: 'Check-out date', required: true },
+        { name: 'guests', type: 'object', description: 'Guests { adults, children }', required: true },
+        { name: 'roomType', type: 'string', description: 'Room type filter', required: false }
+      ],
+      handler: 'lib/services/price-comparison-service.comparePrices',
+      isAsync: true,
+      timeout: 45000
+    },
+    {
+      name: 'get_price_history',
+      description: 'Get historical price data for a hotel across sources.',
+      parameters: [
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: true },
+        { name: 'dateRange', type: 'object', description: 'Date range { from, to }', required: true }
+      ],
+      handler: 'lib/services/price-comparison-service.getPriceHistory',
+      isAsync: true
+    },
+    {
+      name: 'predict_best_price',
+      description: 'Predict best time to book based on price patterns.',
+      parameters: [
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: true },
+        { name: 'travelDates', type: 'object', description: 'Travel dates { checkIn, checkOut }', required: true }
+      ],
+      handler: 'lib/services/price-comparison-service.getPricePrediction',
+      isAsync: true
+    },
+    {
+      name: 'create_price_alert',
+      description: 'Create alert when price drops below target.',
+      parameters: [
+        { name: 'customerId', type: 'string', description: 'Customer ID', required: true },
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: true },
+        { name: 'targetPrice', type: 'number', description: 'Target price', required: true },
+        { name: 'checkIn', type: 'date', description: 'Check-in date', required: true },
+        { name: 'checkOut', type: 'date', description: 'Check-out date', required: true },
+        { name: 'notifyEmail', type: 'string', description: 'Email for notifications', required: true }
+      ],
+      handler: 'lib/services/price-comparison-service.createPriceAlert',
+      isAsync: true
+    }
+  ]
+};
+
+export const travelBundleSkill: AISkill = {
+  id: 'travel-bundle',
+  name: 'Travel Bundle Search',
+  nameHe: 'חיפוש חבילות נסיעה',
+  description: 'Search and compare flight+hotel packages with savings analysis',
+  descriptionHe: 'חיפוש והשוואת חבילות טיסה+מלון עם ניתוח חיסכון',
+  category: 'booking',
+  capabilities: ['bundling', 'comparison', 'savings'],
+  isEnabled: true,
+  priority: 15,
+  requiredPermissions: ['booking:read', 'flights:read'],
+  tools: [
+    {
+      name: 'search_bundles',
+      description: 'Search for flight+hotel bundle packages.',
+      parameters: [
+        { name: 'origin', type: 'string', description: 'Origin city or airport code', required: true },
+        { name: 'destination', type: 'string', description: 'Destination city', required: true },
+        { name: 'checkIn', type: 'date', description: 'Check-in/departure date', required: true },
+        { name: 'checkOut', type: 'date', description: 'Check-out/return date', required: true },
+        { name: 'adults', type: 'number', description: 'Number of adults', required: true },
+        { name: 'children', type: 'array', description: 'Children ages', required: false },
+        { name: 'class', type: 'string', description: 'Flight class: economy, business, first', required: false },
+        { name: 'hotelStars', type: 'array', description: 'Hotel star ratings filter', required: false },
+        { name: 'maxBudget', type: 'number', description: 'Maximum total budget', required: false }
+      ],
+      handler: 'lib/services/travel-bundle-service.searchBundles',
+      isAsync: true,
+      timeout: 60000
+    },
+    {
+      name: 'get_bundle_details',
+      description: 'Get detailed information about a specific bundle.',
+      parameters: [
+        { name: 'bundleId', type: 'string', description: 'Bundle ID', required: true }
+      ],
+      handler: 'lib/services/travel-bundle-service.getBundleDetails',
+      isAsync: true
+    },
+    {
+      name: 'check_bundle_availability',
+      description: 'Check real-time availability of a bundle before booking.',
+      parameters: [
+        { name: 'bundleId', type: 'string', description: 'Bundle ID', required: true }
+      ],
+      handler: 'lib/services/travel-bundle-service.checkBundleAvailability',
+      isAsync: true
+    },
+    {
+      name: 'create_custom_bundle',
+      description: 'Create a custom bundle from individual flight and hotel selections.',
+      parameters: [
+        { name: 'flightIds', type: 'array', description: 'Selected flight IDs', required: false },
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: true },
+        { name: 'roomCode', type: 'string', description: 'Room code', required: true },
+        { name: 'checkIn', type: 'date', description: 'Check-in date', required: true },
+        { name: 'checkOut', type: 'date', description: 'Check-out date', required: true },
+        { name: 'extras', type: 'array', description: 'Extra services: transfer, insurance, tours', required: false }
+      ],
+      handler: 'lib/services/travel-bundle-service.createCustomBundle',
+      isAsync: true
+    },
+    {
+      name: 'get_bundle_breakdown',
+      description: 'Get price breakdown for a bundle showing savings.',
+      parameters: [
+        { name: 'bundleId', type: 'string', description: 'Bundle ID', required: true }
+      ],
+      handler: 'lib/services/travel-bundle-service.getBundlePriceBreakdown',
+      isAsync: true
+    }
+  ]
+};
+
+export const calendarSyncSkill: AISkill = {
+  id: 'calendar-sync',
+  name: 'Calendar Integration',
+  nameHe: 'אינטגרציית לוח שנה',
+  description: 'Add bookings to Google Calendar, Outlook, Apple Calendar with automatic reminders',
+  descriptionHe: 'הוספת הזמנות ללוח שנה של גוגל, אאוטלוק, אפל עם תזכורות אוטומטיות',
+  category: 'communication',
+  capabilities: ['calendar', 'sync', 'reminders'],
+  isEnabled: true,
+  priority: 16,
+  requiredPermissions: ['booking:read', 'calendar:write'],
+  tools: [
+    {
+      name: 'add_to_calendar',
+      description: 'Generate calendar links for a booking (Google, Outlook, Apple, Yahoo).',
+      parameters: [
+        { name: 'bookingId', type: 'string', description: 'Booking ID', required: true },
+        { name: 'hotelName', type: 'string', description: 'Hotel name', required: true },
+        { name: 'hotelAddress', type: 'string', description: 'Hotel address', required: true },
+        { name: 'checkIn', type: 'date', description: 'Check-in date', required: true },
+        { name: 'checkOut', type: 'date', description: 'Check-out date', required: true },
+        { name: 'roomType', type: 'string', description: 'Room type', required: true },
+        { name: 'confirmationNumber', type: 'string', description: 'Confirmation number', required: true },
+        { name: 'guests', type: 'array', description: 'Guest names', required: true }
+      ],
+      handler: 'lib/services/calendar-sync-service.getAllCalendarLinks',
+      isAsync: false
+    },
+    {
+      name: 'download_ics_file',
+      description: 'Download ICS calendar file for the booking.',
+      parameters: [
+        { name: 'booking', type: 'object', description: 'Booking details', required: true }
+      ],
+      handler: 'lib/services/calendar-sync-service.downloadICSFile',
+      isAsync: false
+    },
+    {
+      name: 'sync_to_google_calendar',
+      description: 'Sync booking directly to connected Google Calendar (requires OAuth).',
+      parameters: [
+        { name: 'booking', type: 'object', description: 'Booking details', required: true },
+        { name: 'accessToken', type: 'string', description: 'Google OAuth access token', required: true }
+      ],
+      handler: 'lib/services/calendar-sync-service.syncToConnectedCalendar',
+      isAsync: true
+    },
+    {
+      name: 'update_calendar_event',
+      description: 'Update an existing calendar event (for booking modifications).',
+      parameters: [
+        { name: 'provider', type: 'string', description: 'Calendar provider: google, outlook', required: true },
+        { name: 'eventId', type: 'string', description: 'Calendar event ID', required: true },
+        { name: 'booking', type: 'object', description: 'Updated booking details', required: true },
+        { name: 'accessToken', type: 'string', description: 'OAuth access token', required: true }
+      ],
+      handler: 'lib/services/calendar-sync-service.updateCalendarEvent',
+      isAsync: true
+    },
+    {
+      name: 'delete_calendar_event',
+      description: 'Delete calendar event (for cancellations).',
+      parameters: [
+        { name: 'provider', type: 'string', description: 'Calendar provider', required: true },
+        { name: 'eventId', type: 'string', description: 'Calendar event ID', required: true },
+        { name: 'accessToken', type: 'string', description: 'OAuth access token', required: true }
+      ],
+      handler: 'lib/services/calendar-sync-service.deleteCalendarEvent',
+      isAsync: true
+    }
+  ]
+};
+
 export const allSkills: AISkill[] = [
   // Booking
   hotelSearchSkill,
@@ -839,7 +1181,13 @@ export const allSkills: AISkill[] = [
   bundleDealsSkill,
   waitlistSkill,
   groupBookingSkill,
-  affiliateSkill
+  affiliateSkill,
+  // NEW V3 Skills - Advanced Intelligence
+  destinationInfoSkill,
+  customerMemorySkill,
+  priceComparisonSkill,
+  travelBundleSkill,
+  calendarSyncSkill
 ];
 
 export const getSkillById = (id: string): AISkill | undefined => {

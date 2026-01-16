@@ -1444,6 +1444,324 @@ export const calendarSyncSkill: AISkill = {
   ]
 };
 
+// ========================================
+// PHASE 2 SKILLS
+// ========================================
+
+export const travelInsuranceSkill: AISkill = {
+  id: 'travel-insurance',
+  name: 'Travel Insurance',
+  nameHe: 'ביטוח נסיעות',
+  description: 'Offer and manage travel insurance plans with quotes, purchases, claims, and cancellations.',
+  descriptionHe: 'הצעה וניהול תוכניות ביטוח נסיעות כולל הצעות מחיר, רכישות, תביעות וביטולים.',
+  category: 'booking',
+  capabilities: ['insurance', 'quotes', 'claims'],
+  isEnabled: true,
+  priority: 7,
+  requiredPermissions: ['booking:read', 'insurance:manage'],
+  tools: [
+    {
+      name: 'get_insurance_plans',
+      description: 'Get available travel insurance plans',
+      parameters: [
+        { name: 'destination', type: 'string', description: 'Travel destination', required: false },
+        { name: 'tripType', type: 'string', description: 'Type of trip', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/insurance.getInsurancePlans',
+      isAsync: true
+    },
+    {
+      name: 'get_insurance_quote',
+      description: 'Get a quote for travel insurance',
+      parameters: [
+        { name: 'planId', type: 'string', description: 'Insurance plan ID', required: true },
+        { name: 'bookingId', type: 'string', description: 'Related booking ID', required: false },
+        { name: 'checkIn', type: 'date', description: 'Trip start date', required: true },
+        { name: 'checkOut', type: 'date', description: 'Trip end date', required: true },
+        { name: 'travelers', type: 'number', description: 'Number of travelers', required: true },
+        { name: 'childrenUnder18', type: 'number', description: 'Children under 18 (free on family plan)', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/insurance.getInsuranceQuote',
+      isAsync: true
+    },
+    {
+      name: 'purchase_insurance',
+      description: 'Purchase travel insurance policy',
+      parameters: [
+        { name: 'quoteId', type: 'string', description: 'Quote ID', required: true },
+        { name: 'bookingId', type: 'string', description: 'Booking ID', required: true },
+        { name: 'customerId', type: 'string', description: 'Customer ID', required: true },
+        { name: 'customerName', type: 'string', description: 'Customer name', required: true },
+        { name: 'customerEmail', type: 'string', description: 'Customer email', required: true },
+        { name: 'travelers', type: 'array', description: 'Names of all travelers', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/insurance.purchaseInsurance',
+      isAsync: true
+    },
+    {
+      name: 'cancel_insurance',
+      description: 'Cancel insurance policy',
+      parameters: [
+        { name: 'policyId', type: 'string', description: 'Policy ID', required: true },
+        { name: 'reason', type: 'string', description: 'Cancellation reason', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/insurance.cancelInsurance',
+      isAsync: true
+    },
+    {
+      name: 'file_insurance_claim',
+      description: 'File an insurance claim',
+      parameters: [
+        { name: 'policyId', type: 'string', description: 'Policy ID', required: true },
+        { name: 'claimType', type: 'string', description: 'Type of claim', required: true },
+        { name: 'description', type: 'string', description: 'Claim description', required: true },
+        { name: 'amount', type: 'number', description: 'Claim amount', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/insurance.fileInsuranceClaim',
+      isAsync: true
+    }
+  ]
+};
+
+export const abandonedCartSkill: AISkill = {
+  id: 'abandoned-cart',
+  name: 'Abandoned Cart Recovery',
+  nameHe: 'שחזור עגלות נטושות',
+  description: 'Track abandoned bookings and recover them with automated email campaigns and discounts.',
+  descriptionHe: 'מעקב אחר הזמנות נטושות ושחזורן באמצעות קמפיינים אוטומטיים ומבצעים.',
+  category: 'automation',
+  capabilities: ['cart-recovery', 'email-automation', 'analytics'],
+  isEnabled: true,
+  priority: 8,
+  requiredPermissions: ['booking:read', 'marketing:send'],
+  tools: [
+    {
+      name: 'track_cart_activity',
+      description: 'Track user activity in booking flow',
+      parameters: [
+        { name: 'sessionId', type: 'string', description: 'Session ID', required: true },
+        { name: 'stage', type: 'string', description: 'Booking stage: search, room_selected, prebook, checkout, payment', required: true },
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: true },
+        { name: 'hotelName', type: 'string', description: 'Hotel name', required: true },
+        { name: 'totalPrice', type: 'number', description: 'Total price', required: true },
+        { name: 'currency', type: 'string', description: 'Currency', required: true },
+        { name: 'checkIn', type: 'date', description: 'Check-in date', required: true },
+        { name: 'checkOut', type: 'date', description: 'Check-out date', required: true },
+        { name: 'guests', type: 'number', description: 'Number of guests', required: true },
+        { name: 'customerEmail', type: 'string', description: 'Customer email', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/abandoned-cart.trackCartActivity',
+      isAsync: true
+    },
+    {
+      name: 'get_abandoned_carts',
+      description: 'Get list of abandoned carts for recovery',
+      parameters: [
+        { name: 'minAge', type: 'number', description: 'Minimum age in minutes', required: false },
+        { name: 'hasEmail', type: 'boolean', description: 'Only carts with email', required: false },
+        { name: 'limit', type: 'number', description: 'Max results', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/abandoned-cart.getAbandonedCarts',
+      isAsync: true
+    },
+    {
+      name: 'send_recovery_email',
+      description: 'Send cart recovery email',
+      parameters: [
+        { name: 'cartId', type: 'string', description: 'Cart ID', required: true },
+        { name: 'templateType', type: 'string', description: 'Template: initial, reminder, lastChance', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/abandoned-cart.sendRecoveryEmail',
+      isAsync: true
+    },
+    {
+      name: 'get_recovery_stats',
+      description: 'Get cart recovery statistics',
+      parameters: [
+        { name: 'startDate', type: 'date', description: 'Start date', required: false },
+        { name: 'endDate', type: 'date', description: 'End date', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/abandoned-cart.getRecoveryStats',
+      isAsync: true
+    },
+    {
+      name: 'run_recovery_campaign',
+      description: 'Run automated recovery campaign',
+      parameters: [
+        { name: 'dryRun', type: 'boolean', description: 'Preview without sending', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/abandoned-cart.runRecoveryCampaign',
+      isAsync: true
+    }
+  ]
+};
+
+export const whatsappBotSkill: AISkill = {
+  id: 'whatsapp-bot',
+  name: 'WhatsApp Bot',
+  nameHe: 'בוט וואטסאפ',
+  description: 'Send booking notifications and handle customer support via WhatsApp Business API.',
+  descriptionHe: 'שליחת התראות הזמנה ותמיכת לקוחות דרך WhatsApp Business API.',
+  category: 'communication',
+  capabilities: ['whatsapp', 'notifications', 'support'],
+  isEnabled: true,
+  priority: 9,
+  requiredPermissions: ['booking:read', 'whatsapp:send'],
+  tools: [
+    {
+      name: 'send_whatsapp_message',
+      description: 'Send a WhatsApp message',
+      parameters: [
+        { name: 'to', type: 'string', description: 'Phone number', required: true },
+        { name: 'type', type: 'string', description: 'Message type: text, template, interactive', required: true },
+        { name: 'content', type: 'string', description: 'Message content', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/whatsapp.sendWhatsAppMessage',
+      isAsync: true
+    },
+    {
+      name: 'send_booking_confirmation_whatsapp',
+      description: 'Send booking confirmation via WhatsApp',
+      parameters: [
+        { name: 'phone', type: 'string', description: 'Phone number', required: true },
+        { name: 'customerName', type: 'string', description: 'Customer name', required: true },
+        { name: 'bookingId', type: 'string', description: 'Booking ID', required: true },
+        { name: 'hotelName', type: 'string', description: 'Hotel name', required: true },
+        { name: 'checkIn', type: 'date', description: 'Check-in date', required: true },
+        { name: 'checkOut', type: 'date', description: 'Check-out date', required: true },
+        { name: 'confirmationNumber', type: 'string', description: 'Confirmation number', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/whatsapp.sendBookingConfirmation',
+      isAsync: true
+    },
+    {
+      name: 'send_checkin_reminder_whatsapp',
+      description: 'Send check-in reminder via WhatsApp',
+      parameters: [
+        { name: 'phone', type: 'string', description: 'Phone number', required: true },
+        { name: 'customerName', type: 'string', description: 'Customer name', required: true },
+        { name: 'hotelName', type: 'string', description: 'Hotel name', required: true },
+        { name: 'hotelAddress', type: 'string', description: 'Hotel address', required: true },
+        { name: 'checkIn', type: 'date', description: 'Check-in date', required: true },
+        { name: 'confirmationNumber', type: 'string', description: 'Confirmation number', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/whatsapp.sendCheckInReminder',
+      isAsync: true
+    },
+    {
+      name: 'handle_whatsapp_message',
+      description: 'Handle incoming WhatsApp message',
+      parameters: [
+        { name: 'from', type: 'string', description: 'Sender phone', required: true },
+        { name: 'messageId', type: 'string', description: 'Message ID', required: true },
+        { name: 'type', type: 'string', description: 'Message type', required: true },
+        { name: 'text', type: 'string', description: 'Message text', required: false },
+        { name: 'buttonId', type: 'string', description: 'Button ID if clicked', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/whatsapp.handleIncomingMessage',
+      isAsync: true
+    },
+    {
+      name: 'get_whatsapp_stats',
+      description: 'Get WhatsApp analytics',
+      parameters: [
+        { name: 'startDate', type: 'date', description: 'Start date', required: false },
+        { name: 'endDate', type: 'date', description: 'End date', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/whatsapp.getWhatsAppStats',
+      isAsync: true
+    }
+  ]
+};
+
+export const reviewsSkill: AISkill = {
+  id: 'reviews-management',
+  name: 'Reviews & Ratings',
+  nameHe: 'ביקורות ודירוגים',
+  description: 'Collect, manage, and analyze guest reviews with automated requests and AI summaries.',
+  descriptionHe: 'איסוף, ניהול וניתוח ביקורות אורחים עם בקשות אוטומטיות וסיכומי AI.',
+  category: 'analysis',
+  capabilities: ['reviews', 'ratings', 'feedback'],
+  isEnabled: true,
+  priority: 10,
+  requiredPermissions: ['booking:read', 'reviews:manage'],
+  tools: [
+    {
+      name: 'request_review',
+      description: 'Request review from guest after checkout',
+      parameters: [
+        { name: 'bookingId', type: 'string', description: 'Booking ID', required: true },
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: true },
+        { name: 'customerId', type: 'string', description: 'Customer ID', required: true },
+        { name: 'customerEmail', type: 'string', description: 'Customer email', required: true },
+        { name: 'customerName', type: 'string', description: 'Customer name', required: true },
+        { name: 'checkOutDate', type: 'date', description: 'Check-out date', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/reviews.requestReview',
+      isAsync: true
+    },
+    {
+      name: 'submit_review',
+      description: 'Submit a guest review',
+      parameters: [
+        { name: 'bookingId', type: 'string', description: 'Booking ID', required: true },
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: true },
+        { name: 'overallRating', type: 'number', description: 'Overall rating 1-5', required: true },
+        { name: 'ratings', type: 'object', description: 'Category ratings', required: true },
+        { name: 'title', type: 'string', description: 'Review title', required: true },
+        { name: 'content', type: 'string', description: 'Review content', required: true },
+        { name: 'tripType', type: 'string', description: 'Trip type', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/reviews.submitReview',
+      isAsync: true
+    },
+    {
+      name: 'get_hotel_reviews',
+      description: 'Get reviews for a hotel',
+      parameters: [
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: true },
+        { name: 'minRating', type: 'number', description: 'Minimum rating filter', required: false },
+        { name: 'sortBy', type: 'string', description: 'Sort: recent, rating, helpful', required: false },
+        { name: 'limit', type: 'number', description: 'Max results', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/reviews.getHotelReviews',
+      isAsync: true
+    },
+    {
+      name: 'respond_to_review',
+      description: 'Post hotel response to a review',
+      parameters: [
+        { name: 'reviewId', type: 'string', description: 'Review ID', required: true },
+        { name: 'responderId', type: 'string', description: 'Responder ID', required: true },
+        { name: 'responderName', type: 'string', description: 'Responder name', required: true },
+        { name: 'content', type: 'string', description: 'Response content', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/reviews.respondToReview',
+      isAsync: true
+    },
+    {
+      name: 'generate_review_summary',
+      description: 'Generate AI summary of hotel reviews',
+      parameters: [
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/reviews.generateReviewSummary',
+      isAsync: true
+    },
+    {
+      name: 'moderate_review',
+      description: 'Approve, reject, or flag a review',
+      parameters: [
+        { name: 'reviewId', type: 'string', description: 'Review ID', required: true },
+        { name: 'action', type: 'string', description: 'Action: approve, reject, flag', required: true },
+        { name: 'reason', type: 'string', description: 'Reason for action', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/reviews.moderateReview',
+      isAsync: true
+    }
+  ]
+};
+
 export const allSkills: AISkill[] = [
   // Booking
   hotelSearchSkill,
@@ -1481,7 +1799,12 @@ export const allSkills: AISkill[] = [
   customerMemorySkill,
   priceComparisonSkill,
   travelBundleSkill,
-  calendarSyncSkill
+  calendarSyncSkill,
+  // Phase 2 Skills
+  travelInsuranceSkill,
+  abandonedCartSkill,
+  whatsappBotSkill,
+  reviewsSkill
 ];
 
 export const getSkillById = (id: string): AISkill | undefined => {

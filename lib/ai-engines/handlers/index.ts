@@ -75,6 +75,57 @@ export {
   fraudHandlers
 } from './fraud';
 
+// Insurance handlers
+export {
+  getInsurancePlans,
+  getInsuranceQuote,
+  purchaseInsurance,
+  getInsurancePolicy,
+  cancelInsurance,
+  fileInsuranceClaim,
+  getClaimStatus,
+  insuranceHandlers
+} from './insurance';
+
+// Abandoned cart handlers
+export {
+  trackCartActivity,
+  markCartAbandoned,
+  getAbandonedCarts,
+  sendRecoveryEmail,
+  markCartRecovered,
+  getRecoveryLink,
+  getRecoveryStats,
+  runRecoveryCampaign,
+  abandonedCartHandlers
+} from './abandoned-cart';
+
+// WhatsApp handlers
+export {
+  sendWhatsAppMessage,
+  sendBookingConfirmation,
+  sendCheckInReminder,
+  sendBookingOptions,
+  handleIncomingMessage,
+  getConversation,
+  sendBulkNotification,
+  getWhatsAppStats,
+  whatsappHandlers
+} from './whatsapp';
+
+// Reviews handlers
+export {
+  requestReview,
+  submitReview,
+  getHotelReviews,
+  moderateReview,
+  respondToReview,
+  markReviewHelpful,
+  generateReviewSummary,
+  sendReviewRequests,
+  reviewHandlers
+} from './reviews';
+
 // Re-export types
 export type { RealtimeStreamConfig, RealtimeCallbacks } from './voice';
 export type { ScraperConfig, ScrapedPrice } from './monitoring';
@@ -212,6 +263,98 @@ export const handlerRegistry: Record<string, Function> = {
   'lib/ai-engines/handlers/fraud.runFraudChecks': async (params: any, context: any) => {
     const { runFraudChecks } = await import('./fraud');
     return runFraudChecks(params, context);
+  },
+
+  // Insurance handlers
+  'lib/ai-engines/handlers/insurance.getInsurancePlans': async (params: any, context: any) => {
+    const { getInsurancePlans } = await import('./insurance');
+    return getInsurancePlans(params, context);
+  },
+  'lib/ai-engines/handlers/insurance.getInsuranceQuote': async (params: any, context: any) => {
+    const { getInsuranceQuote } = await import('./insurance');
+    return getInsuranceQuote(params, context);
+  },
+  'lib/ai-engines/handlers/insurance.purchaseInsurance': async (params: any, context: any) => {
+    const { purchaseInsurance } = await import('./insurance');
+    return purchaseInsurance(params, context);
+  },
+  'lib/ai-engines/handlers/insurance.cancelInsurance': async (params: any, context: any) => {
+    const { cancelInsurance } = await import('./insurance');
+    return cancelInsurance(params, context);
+  },
+  'lib/ai-engines/handlers/insurance.fileInsuranceClaim': async (params: any, context: any) => {
+    const { fileInsuranceClaim } = await import('./insurance');
+    return fileInsuranceClaim(params, context);
+  },
+
+  // Abandoned cart handlers
+  'lib/ai-engines/handlers/abandoned-cart.trackCartActivity': async (params: any, context: any) => {
+    const { trackCartActivity } = await import('./abandoned-cart');
+    return trackCartActivity(params, context);
+  },
+  'lib/ai-engines/handlers/abandoned-cart.getAbandonedCarts': async (params: any, context: any) => {
+    const { getAbandonedCarts } = await import('./abandoned-cart');
+    return getAbandonedCarts(params, context);
+  },
+  'lib/ai-engines/handlers/abandoned-cart.sendRecoveryEmail': async (params: any, context: any) => {
+    const { sendRecoveryEmail } = await import('./abandoned-cart');
+    return sendRecoveryEmail(params, context);
+  },
+  'lib/ai-engines/handlers/abandoned-cart.getRecoveryStats': async (params: any, context: any) => {
+    const { getRecoveryStats } = await import('./abandoned-cart');
+    return getRecoveryStats(params, context);
+  },
+  'lib/ai-engines/handlers/abandoned-cart.runRecoveryCampaign': async (params: any, context: any) => {
+    const { runRecoveryCampaign } = await import('./abandoned-cart');
+    return runRecoveryCampaign(params, context);
+  },
+
+  // WhatsApp handlers
+  'lib/ai-engines/handlers/whatsapp.sendWhatsAppMessage': async (params: any, context: any) => {
+    const { sendWhatsAppMessage } = await import('./whatsapp');
+    return sendWhatsAppMessage(params, context);
+  },
+  'lib/ai-engines/handlers/whatsapp.sendBookingConfirmation': async (params: any, context: any) => {
+    const { sendBookingConfirmation } = await import('./whatsapp');
+    return sendBookingConfirmation(params, context);
+  },
+  'lib/ai-engines/handlers/whatsapp.sendCheckInReminder': async (params: any, context: any) => {
+    const { sendCheckInReminder } = await import('./whatsapp');
+    return sendCheckInReminder(params, context);
+  },
+  'lib/ai-engines/handlers/whatsapp.handleIncomingMessage': async (params: any, context: any) => {
+    const { handleIncomingMessage } = await import('./whatsapp');
+    return handleIncomingMessage(params, context);
+  },
+  'lib/ai-engines/handlers/whatsapp.getWhatsAppStats': async (params: any, context: any) => {
+    const { getWhatsAppStats } = await import('./whatsapp');
+    return getWhatsAppStats(params, context);
+  },
+
+  // Reviews handlers
+  'lib/ai-engines/handlers/reviews.requestReview': async (params: any, context: any) => {
+    const { requestReview } = await import('./reviews');
+    return requestReview(params, context);
+  },
+  'lib/ai-engines/handlers/reviews.submitReview': async (params: any, context: any) => {
+    const { submitReview } = await import('./reviews');
+    return submitReview(params, context);
+  },
+  'lib/ai-engines/handlers/reviews.getHotelReviews': async (params: any, context: any) => {
+    const { getHotelReviews } = await import('./reviews');
+    return getHotelReviews(params, context);
+  },
+  'lib/ai-engines/handlers/reviews.respondToReview': async (params: any, context: any) => {
+    const { respondToReview } = await import('./reviews');
+    return respondToReview(params, context);
+  },
+  'lib/ai-engines/handlers/reviews.generateReviewSummary': async (params: any, context: any) => {
+    const { generateReviewSummary } = await import('./reviews');
+    return generateReviewSummary(params, context);
+  },
+  'lib/ai-engines/handlers/reviews.moderateReview': async (params: any, context: any) => {
+    const { moderateReview } = await import('./reviews');
+    return moderateReview(params, context);
   }
 };
 

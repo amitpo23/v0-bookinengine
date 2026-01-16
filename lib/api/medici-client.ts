@@ -6,6 +6,9 @@ import type { HotelSearchResult, PreBookResponse, BookResponse } from "./medici-
 import "server-only"
 export * from "./medici-types"
 
+// Import logger
+import { apiLogger } from "@/lib/logging/api-logger"
+
 const MEDICI_BASE_URL = process.env.MEDICI_BASE_URL || "https://medici-backend.azurewebsites.net"
 const MEDICI_IMAGES_BASE = "https://medici-images.azurewebsites.net/images/"
 
@@ -58,6 +61,7 @@ export class MediciApiClient {
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`
+    const startTime = Date.now()
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -65,21 +69,44 @@ export class MediciApiClient {
       ...(options.headers as Record<string, string>),
     }
 
+    // Log request start
+    apiLogger.debug("medici", `Medici API Request: ${endpoint}`, {
+      url,
+      method: options.method || "GET",
+    })
+
     try {
       const response = await fetch(url, {
         ...options,
         headers,
       })
 
+      const duration = Date.now() - startTime
+
       if (response.status === 204) {
+        apiLogger.info("medici", `Medici API Success (204 No Content)`, {
+          endpoint,
+          duration,
+        })
         return {} as T
       }
 
       if (!response.ok) {
         const errorBody = await response.text()
 
+        // Log error
+        await apiLogger.logMediciCall({
+          action: "Medici API Error",
+          endpoint,
+          requestBody: options.body ? JSON.parse(options.body as string) : undefined,
+          statusCode: response.status,
+          duration,
+          error: errorBody,
+        })
+
         if (response.status === 401 && this.retries < this.maxRetries) {
           this.retries++
+          apiLogger.warn("medici", `Token expired, refreshing (attempt ${this.retries})`)
           await this.refreshToken()
           return this.request<T>(endpoint, options)
         }
@@ -89,9 +116,23 @@ export class MediciApiClient {
 
       const data = await response.json()
       this.retries = 0
+
+      // Log successful response
+      await apiLogger.logMediciCall({
+        action: "Medici API Success",
+        endpoint,
+        requestBody: options.body ? JSON.parse(options.body as string) : undefined,
+        responseBody: { itemCount: Array.isArray(data) ? data.length : (data?.items?.length || 1) },
+        statusCode: response.status,
+        duration,
+      })
+
       return data
     } catch (error) {
+      const duration = Date.now() - startTime
+      
       if (error instanceof Error) {
+        apiLogger.error("medici", `Medici API Exception: ${endpoint}`, error.message, { duration })
         throw error
       }
       throw new Error("Unknown error occurred")

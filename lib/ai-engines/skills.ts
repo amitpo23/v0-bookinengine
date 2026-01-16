@@ -1082,6 +1082,295 @@ export const travelBundleSkill: AISkill = {
   ]
 };
 
+// ========================================
+// PHASE 1 CRITICAL SKILLS
+// ========================================
+
+export const paymentProcessingSkill: AISkill = {
+  id: 'payment-processing',
+  name: 'Payment Processing',
+  nameHe: 'עיבוד תשלומים',
+  description: 'Process payments securely using Stripe. Supports credit cards, Apple Pay, Google Pay, and 3D Secure.',
+  descriptionHe: 'עיבוד תשלומים מאובטח באמצעות Stripe. תומך בכרטיסי אשראי, Apple Pay, Google Pay ו-3D Secure.',
+  category: 'booking',
+  capabilities: ['payment-processing'],
+  isEnabled: true,
+  priority: 4,
+  requiredPermissions: ['payment:process', 'booking:write'],
+  tools: [
+    {
+      name: 'create_payment_intent',
+      description: 'Create a Stripe payment intent for a booking',
+      parameters: [
+        { name: 'bookingId', type: 'string', description: 'Booking ID', required: true },
+        { name: 'amount', type: 'number', description: 'Amount in cents', required: true },
+        { name: 'currency', type: 'string', description: 'Currency code (USD, EUR, ILS)', required: true },
+        { name: 'customerEmail', type: 'string', description: 'Customer email', required: true },
+        { name: 'customerName', type: 'string', description: 'Customer name', required: false },
+        { name: 'description', type: 'string', description: 'Payment description', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/payment.createPaymentIntent',
+      isAsync: true,
+      timeout: 30000
+    },
+    {
+      name: 'process_payment',
+      description: 'Process a payment using an existing payment intent',
+      parameters: [
+        { name: 'paymentIntentId', type: 'string', description: 'Stripe Payment Intent ID', required: true },
+        { name: 'paymentMethodId', type: 'string', description: 'Stripe Payment Method ID', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/payment.processPayment',
+      isAsync: true,
+      timeout: 60000
+    },
+    {
+      name: 'verify_payment',
+      description: 'Verify a payment was successful',
+      parameters: [
+        { name: 'paymentIntentId', type: 'string', description: 'Stripe Payment Intent ID', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/payment.verifyPayment',
+      isAsync: true
+    },
+    {
+      name: 'get_payment_status',
+      description: 'Get current status of a payment',
+      parameters: [
+        { name: 'paymentIntentId', type: 'string', description: 'Stripe Payment Intent ID', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/payment.getPaymentStatus',
+      isAsync: true
+    },
+    {
+      name: 'cancel_payment',
+      description: 'Cancel a pending payment intent',
+      parameters: [
+        { name: 'paymentIntentId', type: 'string', description: 'Stripe Payment Intent ID', required: true },
+        { name: 'reason', type: 'string', description: 'Cancellation reason', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/payment.cancelPayment',
+      isAsync: true
+    }
+  ]
+};
+
+export const refundProcessingSkill: AISkill = {
+  id: 'refund-processing',
+  name: 'Refund Processing',
+  nameHe: 'עיבוד החזרים',
+  description: 'Process refunds automatically based on cancellation policy. Supports full and partial refunds.',
+  descriptionHe: 'עיבוד החזרים אוטומטי על פי מדיניות הביטול. תומך בהחזרים מלאים וחלקיים.',
+  category: 'booking',
+  capabilities: ['refund-processing', 'cancellation'],
+  isEnabled: true,
+  priority: 5,
+  requiredPermissions: ['payment:refund', 'booking:cancel'],
+  tools: [
+    {
+      name: 'calculate_refund_amount',
+      description: 'Calculate refund amount based on cancellation policy',
+      parameters: [
+        { name: 'bookingId', type: 'string', description: 'Booking ID', required: true },
+        { name: 'paymentIntentId', type: 'string', description: 'Original payment intent ID', required: true },
+        { name: 'cancellationDate', type: 'date', description: 'Cancellation date', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/refund.calculateRefundAmount',
+      isAsync: true
+    },
+    {
+      name: 'process_refund',
+      description: 'Process a full refund for a booking',
+      parameters: [
+        { name: 'paymentIntentId', type: 'string', description: 'Original payment intent ID', required: true },
+        { name: 'bookingId', type: 'string', description: 'Booking ID', required: true },
+        { name: 'reason', type: 'string', description: 'Refund reason', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/refund.processRefund',
+      isAsync: true,
+      timeout: 30000
+    },
+    {
+      name: 'process_partial_refund',
+      description: 'Process a partial refund for a booking',
+      parameters: [
+        { name: 'paymentIntentId', type: 'string', description: 'Original payment intent ID', required: true },
+        { name: 'bookingId', type: 'string', description: 'Booking ID', required: true },
+        { name: 'amount', type: 'number', description: 'Refund amount in cents', required: true },
+        { name: 'reason', type: 'string', description: 'Refund reason', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/refund.processPartialRefund',
+      isAsync: true,
+      timeout: 30000
+    },
+    {
+      name: 'get_refund_status',
+      description: 'Get status of a refund',
+      parameters: [
+        { name: 'refundId', type: 'string', description: 'Stripe Refund ID', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/refund.getRefundStatus',
+      isAsync: true
+    },
+    {
+      name: 'auto_refund_with_policy',
+      description: 'Automatically refund based on cancellation policy',
+      parameters: [
+        { name: 'bookingId', type: 'string', description: 'Booking ID', required: true },
+        { name: 'paymentIntentId', type: 'string', description: 'Original payment intent ID', required: true },
+        { name: 'reason', type: 'string', description: 'Cancellation reason', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/refund.autoRefundWithPolicy',
+      isAsync: true,
+      timeout: 60000
+    }
+  ]
+};
+
+export const invoiceGenerationSkill: AISkill = {
+  id: 'invoice-generation',
+  name: 'Invoice Generation',
+  nameHe: 'הפקת חשבוניות',
+  description: 'Generate professional invoices and receipts in multiple languages with PDF export.',
+  descriptionHe: 'הפקת חשבוניות מקצועיות וקבלות במספר שפות עם ייצוא PDF.',
+  category: 'communication',
+  capabilities: ['invoice', 'pdf-generation', 'email'],
+  isEnabled: true,
+  priority: 6,
+  requiredPermissions: ['booking:read', 'invoice:generate'],
+  tools: [
+    {
+      name: 'generate_invoice',
+      description: 'Generate an invoice for a booking',
+      parameters: [
+        { name: 'bookingId', type: 'string', description: 'Booking ID', required: true },
+        { name: 'hotelName', type: 'string', description: 'Hotel name', required: true },
+        { name: 'roomType', type: 'string', description: 'Room type', required: true },
+        { name: 'checkIn', type: 'date', description: 'Check-in date', required: true },
+        { name: 'checkOut', type: 'date', description: 'Check-out date', required: true },
+        { name: 'totalPrice', type: 'number', description: 'Total price in cents', required: true },
+        { name: 'currency', type: 'string', description: 'Currency code', required: true },
+        { name: 'customerName', type: 'string', description: 'Customer name', required: true },
+        { name: 'customerEmail', type: 'string', description: 'Customer email', required: true },
+        { name: 'confirmationNumber', type: 'string', description: 'Confirmation number', required: true },
+        { name: 'guests', type: 'number', description: 'Number of guests', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/invoice.generateInvoice',
+      isAsync: true
+    },
+    {
+      name: 'send_invoice_email',
+      description: 'Send invoice via email',
+      parameters: [
+        { name: 'to', type: 'string', description: 'Recipient email', required: true },
+        { name: 'invoiceNumber', type: 'string', description: 'Invoice number', required: true },
+        { name: 'invoiceHtml', type: 'string', description: 'Invoice HTML content', required: true },
+        { name: 'bookingId', type: 'string', description: 'Booking ID', required: true },
+        { name: 'customerName', type: 'string', description: 'Customer name', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/invoice.sendInvoiceEmail',
+      isAsync: true
+    },
+    {
+      name: 'generate_receipt',
+      description: 'Generate a receipt for a completed payment',
+      parameters: [
+        { name: 'bookingId', type: 'string', description: 'Booking ID', required: true },
+        { name: 'paymentId', type: 'string', description: 'Payment ID', required: true },
+        { name: 'amount', type: 'number', description: 'Payment amount in cents', required: true },
+        { name: 'currency', type: 'string', description: 'Currency code', required: true },
+        { name: 'customerName', type: 'string', description: 'Customer name', required: true },
+        { name: 'customerEmail', type: 'string', description: 'Customer email', required: true },
+        { name: 'hotelName', type: 'string', description: 'Hotel name', required: true },
+        { name: 'confirmationNumber', type: 'string', description: 'Confirmation number', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/invoice.generateReceipt',
+      isAsync: true
+    }
+  ]
+};
+
+export const fraudDetectionSkill: AISkill = {
+  id: 'fraud-detection',
+  name: 'Fraud Detection',
+  nameHe: 'זיהוי הונאות',
+  description: 'Analyze bookings for fraud risk using multiple signals: velocity, email patterns, geolocation, and behavior analysis.',
+  descriptionHe: 'ניתוח הזמנות לזיהוי סיכוני הונאה באמצעות אותות מרובים: קצב, דפוסי אימייל, מיקום גיאוגרפי וניתוח התנהגות.',
+  category: 'analysis',
+  capabilities: ['fraud-detection', 'risk-scoring', 'security'],
+  isEnabled: true,
+  priority: 3,
+  requiredPermissions: ['booking:read', 'security:analyze'],
+  tools: [
+    {
+      name: 'analyze_booking_risk',
+      description: 'Analyze a booking for fraud risk and get a risk score',
+      parameters: [
+        { name: 'bookingId', type: 'string', description: 'Booking ID', required: true },
+        { name: 'customerEmail', type: 'string', description: 'Customer email', required: true },
+        { name: 'customerName', type: 'string', description: 'Customer name', required: true },
+        { name: 'amount', type: 'number', description: 'Booking amount in cents', required: true },
+        { name: 'currency', type: 'string', description: 'Currency code', required: true },
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: true },
+        { name: 'checkIn', type: 'date', description: 'Check-in date', required: true },
+        { name: 'checkOut', type: 'date', description: 'Check-out date', required: true },
+        { name: 'ipAddress', type: 'string', description: 'Customer IP address', required: false },
+        { name: 'billingCountry', type: 'string', description: 'Billing country code', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/fraud.analyzeBookingRisk',
+      isAsync: true
+    },
+    {
+      name: 'flag_suspicious_activity',
+      description: 'Flag suspicious activity for review',
+      parameters: [
+        { name: 'type', type: 'string', description: 'Type: velocity, mismatch, pattern, blacklist, geolocation, device', required: true },
+        { name: 'severity', type: 'string', description: 'Severity: low, medium, high, critical', required: true },
+        { name: 'description', type: 'string', description: 'Activity description', required: true },
+        { name: 'bookingId', type: 'string', description: 'Related booking ID', required: false },
+        { name: 'customerId', type: 'string', description: 'Related customer ID', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/fraud.flagSuspiciousActivity',
+      isAsync: true
+    },
+    {
+      name: 'get_risk_score',
+      description: 'Get a quick risk score for a booking',
+      parameters: [
+        { name: 'bookingId', type: 'string', description: 'Booking ID', required: true },
+        { name: 'customerEmail', type: 'string', description: 'Customer email', required: true },
+        { name: 'amount', type: 'number', description: 'Booking amount in cents', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/fraud.getRiskScore',
+      isAsync: true
+    },
+    {
+      name: 'check_blacklist',
+      description: 'Check if customer is on blacklist',
+      parameters: [
+        { name: 'email', type: 'string', description: 'Customer email', required: false },
+        { name: 'phone', type: 'string', description: 'Customer phone', required: false },
+        { name: 'ipAddress', type: 'string', description: 'Customer IP address', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/fraud.checkBlacklist',
+      isAsync: true
+    },
+    {
+      name: 'run_fraud_checks',
+      description: 'Run all fraud checks on a booking',
+      parameters: [
+        { name: 'bookingId', type: 'string', description: 'Booking ID', required: true },
+        { name: 'customerEmail', type: 'string', description: 'Customer email', required: true },
+        { name: 'customerName', type: 'string', description: 'Customer name', required: true },
+        { name: 'amount', type: 'number', description: 'Booking amount in cents', required: true },
+        { name: 'currency', type: 'string', description: 'Currency code', required: true }
+      ],
+      handler: 'lib/ai-engines/handlers/fraud.runFraudChecks',
+      isAsync: true
+    }
+  ]
+};
+
 export const calendarSyncSkill: AISkill = {
   id: 'calendar-sync',
   name: 'Calendar Integration',
@@ -1161,6 +1450,11 @@ export const allSkills: AISkill[] = [
   hotelPrebookSkill,
   hotelBookingSkill,
   bookingCancellationSkill,
+  // Phase 1 Critical Skills
+  paymentProcessingSkill,
+  refundProcessingSkill,
+  invoiceGenerationSkill,
+  fraudDetectionSkill,
   // Price Monitoring
   priceMonitoringSkill,
   // Communication

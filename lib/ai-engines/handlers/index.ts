@@ -34,6 +34,47 @@ export {
   monitoringHandlers
 } from './monitoring';
 
+// Payment handlers
+export {
+  createPaymentIntent,
+  processPayment,
+  verifyPayment,
+  getPaymentStatus,
+  cancelPayment,
+  getBookingPayments,
+  paymentHandlers
+} from './payment';
+
+// Refund handlers
+export {
+  calculateRefundAmount,
+  processRefund,
+  processPartialRefund,
+  getRefundStatus,
+  getBookingRefunds,
+  autoRefundWithPolicy,
+  refundHandlers
+} from './refund';
+
+// Invoice handlers
+export {
+  generateInvoice,
+  sendInvoiceEmail,
+  getInvoice,
+  generateReceipt,
+  invoiceHandlers
+} from './invoice';
+
+// Fraud detection handlers
+export {
+  analyzeBookingRisk,
+  flagSuspiciousActivity,
+  getRiskScore,
+  checkBlacklist,
+  runFraudChecks,
+  fraudHandlers
+} from './fraud';
+
 // Re-export types
 export type { RealtimeStreamConfig, RealtimeCallbacks } from './voice';
 export type { ScraperConfig, ScrapedPrice } from './monitoring';
@@ -91,6 +132,86 @@ export const handlerRegistry: Record<string, Function> = {
   'lib/ai-engines/handlers/monitoring.analyzePriceTrends': async (params: any, context: any) => {
     const { analyzePriceTrends } = await import('./monitoring');
     return analyzePriceTrends(params, context);
+  },
+
+  // Payment handlers
+  'lib/ai-engines/handlers/payment.createPaymentIntent': async (params: any, context: any) => {
+    const { createPaymentIntent } = await import('./payment');
+    return createPaymentIntent(params, context);
+  },
+  'lib/ai-engines/handlers/payment.processPayment': async (params: any, context: any) => {
+    const { processPayment } = await import('./payment');
+    return processPayment(params, context);
+  },
+  'lib/ai-engines/handlers/payment.verifyPayment': async (params: any, context: any) => {
+    const { verifyPayment } = await import('./payment');
+    return verifyPayment(params, context);
+  },
+  'lib/ai-engines/handlers/payment.getPaymentStatus': async (params: any, context: any) => {
+    const { getPaymentStatus } = await import('./payment');
+    return getPaymentStatus(params, context);
+  },
+  'lib/ai-engines/handlers/payment.cancelPayment': async (params: any, context: any) => {
+    const { cancelPayment } = await import('./payment');
+    return cancelPayment(params, context);
+  },
+
+  // Refund handlers
+  'lib/ai-engines/handlers/refund.calculateRefundAmount': async (params: any, context: any) => {
+    const { calculateRefundAmount } = await import('./refund');
+    return calculateRefundAmount(params, context);
+  },
+  'lib/ai-engines/handlers/refund.processRefund': async (params: any, context: any) => {
+    const { processRefund } = await import('./refund');
+    return processRefund(params, context);
+  },
+  'lib/ai-engines/handlers/refund.processPartialRefund': async (params: any, context: any) => {
+    const { processPartialRefund } = await import('./refund');
+    return processPartialRefund(params, context);
+  },
+  'lib/ai-engines/handlers/refund.getRefundStatus': async (params: any, context: any) => {
+    const { getRefundStatus } = await import('./refund');
+    return getRefundStatus(params, context);
+  },
+  'lib/ai-engines/handlers/refund.autoRefundWithPolicy': async (params: any, context: any) => {
+    const { autoRefundWithPolicy } = await import('./refund');
+    return autoRefundWithPolicy(params, context);
+  },
+
+  // Invoice handlers
+  'lib/ai-engines/handlers/invoice.generateInvoice': async (params: any, context: any) => {
+    const { generateInvoice } = await import('./invoice');
+    return generateInvoice(params, context);
+  },
+  'lib/ai-engines/handlers/invoice.sendInvoiceEmail': async (params: any, context: any) => {
+    const { sendInvoiceEmail } = await import('./invoice');
+    return sendInvoiceEmail(params, context);
+  },
+  'lib/ai-engines/handlers/invoice.generateReceipt': async (params: any, context: any) => {
+    const { generateReceipt } = await import('./invoice');
+    return generateReceipt(params, context);
+  },
+
+  // Fraud detection handlers
+  'lib/ai-engines/handlers/fraud.analyzeBookingRisk': async (params: any, context: any) => {
+    const { analyzeBookingRisk } = await import('./fraud');
+    return analyzeBookingRisk(params, context);
+  },
+  'lib/ai-engines/handlers/fraud.flagSuspiciousActivity': async (params: any, context: any) => {
+    const { flagSuspiciousActivity } = await import('./fraud');
+    return flagSuspiciousActivity(params, context);
+  },
+  'lib/ai-engines/handlers/fraud.getRiskScore': async (params: any, context: any) => {
+    const { getRiskScore } = await import('./fraud');
+    return getRiskScore(params, context);
+  },
+  'lib/ai-engines/handlers/fraud.checkBlacklist': async (params: any, context: any) => {
+    const { checkBlacklist } = await import('./fraud');
+    return checkBlacklist(params, context);
+  },
+  'lib/ai-engines/handlers/fraud.runFraudChecks': async (params: any, context: any) => {
+    const { runFraudChecks } = await import('./fraud');
+    return runFraudChecks(params, context);
   }
 };
 

@@ -179,7 +179,8 @@ class ApiLogger {
     if (!db) return
 
     try {
-      await db.from("api_logs").insert({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (db.from("api_logs") as any).insert({
         timestamp: entry.timestamp,
         level: entry.level,
         category: entry.category,

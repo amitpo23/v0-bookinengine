@@ -1762,6 +1762,125 @@ export const reviewsSkill: AISkill = {
   ]
 };
 
+// Revenue Dashboard Skill
+export const revenueDashboardSkill: AISkill = {
+  id: 'revenue-dashboard',
+  name: 'Revenue Dashboard',
+  nameHe: 'דוח הכנסות',
+  description: 'Financial reporting, revenue analytics, and KPI tracking for hotel operations.',
+  descriptionHe: 'דוחות פיננסיים, אנליטיקת הכנסות ומעקב KPI לפעילות המלון.',
+  category: 'analysis',
+  capabilities: ['reporting', 'analytics', 'revenue'],
+  isEnabled: true,
+  priority: 8,
+  requiredPermissions: ['analytics:read', 'finance:read'],
+  tools: [
+    {
+      name: 'get_revenue_summary',
+      description: 'Get revenue summary with totals, comparisons and trends',
+      parameters: [
+        { name: 'period', type: 'string', description: 'Period: day, week, month, quarter, year', required: false },
+        { name: 'startDate', type: 'date', description: 'Start date', required: false },
+        { name: 'endDate', type: 'date', description: 'End date', required: false },
+        { name: 'compareWithPrevious', type: 'boolean', description: 'Compare with previous period', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/revenue-dashboard.getRevenueSummary',
+      isAsync: true
+    },
+    {
+      name: 'get_revenue_breakdown',
+      description: 'Get revenue breakdown by source, hotel, room type, or channel',
+      parameters: [
+        { name: 'breakdownBy', type: 'string', description: 'Breakdown: source, hotel, room_type, channel', required: false },
+        { name: 'period', type: 'string', description: 'Period: day, week, month, quarter, year', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/revenue-dashboard.getRevenueBreakdown',
+      isAsync: true
+    },
+    {
+      name: 'get_kpi_dashboard',
+      description: 'Get KPI dashboard with all key performance indicators',
+      parameters: [
+        { name: 'period', type: 'string', description: 'Period: day, week, month, quarter, year', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/revenue-dashboard.getKPIDashboard',
+      isAsync: true
+    },
+    {
+      name: 'generate_revenue_report',
+      description: 'Generate comprehensive revenue report in various formats',
+      parameters: [
+        { name: 'reportType', type: 'string', description: 'Report type: summary, detailed, executive', required: false },
+        { name: 'period', type: 'string', description: 'Period: day, week, month, quarter, year', required: false },
+        { name: 'format', type: 'string', description: 'Format: json, html, pdf', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/revenue-dashboard.generateRevenueReport',
+      isAsync: true
+    }
+  ]
+};
+
+// Demand Forecasting Skill
+export const demandForecastingSkill: AISkill = {
+  id: 'demand-forecasting',
+  name: 'Demand Forecasting',
+  nameHe: 'חיזוי ביקוש',
+  description: 'AI-powered demand prediction, pricing recommendations, and capacity planning.',
+  descriptionHe: 'חיזוי ביקוש מבוסס AI, המלצות תמחור ותכנון קיבולת.',
+  category: 'analysis',
+  capabilities: ['forecasting', 'pricing', 'analytics'],
+  isEnabled: true,
+  priority: 9,
+  requiredPermissions: ['analytics:read', 'pricing:write'],
+  tools: [
+    {
+      name: 'get_demand_forecast',
+      description: 'Get demand forecast for upcoming period with confidence scores',
+      parameters: [
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: false },
+        { name: 'startDate', type: 'date', description: 'Start date', required: false },
+        { name: 'days', type: 'number', description: 'Number of days to forecast', required: false },
+        { name: 'roomType', type: 'string', description: 'Room type filter', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/demand-forecasting.getDemandForecast',
+      isAsync: true
+    },
+    {
+      name: 'get_pricing_recommendations',
+      description: 'Get dynamic pricing recommendations based on demand forecast',
+      parameters: [
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: false },
+        { name: 'date', type: 'date', description: 'Target date', required: false },
+        { name: 'roomTypes', type: 'array', description: 'Room types to price', required: false },
+        { name: 'competitorPrices', type: 'object', description: 'Competitor prices for comparison', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/demand-forecasting.getPricingRecommendations',
+      isAsync: true
+    },
+    {
+      name: 'analyze_seasonality',
+      description: 'Analyze seasonal patterns and upcoming events impact',
+      parameters: [
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: false },
+        { name: 'year', type: 'number', description: 'Year to analyze', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/demand-forecasting.analyzeSeasonality',
+      isAsync: true
+    },
+    {
+      name: 'detect_demand_anomalies',
+      description: 'Detect unusual demand patterns and anomalies',
+      parameters: [
+        { name: 'hotelId', type: 'string', description: 'Hotel ID', required: false },
+        { name: 'period', type: 'string', description: 'Period to analyze', required: false },
+        { name: 'threshold', type: 'number', description: 'Deviation threshold (%)', required: false }
+      ],
+      handler: 'lib/ai-engines/handlers/demand-forecasting.detectDemandAnomalies',
+      isAsync: true
+    }
+  ]
+};
+
 export const allSkills: AISkill[] = [
   // Booking
   hotelSearchSkill,
@@ -1804,7 +1923,10 @@ export const allSkills: AISkill[] = [
   travelInsuranceSkill,
   abandonedCartSkill,
   whatsappBotSkill,
-  reviewsSkill
+  reviewsSkill,
+  // Phase 3 Skills - Analytics & Forecasting
+  revenueDashboardSkill,
+  demandForecastingSkill
 ];
 
 export const getSkillById = (id: string): AISkill | undefined => {

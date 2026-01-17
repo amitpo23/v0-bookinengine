@@ -126,6 +126,16 @@ export {
   reviewHandlers
 } from './reviews';
 
+// Revenue Dashboard handlers
+export {
+  revenueDashboardHandler
+} from './revenue-dashboard';
+
+// Demand Forecasting handlers
+export {
+  demandForecastingHandler
+} from './demand-forecasting';
+
 // Re-export types
 export type { RealtimeStreamConfig, RealtimeCallbacks } from './voice';
 export type { ScraperConfig, ScrapedPrice } from './monitoring';
@@ -355,6 +365,42 @@ export const handlerRegistry: Record<string, Function> = {
   'lib/ai-engines/handlers/reviews.moderateReview': async (params: any, context: any) => {
     const { moderateReview } = await import('./reviews');
     return moderateReview(params, context);
+  },
+
+  // Revenue Dashboard handlers
+  'lib/ai-engines/handlers/revenue-dashboard.getRevenueSummary': async (params: any, context: any) => {
+    const { revenueDashboardHandler } = await import('./revenue-dashboard');
+    return revenueDashboardHandler.execute('get_revenue_summary', params, context);
+  },
+  'lib/ai-engines/handlers/revenue-dashboard.getRevenueBreakdown': async (params: any, context: any) => {
+    const { revenueDashboardHandler } = await import('./revenue-dashboard');
+    return revenueDashboardHandler.execute('get_revenue_breakdown', params, context);
+  },
+  'lib/ai-engines/handlers/revenue-dashboard.getKPIDashboard': async (params: any, context: any) => {
+    const { revenueDashboardHandler } = await import('./revenue-dashboard');
+    return revenueDashboardHandler.execute('get_kpi_dashboard', params, context);
+  },
+  'lib/ai-engines/handlers/revenue-dashboard.generateRevenueReport': async (params: any, context: any) => {
+    const { revenueDashboardHandler } = await import('./revenue-dashboard');
+    return revenueDashboardHandler.execute('generate_revenue_report', params, context);
+  },
+
+  // Demand Forecasting handlers
+  'lib/ai-engines/handlers/demand-forecasting.getDemandForecast': async (params: any, context: any) => {
+    const { demandForecastingHandler } = await import('./demand-forecasting');
+    return demandForecastingHandler.execute('get_demand_forecast', params, context);
+  },
+  'lib/ai-engines/handlers/demand-forecasting.getPricingRecommendations': async (params: any, context: any) => {
+    const { demandForecastingHandler } = await import('./demand-forecasting');
+    return demandForecastingHandler.execute('get_pricing_recommendations', params, context);
+  },
+  'lib/ai-engines/handlers/demand-forecasting.analyzeSeasonality': async (params: any, context: any) => {
+    const { demandForecastingHandler } = await import('./demand-forecasting');
+    return demandForecastingHandler.execute('analyze_seasonality', params, context);
+  },
+  'lib/ai-engines/handlers/demand-forecasting.detectDemandAnomalies': async (params: any, context: any) => {
+    const { demandForecastingHandler } = await import('./demand-forecasting');
+    return demandForecastingHandler.execute('detect_demand_anomalies', params, context);
   }
 };
 

@@ -176,6 +176,7 @@ function ScarletTemplateContent() {
   const [showAiChat, setShowAiChat] = useState(false)
   const [showApiResults, setShowApiResults] = useState(false)
   const [prebookExpiry, setPrebookExpiry] = useState<Date | null>(null)
+  const [scarletSearchResults, setScarletSearchResults] = useState<any[]>([])
 
   // Track page view on mount
   useEffect(() => {
@@ -196,14 +197,14 @@ function ScarletTemplateContent() {
   useEffect(() => {
     console.log('=== SCARLET DEBUG ===')
     console.log('showApiResults:', showApiResults)
-    console.log('booking.searchResults:', booking.searchResults)
-    console.log('booking.searchResults.length:', booking.searchResults?.length || 0)
-    if (booking.searchResults.length > 0) {
-      console.log('First hotel:', booking.searchResults[0])
-      console.log('Rooms in first hotel:', booking.searchResults[0]?.rooms?.length || 0)
-      console.log('First 3 rooms:', booking.searchResults[0]?.rooms?.slice(0, 3))
+    console.log('scarletSearchResults:', scarletSearchResults)
+    console.log('scarletSearchResults.length:', scarletSearchResults?.length || 0)
+    if (scarletSearchResults.length > 0) {
+      console.log('First hotel:', scarletSearchResults[0])
+      console.log('Rooms in first hotel:', scarletSearchResults[0]?.rooms?.length || 0)
+      console.log('First 3 rooms:', scarletSearchResults[0]?.rooms?.slice(0, 3))
     }
-  }, [showApiResults, booking.searchResults])
+  }, [showApiResults, scarletSearchResults])
 
   // Auto-rotate background images every 5 seconds
   useEffect(() => {
@@ -244,7 +245,7 @@ function ScarletTemplateContent() {
     console.log('=== STARTING SEARCH ===')
     console.log('Search params:', { checkIn, checkOut, guests })
 
-    // Call real Medici API - Search Tel Aviv hotels, then filter for Scarlet
+    // Call real Medici API - Search Tel Aviv hotels
     const searchResult = await booking.searchHotels({
       checkIn: new Date(checkIn),
       checkOut: new Date(checkOut),
@@ -255,16 +256,30 @@ function ScarletTemplateContent() {
 
     console.log('=== AFTER SEARCH ===')
     console.log('searchResult:', searchResult)
-    console.log('booking.searchResults:', booking.searchResults)
-    console.log('booking.searchResults.length:', booking.searchResults?.length || 0)
+    console.log('searchResult.length:', searchResult?.length || 0)
     
-    // Log all hotel names to find the exact Scarlet hotel name
+    // Log all hotel names from searchResult
     console.log('=== ALL HOTEL NAMES ===')
-    booking.searchResults?.forEach((hotel: any, index: number) => {
-      console.log(`${index + 1}. ${hotel.name || hotel.hotelName || 'Unknown'}`)
+    searchResult?.forEach((hotel: any, index: number) => {
+      console.log(`${index + 1}. ${hotel.hotelName || 'Unknown'} (ID: ${hotel.hotelId})`)
     })
 
-    alert(`✅ Search completed! Found ${booking.searchResults?.length || 0} hotels. Check console for hotel names.`)
+    // Filter for Scarlet hotel only
+    const scarletHotels = searchResult?.filter((hotel: any) => 
+      hotel.hotelName.toLowerCase().includes('scarlet') ||
+      hotel.hotelId === 863233  // Scarlet Hotel ID from the link you provided
+    ) || []
+
+    console.log('=== FILTERED RESULTS ===')
+    console.log('Found Scarlet hotels:', scarletHotels.length)
+    if (scarletHotels.length > 0) {
+      console.log('First Scarlet hotel:', scarletHotels[0])
+    }
+
+    // Save to state for rendering
+    setScarletSearchResults(scarletHotels)
+
+    alert(`✅ Search completed! Found ${scarletHotels.length || 0} Scarlet hotel(s). Check console for details.`)
 
     setShowApiResults(true)
     console.log('setShowApiResults(true) called')
@@ -275,7 +290,7 @@ function ScarletTemplateContent() {
     console.log('=== ROOM SELECTION STARTED ===')
     console.log('Room clicked:', room)
     console.log('checkIn:', checkIn, 'checkOut:', checkOut)
-    console.log('booking.searchResults:', booking.searchResults)
+    console.log('scarletSearchResults:', scarletSearchResults)
 
     if (!checkIn || !checkOut) {
       // Use static room data if no dates selected
@@ -284,8 +299,8 @@ function ScarletTemplateContent() {
     }
 
     // If we have API results, do a real prebook
-    if (booking.searchResults.length > 0) {
-      const hotel = booking.searchResults[0]
+    if (scarletSearchResults.length > 0) {
+      const hotel = scarletSearchResults[0]
       console.log('Hotel from API:', hotel)
       console.log('Hotel rooms:', hotel.rooms)
       
@@ -642,14 +657,14 @@ function ScarletTemplateContent() {
 
         <div className="space-y-16">
           {(() => {
-            const shouldShowApi = showApiResults && booking.searchResults.length > 0
+            const shouldShowApi = showApiResults && scarletSearchResults.length > 0
             const roomsToRender = shouldShowApi 
-              ? (booking.searchResults[0]?.rooms || []).map((apiRoom: any, idx: number) => normalizeApiRoom(apiRoom, idx))
+              ? (scarletSearchResults[0]?.rooms || []).map((apiRoom: any, idx: number) => normalizeApiRoom(apiRoom, idx))
               : scarletRoomTypes
             
             console.log('=== ROOM RENDER ===')
             console.log('showApiResults:', showApiResults)
-            console.log('booking.searchResults.length:', booking.searchResults?.length || 0)
+            console.log('scarletSearchResults.length:', scarletSearchResults?.length || 0)
             console.log('shouldShowApi:', shouldShowApi)
             console.log('roomsToRender.length:', roomsToRender.length)
             console.log('First room:', roomsToRender[0])

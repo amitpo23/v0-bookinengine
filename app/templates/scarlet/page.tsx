@@ -244,13 +244,14 @@ function ScarletTemplateContent() {
     console.log('=== STARTING SEARCH ===')
     console.log('Search params:', { checkIn, checkOut, guests })
 
-    // Call real Medici API
+    // Call real Medici API - Search specifically for Scarlet Hotel
     const searchResult = await booking.searchHotels({
       checkIn: new Date(checkIn),
       checkOut: new Date(checkOut),
       adults: guests,
       children: [],
-      city: "Tel Aviv", // Search Tel Aviv hotels
+      hotelName: "Scarlet", // Search specifically for Scarlet Hotel
+      city: "Tel Aviv",
     })
 
     console.log('=== AFTER SEARCH ===')

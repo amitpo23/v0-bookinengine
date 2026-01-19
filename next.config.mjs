@@ -3,9 +3,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  turbopack: {
-    root: 'c:\\Users\\97250\\Desktop\\booking engine\\v0-bookinengine',
-  },
   images: {
     unoptimized: true,
     remotePatterns: [

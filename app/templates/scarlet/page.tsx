@@ -244,13 +244,12 @@ function ScarletTemplateContent() {
     console.log('=== STARTING SEARCH ===')
     console.log('Search params:', { checkIn, checkOut, guests })
 
-    // Call real Medici API - Search specifically for Scarlet Hotel
+    // Call real Medici API - Search Tel Aviv hotels, then filter for Scarlet
     const searchResult = await booking.searchHotels({
       checkIn: new Date(checkIn),
       checkOut: new Date(checkOut),
       adults: guests,
       children: [],
-      hotelName: "Scarlet", // Search specifically for Scarlet Hotel
       city: "Tel Aviv",
     })
 
@@ -258,8 +257,14 @@ function ScarletTemplateContent() {
     console.log('searchResult:', searchResult)
     console.log('booking.searchResults:', booking.searchResults)
     console.log('booking.searchResults.length:', booking.searchResults?.length || 0)
+    
+    // Log all hotel names to find the exact Scarlet hotel name
+    console.log('=== ALL HOTEL NAMES ===')
+    booking.searchResults?.forEach((hotel: any, index: number) => {
+      console.log(`${index + 1}. ${hotel.name || hotel.hotelName || 'Unknown'}`)
+    })
 
-    alert(`✅ Search completed! Found ${booking.searchResults?.length || 0} hotels`)
+    alert(`✅ Search completed! Found ${booking.searchResults?.length || 0} hotels. Check console for hotel names.`)
 
     setShowApiResults(true)
     console.log('setShowApiResults(true) called')

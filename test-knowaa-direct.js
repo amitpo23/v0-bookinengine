@@ -9,10 +9,11 @@ async function testKnowaaSearch() {
   const body = {
     dateFrom: "2026-02-01",
     dateTo: "2026-02-05",
+    hotelName: "Scarlet",
     city: "Tel Aviv",
     pax: [{ adults: 2, children: [] }],
     stars: null,
-    limit: 10,
+    limit: 100,
     ShowExtendedData: true,
   }
 
@@ -39,9 +40,37 @@ async function testKnowaaSearch() {
     const data = await response.json()
     console.log("\n✅ Success! Found", data.items?.length || 0, "hotels\n")
 
+    // Search for Scarlet hotel
+    if (data.items && data.items.length > 0) {
+      const scarlet = data.items.filter(hotel => 
+        hotel.name?.toLowerCase().includes("scarlet")
+      )
+      
+      if (scarlet.length > 0) {
+        console.log(`🎯 FOUND SCARLET HOTEL! (${scarlet.length} results)\n`)
+        scarlet.forEach((hotel, i) => {
+          console.log(`${i + 1}. ${hotel.name}`)
+          console.log(`   City: ${hotel.city || "N/A"}`)
+          console.log(`   Stars: ${hotel.stars || 0}`)
+          console.log(`   Rooms: ${hotel.items?.length || 0}`)
+          if (hotel.items && hotel.items[0]) {
+            console.log(`   Price: ${hotel.items[0].priceBeforeDiscount} ${hotel.items[0].currency}`)
+          }
+          console.log()
+        })
+      } else {
+        console.log("❌ Scarlet hotel not found in results\n")
+        console.log("First 10 hotels:")
+        data.items.slice(0, 10).forEach((hotel, i) => {
+          console.log(`${i + 1}. ${hotel.name}`)
+        })
+      }
+    }
+
     // Show first 3 hotels
     if (data.items && data.items.length > 0) {
-      data.items.slice(0, 3).forEach((hotel, i) => {
+      console.log("\nAll hotels found:")
+      data.items.slice(0, 5).forEach((hotel, i) => {
         console.log(`${i + 1}. ${hotel.name}`)
         console.log(`   City: ${hotel.city || "N/A"}`)
         console.log(`   Stars: ${hotel.stars || 0}`)

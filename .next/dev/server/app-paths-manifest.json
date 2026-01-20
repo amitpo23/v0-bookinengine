@@ -1,1 +1,6 @@
-{}
+{
+  "/api/booking/book/route": "app/api/booking/book/route.js",
+  "/api/booking/prebook/route": "app/api/booking/prebook/route.js",
+  "/api/hotels/search/route": "app/api/hotels/search/route.js",
+  "/api/test-knowaa/route": "app/api/test-knowaa/route.js"
+}

@@ -12,8 +12,12 @@ import { apiLogger } from "@/lib/logging/api-logger"
 const MEDICI_BASE_URL = process.env.MEDICI_BASE_URL || "https://medici-backend.azurewebsites.net"
 const MEDICI_IMAGES_BASE = "https://medici-images.azurewebsites.net/images/"
 
-// IMPORTANT: Use hardcoded token (UserId:11, expires 2066) - DO NOT use env variable as it may have old token
+// MEDICI TOKEN (UserId:11, expires 2083) - Has access to Scarlet Hotel (ID: 12466)
 const MEDICI_TOKEN = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIxMSIsIm5iZiI6MTc2ODQ1NzU5NSwiZXhwIjoyMDgzOTkwMzk1LCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.g-CO7I75BlowE-F3J3GqlXsbIgNtG8_w2v1WMwG6djE"
+
+// KNOWAA TOKEN (partnerships@knowaaglobal.com, UserId:24, expires 2084) - Different hotel inventory
+// Note: Scarlet Hotel NOT available under Knowaa credentials
+const KNOWAA_TOKEN = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIyNCIsIm5iZiI6MTc2ODg5Mzc0OCwiZXhwIjoyMDg0NDI2NTQ4LCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.eY7rKMlW8wTklJLFa-z2JMnyNKf7mcEzSIH_AOQ3nyU"
 
 // =====================
 // TYPES

@@ -1,2 +1,61 @@
-[00:00:01.365] Server  WARN     ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
-[00:00:01.574] Server  LOG      ✓ Ready in 1273ms
+[00:00:13.559] Server  WARN     ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[00:00:14.036] Server  LOG      ✓ Ready in 12.2s
+[00:02:01.982] Server  LOG     [18:42:36] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:02:09.256] Server  LOG     [18:42:44] 🏨 [WARN] Medici API Error POST /api/hotels/GetInnstantSearchPrice [404] (7.80s)
+[00:02:09.257] Server  LOG     [18:42:44] 🏨 [ERROR] Medici API Exception: /api/hotels/GetInnstantSearchPrice
+[00:02:09.257] Server  ERROR     Error: API Error 404: No hotels found.
+[00:02:09.257] Server  ERROR   Search API Error: "API Error 404: No hotels found."
+[00:03:00.159] Server  LOG     [18:43:35] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:03:10.208] Server  LOG     [18:43:45] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (9.99s)
+[00:03:24.367] Server  LOG     
+🚀 [Knowaa Test] Action: search
+[00:03:24.367] Server  LOG     
+🔍 Searching: Hotel: Scarlet
+[00:03:24.368] Server  LOG     [18:43:59] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:03:31.181] Server  LOG     [18:44:06] 🏨 [WARN] Medici API Error POST /api/hotels/GetInnstantSearchPrice [404] (6.81s)
+[00:03:31.182] Server  LOG     [18:44:06] 🏨 [ERROR] Medici API Exception: /api/hotels/GetInnstantSearchPrice
+[00:03:31.182] Server  ERROR     Error: API Error 404: No hotels found.
+[00:03:31.182] Server  ERROR   ❌ [Knowaa Test] Error: "API Error 404: No hotels found."
+[00:03:44.837] Server  LOG     
+🚀 [Knowaa Test] Action: search
+[00:03:44.838] Server  LOG     
+🔍 Searching: Hotel: Scarlet
+[00:03:44.838] Server  LOG     [18:44:20] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:03:51.769] Server  LOG     [18:44:27] 🏨 [WARN] Medici API Error POST /api/hotels/GetInnstantSearchPrice [404] (6.93s)
+[00:03:51.769] Server  LOG     [18:44:27] 🏨 [ERROR] Medici API Exception: /api/hotels/GetInnstantSearchPrice
+[00:03:51.770] Server  ERROR     Error: API Error 404: No hotels found.
+[00:03:51.770] Server  ERROR   ❌ [Knowaa Test] Error: "API Error 404: No hotels found."
+[00:06:16.187] Server  LOG     [18:46:51] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:06:23.781] Server  LOG     [18:46:59] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (7.54s)
+[00:06:55.610] Server  LOG     [18:47:31] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:07:03.252] Server  LOG     [18:47:38] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (7.59s)
+[00:15:27.136] Server  LOG     [18:56:02] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:15:34.974] Server  LOG     [18:56:10] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (7.79s)
+[00:15:43.790] Server  LOG     [18:56:19] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:15:51.472] Server  LOG     [18:56:26] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (7.63s)
+[00:16:02.214] Server  LOG     [18:56:37] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:16:09.886] Server  LOG     [18:56:45] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (7.63s)
+[00:17:12.746] Server  LOG     [18:57:48] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:17:31.496] Server  LOG     [18:58:07] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (18.73s)
+[00:17:38.885] Server  LOG     [18:58:14] 🏨 [DEBUG] Medici API Request: /api/hotels/PreBook
+[00:17:46.085] Server  LOG     [18:58:21] 🏨 [INFO] Medici API Success (204 No Content)
+[00:19:17.713] Server  LOG     [18:59:53] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:19:25.216] Server  LOG     [19:00:00] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (7.48s)
+[00:21:40.949] Server  LOG     [19:02:16] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:21:48.680] Server  LOG     [19:02:24] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (7.71s)
+[00:21:59.443] Server  LOG     [19:02:34] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:22:06.840] Server  LOG     [19:02:42] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (7.39s)
+[00:22:16.442] Server  LOG     [19:02:51] 🏨 [DEBUG] Medici API Request: /api/hotels/PreBook
+[00:22:23.341] Server  LOG     [19:02:58] 🏨 [INFO] Medici API Success (204 No Content)
+[00:26:59.250] Server  LOG     [19:07:34] 🏨 [DEBUG] Medici API Request: /api/hotels/PreBook
+[00:27:06.492] Server  LOG     [19:07:42] 🏨 [INFO] Medici API Success (204 No Content)
+[00:27:28.736] Server  WARN    [Email] RESEND_API_KEY not configured - emails disabled
+[00:27:28.741] Server  LOG     [19:08:04] 🏨 [DEBUG] Medici API Request: /api/hotels/Book
+[00:27:34.707] Server  LOG     [19:08:10] 🏨 [INFO] Medici API Success POST /api/hotels/Book [200] (5.96s)
+[00:28:14.827] Server  LOG     [19:08:50] 🏨 [DEBUG] Medici API Request: /api/hotels/Book
+[00:28:19.777] Server  LOG     [19:08:55] 🏨 [INFO] Medici API Success POST /api/hotels/Book [200] (4.94s)
+[00:28:48.714] Server  WARN    [Email] RESEND_API_KEY not configured - emails disabled
+[00:28:48.724] Server  LOG     [19:09:24] 🏨 [DEBUG] Medici API Request: /api/hotels/Book
+[00:28:53.840] Server  LOG     [19:09:29] 🏨 [INFO] Medici API Success POST /api/hotels/Book [200] (5.11s)
+[00:28:53.840] Server  LOG     [DEBUG] Book API Response: "{\n  \"insertPreBook\": null,\n  \"rootBuyRoom\": null,\n  \"bookRes\": {\n    \"content\": null,\n    \"status\": null,\n    \"errorCode\": null,\n    \"errorMessage\": null,\n    \"requestJson\": \"35885:suite:double:RO:696fd03ccad561.65685879$118h1013n\",\n    \"responseJson\": \"System.Net.Http.HttpRequestException: Request failed with status code BadRequest\\r\\n   at RestSharp.RestClientExtensions.PostAsync(IRestClient client, RestRequest request, CancellationToken cancellationToken)\\r\\n   at OnlyNight.Services.Services.ApiRequestInnstantService.BookAsync(Book book, Int32 userId, String directJson, Nullable`1 opportunityId) in D:\\\\SmartTek Solutions\\\\OnlyNight\\\\OnlyNightBackend\\\\Service\\\\Services\\\\ApiRequestInnstantService.cs:line 181\",\n    \"preBookId\": 0,\n    \"book\": {\n      \"customer\": null,\n      \"paymentMethod\": {\n        \"methodName\": \"account_credit\"\n      },\n      \"reference\": {\n        \"agency\": \"my agency reference\",\n        \"voucherEmail\": \"test@example.com\"\n      },\n      \"services\": []\n    },\n    \"dateInsert\": \"0001-01-01T00:00:00\",\n    \"opportunityId\": 0,\n    \"source\": 0\n  }\n}"
+[00:28:53.842] Server  LOG     [DEBUG] Parsed: {}

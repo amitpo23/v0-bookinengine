@@ -826,7 +826,11 @@ class MediciApiClient {
                     const tempCode = `TEMP-${hotelId}-${roomItem.id || Date.now()}-${roomIdx}`;
                     roomCode = tempCode;
                 }
-                const price = extractPriceFromRoom(roomItem);
+                // Extract price from room item first, then fallback to parent item (hotel level)
+                let price = extractPriceFromRoom(roomItem);
+                if (price === 0) {
+                    price = extractPriceFromRoom(item); // Fallback to hotel-level price
+                }
                 hotel.rooms.push({
                     code: roomCode,
                     roomId: String(roomItem.id || roomItem.roomId || `${hotel.hotelId}-${hotel.rooms.length + 1}`),
@@ -1695,9 +1699,9 @@ async function POST(request) {
                     categoryId: room.categoryId || getCategoryIdFromName(room.roomCategory || room.roomType),
                     boardId: room.boardId || getBoardIdFromCode(room.board || room.boardType),
                     boardType: room.boardType || room.board || "RO",
-                    buyPrice: Number(room.buyPrice) || Number(room.price) || 0,
+                    buyPrice: typeof room.buyPrice === "number" ? room.buyPrice : typeof room.price === "object" && room.price?.amount ? Number(room.price.amount) : Number(room.price) || 0,
                     originalPrice: Number(room.originalPrice) || 0,
-                    currency: room.currency || "ILS",
+                    currency: room.currency || (typeof room.price === "object" ? room.price?.currency : undefined) || "ILS",
                     maxOccupancy: room.maxOccupancy || room.pax?.adults || 2,
                     size: room.size || room.roomSize || 0,
                     view: room.view || "",
@@ -1705,7 +1709,8 @@ async function POST(request) {
                     amenities: room.amenities || room.facilities || [],
                     images: room.images || [],
                     cancellationPolicy: room.cancellationPolicy || "free",
-                    available: room.available || room.quantity?.max || 1
+                    available: room.available || room.quantity?.max || 1,
+                    requestJson: room.requestJson || roomCode
                 };
             });
             // Enrich hotel data if missing information

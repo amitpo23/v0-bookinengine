@@ -98,6 +98,7 @@ export async function POST(request: NextRequest) {
             images: room.images || [],
             cancellationPolicy: room.cancellationPolicy || "free",
             available: room.available || room.quantity?.max || 1,
+            requestJson: room.requestJson || roomCode, // Add requestJson for PreBook
           }
         })
 

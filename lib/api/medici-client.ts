@@ -88,7 +88,7 @@ export class MediciApiClient {
           endpoint,
           duration,
         })
-        return {} as T
+        return { _status: 204 } as T
       }
 
       if (!response.ok) {
@@ -262,6 +262,8 @@ export class MediciApiClient {
         body: JSON.stringify(bookBody),
       })
 
+      console.log('[DEBUG] Book API Response:', JSON.stringify(response, null, 2))
+
       const bookingID =
         response?.bookRes?.content?.bookingID ||
         response?.content?.bookingID ||
@@ -276,6 +278,8 @@ export class MediciApiClient {
         ""
 
       const status = response?.bookRes?.content?.status || response?.content?.status || response?.status || ""
+
+      console.log('[DEBUG] Parsed:', { bookingID, supplierReference, status })
 
       const isSuccess = status === "confirmed"
 

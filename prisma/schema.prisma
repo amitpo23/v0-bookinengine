@@ -425,64 +425,6 @@ model SystemGuideline {
 }
 
 // ============================================
-// SEARCH LOGS
-// ============================================
-
-model SearchLog {
-  id            String    @id @default(cuid())
-  
-  // Hotel context
-  hotelId       String?   @map("hotel_id")
-  
-  // Search parameters
-  searchQuery   String?   @map("search_query")
-  destination   String?   // city or hotel name
-  hotelName     String?   @map("hotel_name")
-  city          String?
-  
-  // Dates
-  dateFrom      DateTime? @map("date_from") @db.Date
-  dateTo        DateTime? @map("date_to") @db.Date
-  
-  // Guests
-  adults        Int?      @default(2)
-  children      Int?      @default(0)
-  
-  // Results
-  resultsCount  Int       @default(0) @map("results_count")
-  foundHotels   Int?      @map("found_hotels")
-  foundRooms    Int?      @map("found_rooms")
-  
-  // Performance
-  durationMs    Int?      @map("duration_ms")
-  
-  // Status
-  success       Boolean   @default(true)
-  errorMessage  String?   @map("error_message")
-  
-  // Context
-  userId        String?   @map("user_id")
-  sessionId     String?   @map("session_id")
-  ipAddress     String?   @map("ip_address")
-  userAgent     String?   @map("user_agent")
-  
-  // Source
-  source        String?   // "chat", "widget", "template", "api"
-  channel       String?   // "web", "mobile", "embed"
-  
-  // Additional metadata
-  metadata      Json?
-  
-  createdAt     DateTime  @default(now()) @map("created_at")
-
-  @@index([hotelId])
-  @@index([createdAt])
-  @@index([success])
-  @@index([userId])
-  @@map("search_logs")
-}
-
-// ============================================
 // SYSTEM LOGS
 // ============================================
 

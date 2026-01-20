@@ -1,8 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { knowaaClient, getTokenCacheStatus } from "@/lib/api/knowaa-client"
+import { mediciApi } from "@/lib/api/medici-client"
+import { getTokenCacheStatus } from "@/lib/api/knowaa-client"
 
 /**
- * Test Knowaa authentication and search
+ * Test Knowaa/Medici API search using working client
  * GET /api/test-knowaa?action=search&city=Tel%20Aviv&dateFrom=2025-02-01&dateTo=2025-02-05
  */
 export async function GET(request: NextRequest) {
@@ -32,7 +33,8 @@ export async function GET(request: NextRequest) {
     if (action === "search") {
       console.log(`\n🔍 Searching: ${hotelName ? `Hotel: ${hotelName}` : `City: ${city}`}`)
 
-      const results = await knowaaClient.searchHotels({
+      // Use existing mediciApi client which works
+      const results = await mediciApi.searchHotels({
         dateFrom,
         dateTo,
         hotelName: hotelName || undefined,

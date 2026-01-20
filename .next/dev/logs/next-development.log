@@ -1,2 +1,35 @@
-[00:00:02.753] Server  WARN     ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
-[00:00:03.128] Server  LOG      ✓ Ready in 2.4s
+[00:00:01.350] Server  WARN     ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[00:00:01.524] Server  LOG      ✓ Ready in 1169ms
+[00:00:09.014] Server  LOG     
+🚀 [Knowaa Test] Action: search
+[00:00:09.017] Server  LOG     
+🔍 Searching: City: Tel Aviv
+[00:00:09.393] Server  LOG     [8:51:52] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:00:22.666] Server  LOG     [8:52:05] 🏨 [WARN] Medici API Error POST /api/hotels/GetInnstantSearchPrice [404] (13.64s)
+[00:00:22.666] Server  LOG     [8:52:05] 🏨 [ERROR] Medici API Exception: /api/hotels/GetInnstantSearchPrice
+[00:00:22.666] Server  ERROR     Error: API Error 404: No hotels found.
+[00:00:22.667] Server  ERROR   ❌ [Knowaa Test] Error: "API Error 404: No hotels found."
+[00:00:34.755] Server  LOG     
+🚀 [Knowaa Test] Action: search
+[00:00:34.755] Server  LOG     
+🔍 Searching: City: Tel Aviv
+[00:00:34.756] Server  LOG     [8:52:17] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:00:48.793] Server  LOG     [8:52:31] 🏨 [WARN] Medici API Error POST /api/hotels/GetInnstantSearchPrice [404] (14.04s)
+[00:00:48.793] Server  LOG     [8:52:31] 🏨 [ERROR] Medici API Exception: /api/hotels/GetInnstantSearchPrice
+[00:00:48.794] Server  ERROR     Error: API Error 404: No hotels found.
+[00:00:48.794] Server  ERROR   ❌ [Knowaa Test] Error: "API Error 404: No hotels found."
+[00:01:00.370] Server  LOG     
+🚀 [Knowaa Test] Action: search
+[00:01:00.370] Server  LOG     
+🔍 Searching: City: Tel Aviv
+[00:01:00.370] Server  LOG     [8:52:43] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:01:13.547] Server  LOG     [8:52:56] 🏨 [WARN] Medici API Error POST /api/hotels/GetInnstantSearchPrice [404] (13.18s)
+[00:01:13.547] Server  LOG     [8:52:56] 🏨 [ERROR] Medici API Exception: /api/hotels/GetInnstantSearchPrice
+[00:01:13.548] Server  ERROR     Error: API Error 404: No hotels found.
+[00:01:13.548] Server  ERROR   ❌ [Knowaa Test] Error: "API Error 404: No hotels found."
+[00:01:26.382] Server  LOG     
+🚀 [Knowaa Test] Action: search
+[00:01:26.382] Server  LOG     
+🔍 Searching: City: Tel Aviv
+[00:01:26.382] Server  LOG     [8:53:09] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:01:38.789] Server  LOG     [8:53:21] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (12.30s)

@@ -675,6 +675,11 @@ function ScarletTemplateContent() {
             console.log('shouldShowApi:', shouldShowApi)
             console.log('roomsToRender.length:', roomsToRender.length)
             console.log('First room:', roomsToRender[0])
+            if (roomsToRender[0]) {
+              console.log('First room price (basePrice):', roomsToRender[0].basePrice)
+              console.log('First room currency:', roomsToRender[0].currency)
+              console.log('First room apiRoom:', roomsToRender[0].apiRoom)
+            }
             
             return roomsToRender
           })().map((room, index) => (
@@ -790,7 +795,9 @@ function ScarletTemplateContent() {
 
                   {/* Price Tag */}
                   <div className="absolute bottom-4 left-4 bg-red-600/90 backdrop-blur-md px-6 py-3 rounded-full">
-                    <div className="text-2xl font-bold">₪{room.basePrice}</div>
+                    <div className="text-2xl font-bold">
+                      {room.currency === 'USD' ? '$' : room.currency === 'EUR' ? '€' : '₪'}{room.basePrice}
+                    </div>
                     <div className="text-xs text-gray-200">{t('perNight')}</div>
                   </div>
                 </div>

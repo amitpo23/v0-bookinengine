@@ -612,7 +612,11 @@ export class MediciApiClient {
           roomCode = tempCode
         }
 
-        const price = extractPriceFromRoom(roomItem)
+        // Extract price from room item first, then fallback to parent item (hotel level)
+        let price = extractPriceFromRoom(roomItem)
+        if (price === 0) {
+          price = extractPriceFromRoom(item) // Fallback to hotel-level price
+        }
 
         hotel.rooms.push({
           code: roomCode,

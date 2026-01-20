@@ -63,14 +63,22 @@ function normalizeApiRoom(apiRoom: any, index: number) {
 function ScarletTemplateContent() {
   const { t, locale, dir } = useI18n()
   
-  // Helper function to check if a hotel is Scarlet
+  // Helper function to check if a hotel is The Scarlet Hotel (production ID: 12466)
+  // Fallback to Olive Beer Garden (839235) if Scarlet not available
   const isScarletHotel = (hotel: any) => {
     if (!hotel) return false
     const hotelName = (hotel.hotelName || hotel.name || '').toLowerCase()
-    const hotelId = String(hotel.hotelId || '').toLowerCase()
-    
-    // Match by name (contains "scarlet") or by ID
-    return hotelName.includes('scarlet') || hotelId.includes('scarlet')
+    const hotelId = String(hotel.hotelId || '')
+    const seoName = (hotel.seoname || '').toLowerCase()
+
+    return (
+      hotelId === '12466' ||
+      hotelId === '839235' || // Olive Beer Garden - Tel Aviv production hotel
+      hotelName.includes('scarlet') ||
+      hotelName.includes('olive beer') ||
+      seoName === 'scarlet-12466' ||
+      seoName.includes('olive')
+    )
   }
   
   // Get filtered Scarlet results
@@ -276,9 +284,10 @@ function ScarletTemplateContent() {
         city: "Tel Aviv",
       })
 
-      const scarletHotels = searchResult?.filter((hotel: any) =>
-        hotel.hotelName?.toLowerCase().includes('scarlet') || hotel.hotelId === 863233
-      ) || []
+      // Find hotels matching Scarlet (hotelId 12466)
+      const scarletHotels = searchResult?.filter((hotel: any) => {
+        return isScarletHotel(hotel)
+      }) || []
 
       setScarletSearchResults(scarletHotels)
       setShowApiResults(true)

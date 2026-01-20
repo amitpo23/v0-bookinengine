@@ -81,9 +81,15 @@ export async function POST(request: NextRequest) {
             categoryId: room.categoryId || getCategoryIdFromName(room.roomCategory || room.roomType),
             boardId: room.boardId || getBoardIdFromCode(room.board || room.boardType),
             boardType: room.boardType || room.board || "RO",
-            buyPrice: Number(room.buyPrice) || Number(room.price) || 0,
+            buyPrice:
+              typeof room.buyPrice === "number"
+                ? room.buyPrice
+                : typeof room.price === "object" && room.price?.amount
+                ? Number(room.price.amount)
+                : Number(room.price) || 0,
             originalPrice: Number(room.originalPrice) || 0,
-            currency: room.currency || "ILS",
+            currency:
+              room.currency || (typeof room.price === "object" ? room.price?.currency : undefined) || "ILS",
             maxOccupancy: room.maxOccupancy || room.pax?.adults || 2,
             size: room.size || room.roomSize || 0,
             view: room.view || "",

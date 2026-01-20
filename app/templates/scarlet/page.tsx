@@ -64,7 +64,7 @@ function ScarletTemplateContent() {
   const { t, locale, dir } = useI18n()
   
   // Helper function to check if a hotel is The Scarlet Hotel (production ID: 12466)
-  // Fallback to Olive Beer Garden (839235) if Scarlet not available
+  // ONLY Scarlet - no fallback hotels for this dedicated template
   const isScarletHotel = (hotel: any) => {
     if (!hotel) return false
     const hotelName = (hotel.hotelName || hotel.name || '').toLowerCase()
@@ -73,11 +73,8 @@ function ScarletTemplateContent() {
 
     return (
       hotelId === '12466' ||
-      hotelId === '839235' || // Olive Beer Garden - Tel Aviv production hotel
       hotelName.includes('scarlet') ||
-      hotelName.includes('olive beer') ||
-      seoName === 'scarlet-12466' ||
-      seoName.includes('olive')
+      seoName === 'scarlet-12466'
     )
   }
   
@@ -276,6 +273,8 @@ function ScarletTemplateContent() {
     })
 
     try {
+      // Search in Tel Aviv and filter for Scarlet Hotel only
+      // Note: Direct hotel name search returns 404, so we search by city and filter
       const searchResult = await booking.searchHotels({
         checkIn: new Date(checkIn),
         checkOut: new Date(checkOut),
@@ -284,7 +283,7 @@ function ScarletTemplateContent() {
         city: "Tel Aviv",
       })
 
-      // Find hotels matching Scarlet (hotelId 12466)
+      // Filter ONLY Scarlet Hotel (ID: 12466) - no fallback hotels
       const scarletHotels = searchResult?.filter((hotel: any) => {
         return isScarletHotel(hotel)
       }) || []
@@ -293,7 +292,11 @@ function ScarletTemplateContent() {
       setShowApiResults(true)
 
       if (!silent) {
-        showToast?.(scarletHotels.length > 0 ? 'נמצאו תוצאות לסקרלט' : 'לא נמצאו תוצאות', 'success')
+        if (scarletHotels.length > 0) {
+          showToast?.('נמצאו תוצאות למלון סקרלט', 'success')
+        } else {
+          showToast?.('מלון סקרלט לא זמין בתאריכים אלה', 'error')
+        }
       }
     } catch (err: any) {
       console.error('Search failed', err)

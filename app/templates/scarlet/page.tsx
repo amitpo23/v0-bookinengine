@@ -177,6 +177,7 @@ function ScarletTemplateContent() {
   const [showApiResults, setShowApiResults] = useState(false)
   const [prebookExpiry, setPrebookExpiry] = useState<Date | null>(null)
   const [scarletSearchResults, setScarletSearchResults] = useState<any[]>([])
+  const [hasAutoSearched, setHasAutoSearched] = useState(false)
 
   // Track page view on mount
   useEffect(() => {
@@ -220,20 +221,44 @@ function ScarletTemplateContent() {
     return () => clearInterval(interval)
   }, [])
 
+  // Prefill dates so search can run immediately
+  useEffect(() => {
+    if (!checkIn) {
+      setCheckIn(format(addDays(new Date(), 1), "yyyy-MM-dd"))
+    }
+    if (!checkOut) {
+      setCheckOut(format(addDays(new Date(), 3), "yyyy-MM-dd"))
+    }
+  }, [checkIn, checkOut])
+
+  // Keep scarlet results in sync with booking search results (so UI always shows live API data)
+  useEffect(() => {
+    if (!booking.searchResults || booking.searchResults.length === 0) return
+    const scarletHotels = booking.searchResults.filter(isScarletHotel)
+    if (scarletHotels.length > 0) {
+      setScarletSearchResults(scarletHotels)
+      setShowApiResults(true)
+    }
+  }, [booking.searchResults])
+
+  // Auto-run search once dates exist (so Scarlet page renders live data on load)
+  useEffect(() => {
+    if (!checkIn || !checkOut || hasAutoSearched) return
+    setHasAutoSearched(true)
+    handleSearch(true).catch((err) => console.error('Auto search failed', err))
+  }, [checkIn, checkOut, hasAutoSearched])
+
   // Real API Search
-  const handleSearch = async () => {
-    alert('🔍 handleSearch started!')
-    console.log('handleSearch called!')
-    console.log('checkIn:', checkIn, 'checkOut:', checkOut)
-    
+  const handleSearch = async (silent?: boolean) => {
+    console.log('handleSearch called! checkIn:', checkIn, 'checkOut:', checkOut)
+
     if (!checkIn || !checkOut) {
-      console.log('Missing dates, showing error')
-      alert('❌ אנא בחר תאריכים!')
+      showToast?.('אנא בחרו תאריכים', 'error')
       return
     }
 
-    alert('✅ Dates selected, starting search...')
-    console.log('Dates are set, proceeding with search')
+    setShowApiResults(false)
+    setScarletSearchResults([])
 
     trackSearch(`${checkIn} to ${checkOut}, ${guests} guests`, {
       check_in: checkIn,
@@ -242,47 +267,29 @@ function ScarletTemplateContent() {
       hotel_id: scarletHotelConfig.hotelId
     })
 
-    console.log('=== STARTING SEARCH ===')
-    console.log('Search params:', { checkIn, checkOut, guests })
+    try {
+      const searchResult = await booking.searchHotels({
+        checkIn: new Date(checkIn),
+        checkOut: new Date(checkOut),
+        adults: guests,
+        children: [],
+        city: "Tel Aviv",
+      })
 
-    // Call real Medici API - Search Tel Aviv hotels
-    const searchResult = await booking.searchHotels({
-      checkIn: new Date(checkIn),
-      checkOut: new Date(checkOut),
-      adults: guests,
-      children: [],
-      city: "Tel Aviv",
-    })
+      const scarletHotels = searchResult?.filter((hotel: any) =>
+        hotel.hotelName?.toLowerCase().includes('scarlet') || hotel.hotelId === 863233
+      ) || []
 
-    console.log('=== AFTER SEARCH ===')
-    console.log('searchResult:', searchResult)
-    console.log('searchResult.length:', searchResult?.length || 0)
-    
-    // Log all hotel names from searchResult
-    console.log('=== ALL HOTEL NAMES ===')
-    searchResult?.forEach((hotel: any, index: number) => {
-      console.log(`${index + 1}. ${hotel.hotelName || 'Unknown'} (ID: ${hotel.hotelId})`)
-    })
+      setScarletSearchResults(scarletHotels)
+      setShowApiResults(true)
 
-    // Filter for Scarlet hotel only
-    const scarletHotels = searchResult?.filter((hotel: any) => 
-      hotel.hotelName.toLowerCase().includes('scarlet') ||
-      hotel.hotelId === 863233  // Scarlet Hotel ID from the link you provided
-    ) || []
-
-    console.log('=== FILTERED RESULTS ===')
-    console.log('Found Scarlet hotels:', scarletHotels.length)
-    if (scarletHotels.length > 0) {
-      console.log('First Scarlet hotel:', scarletHotels[0])
+      if (!silent) {
+        showToast?.(scarletHotels.length > 0 ? 'נמצאו תוצאות לסקרלט' : 'לא נמצאו תוצאות', 'success')
+      }
+    } catch (err: any) {
+      console.error('Search failed', err)
+      showToast?.('החיפוש נכשל, נסו שוב', 'error')
     }
-
-    // Save to state for rendering
-    setScarletSearchResults(scarletHotels)
-
-    alert(`✅ Search completed! Found ${scarletHotels.length || 0} Scarlet hotel(s). Check console for details.`)
-
-    setShowApiResults(true)
-    console.log('setShowApiResults(true) called')
   }
 
   // Handle room selection with PreBook

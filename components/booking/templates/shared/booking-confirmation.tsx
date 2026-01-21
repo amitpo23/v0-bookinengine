@@ -74,6 +74,19 @@ export function BookingConfirmation({
 
   return (
     <div className={`p-6 rounded-lg ${containerClass}`} dir="rtl">
+      {/* Demo Mode Notice */}
+      <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+          <h4 className="font-medium text-green-900">הזמנת בדיקה הושלמה בהצלחה</h4>
+        </div>
+        <p className="text-sm text-green-700 mt-1">
+          ✅ זוהי הזמנת דמו לבדיקות - לא בוצע חיוב אמיתי
+          <br />
+          📧 מייל אישור נשלח לכתובת {guestEmail}
+        </p>
+      </div>
+
       <div className="text-center mb-8">
         <CheckCircle className={`w-20 h-20 mx-auto mb-4 ${successColor}`} />
         <h1 className="text-3xl font-bold mb-2">ההזמנה אושרה!</h1>

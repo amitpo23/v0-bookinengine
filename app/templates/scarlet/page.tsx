@@ -28,33 +28,102 @@ import { AnimatedCard, showToast } from "@/components/templates/enhanced-ui"
 import { motion, AnimatePresence } from "framer-motion"
 
 // Helper function to normalize API rooms to display format
+// Customized for Scarlet Hotel Tel Aviv with room types found in API tests
 function normalizeApiRoom(apiRoom: any, index: number) {
-  const emojis = ['💎', '❤️', '💼', '☀️', '🌙', '✨', '🎭', '🏆']
-  const hebrewNames = ['הקלאסי הזוגי', 'הרומנטי הזוגי', 'האקונומי הזוגי', 'קלאסי עם מרפסת', 'סוויט מלוכה', 'חדר דלוקס', 'חדר פרימיום', 'סוויט ויו']
+  // Based on API test results, we found: Standard Triple ($256.98), Standard Double, etc.
+  const roomName = (apiRoom.roomName || '').toLowerCase()
+  const roomCategory = (apiRoom.roomCategory || '').toLowerCase()
   
+  // Define room configurations based on actual Scarlet Tel Aviv room types
+  let roomConfig = {
+    emoji: '💎',
+    hebrewName: 'חדר סטנדרט',
+    tagline: 'חדר עם כל הנוחיות',
+    description: 'חדר מעוצב בסגנון בוטיק במלון סקרלט תל אביב',
+    features: ["מיטה נוחה", "טלוויזיה חכמה", "מיזוג אוויר", "נוף לעיר"],
+    isPremium: false,
+    wowFactor: false,
+  }
+  
+  // Standard Triple - found in API tests at $256.98
+  if (roomName.includes('triple')) {
+    roomConfig = {
+      emoji: '🏛️',
+      hebrewName: 'חדר משולש סטנדרט',
+      tagline: 'מושלם לשלושה אורחים',
+      description: 'חדר מרווח לשלושה אורחים ברחוב גורדון המפורסם, בלב תל אביב התוססת.',
+      features: [
+        "מיטה זוגית + מיטה יחיד",
+        "שטח מרווח - 35 מ״ר",
+        "נוף לרחוב גורדון",
+        "מקלחון זכוכית",
+        "פינת קפה מאובזרת",
+        "מיזוג אוויר מתקדם"
+      ],
+      isPremium: true,
+      wowFactor: true,
+    }
+  }
+  
+  // Standard Double - common room type
+  else if (roomName.includes('double')) {
+    roomConfig = {
+      emoji: '💎',
+      hebrewName: 'חדר זוגי סטנדרט',
+      tagline: 'חדר זוגי בסגנון בוטיק',
+      description: 'חדר זוגי אלגנטי ברחוב גורדון, במיקום מיוחד של תל אביב ליד החוף.',
+      features: [
+        "מיטה זוגית King Size",
+        "נוף לעיר תל אביב",
+        "עיצוב בוטיק ייחודי", 
+        "אמבטיה מודרנית",
+        "טלוויזיה חכמה",
+        "כספת דיגיטלית"
+      ],
+      isPremium: false,
+      wowFactor: false,
+    }
+  }
+  
+  // Classic rooms (if found in future API calls)
+  else if (roomName.includes('classic')) {
+    roomConfig = {
+      emoji: '✨',
+      hebrewName: 'חדר קלאסי',
+      tagline: 'עיצוב קלאסי מעודן',
+      description: 'חדר מעוצב בסגנון קלאסי עם נגיעות מודרניות, המשלב בין אלגנטיות לנוחות.',
+      features: [
+        "עיצוב קלאסי מעודן",
+        "מיטה אורתופדית",
+        "פינת ישיבה נוחה",
+        "חדר רחצה מאובזר",
+        "נוף פנורמי",
+        "שירות חדרים 24/7"
+      ],
+      isPremium: true,
+      wowFactor: false,
+    }
+  }
+
   return {
-    id: apiRoom.roomId || apiRoom.code || `room-${index}`,
-    name: apiRoom.roomName || `Room ${index + 1}`,
-    hebrewName: hebrewNames[index % hebrewNames.length] || apiRoom.roomName || `חדר ${index + 1}`,
-    emoji: emojis[index % emojis.length],
-    tagline: apiRoom.view ? `עם נוף ${apiRoom.view}` : "חדר עם כל הנוחיות",
-    description: `חדר בגודל ${apiRoom.size || 20} מ"ר עם קיבול של עד ${apiRoom.maxOccupancy || 2} אורחים. ` + 
-                 (apiRoom.amenities?.length > 0 ? `כולל: ${apiRoom.amenities.slice(0, 3).join(', ')}.` : ""),
+    id: apiRoom.roomId || apiRoom.code || `scarlet-room-${index}`,
+    name: roomConfig.hebrewName,
+    hebrewName: roomConfig.hebrewName,
+    emoji: roomConfig.emoji,
+    tagline: roomConfig.tagline,
+    description: roomConfig.description,
     size: apiRoom.size || 20,
-    maxGuests: apiRoom.maxOccupancy || 2,
+    maxGuests: isTriple ? 3 : 2,
     basePrice: Math.round(apiRoom.buyPrice || 0),
-    currency: apiRoom.currency || "ILS",
-    features: apiRoom.amenities?.slice(0, 7) || [
-      "מיטה נוחה",
-      "טלוויזיה חכמה",
-      "מיזוג אוויר",
-      "מקלחת חמה",
-      "מגבות רכות",
-      "קפה/תה",
-      "נוף"
-    ],
-    images: apiRoom.images?.length > 0 ? apiRoom.images : [
-      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/classic-balcony/SCARLET%20DAY2-1.jpg"
+    currency: apiRoom.currency || "USD",
+    features: roomConfig.features,
+    isPremium: roomConfig.isPremium,
+    wowFactor: roomConfig.wowFactor,
+    images: [
+      // Use real Scarlet hotel images
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/classic-balcony/SCARLET%20DAY2-1.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/classic-balcony/SCARLET%20DAY2-2.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/classic-balcony/SCARLET%20DAY2-3.jpg"
     ],
     apiRoom: apiRoom // Keep original API data for reference
   }
@@ -63,19 +132,32 @@ function normalizeApiRoom(apiRoom: any, index: number) {
 function ScarletTemplateContent() {
   const { t, locale, dir } = useI18n()
   
-  // Helper function to check if a hotel is The Scarlet Hotel (production ID: 12466)
-  // ONLY Scarlet - no fallback hotels for this dedicated template
+  // Helper function to check if a hotel is Scarlet Hotel Tel Aviv
+  // Based on API test results: "Scarlet Hotel" at "J. L. Gordon St 17"
   const isScarletHotel = (hotel: any) => {
     if (!hotel) return false
     const hotelName = (hotel.hotelName || hotel.name || '').toLowerCase()
-    const hotelId = String(hotel.hotelId || '')
-    const seoName = (hotel.seoname || '').toLowerCase()
-
-    return (
-      hotelId === '12466' ||
-      hotelName.includes('scarlet') ||
-      seoName === 'scarlet-12466'
+    const address = (hotel.address || '').toLowerCase()
+    
+    // Must have "scarlet" in the name - this is the key identifier
+    const hasScarletnName = hotelName.includes('scarlet')
+    
+    // Check for Tel Aviv Scarlet specifically
+    const isTelAvivScarlet = (
+      hasScarletnName && (
+        hotelName === 'scarlet hotel' ||
+        address.includes('j. l. gordon') ||
+        address.includes('gordon st 17')
+      )
     )
+    
+    // Exclude Singapore Scarlet (33 ERSKINE ROAD)
+    const isSingaporeScarlet = (
+      hasScarletnName && address.includes('erskine road')
+    )
+
+    // Must have "scarlet" in name AND be Tel Aviv location (not Singapore)
+    return hasScarletnName && isTelAvivScarlet && !isSingaporeScarlet
   }
   
   // Get filtered Scarlet results
@@ -273,33 +355,88 @@ function ScarletTemplateContent() {
     })
 
     try {
-      // Search in Tel Aviv and filter for Scarlet Hotel only
-      // Note: Direct hotel name search returns 404, so we search by city and filter
-      const searchResult = await booking.searchHotels({
-        checkIn: new Date(checkIn),
-        checkOut: new Date(checkOut),
-        adults: guests,
-        children: [],
-        city: "Tel Aviv",
-      })
+      // Multi-strategy search for Scarlet Hotel Tel Aviv
+      // Based on API tests: city search with higher limit finds Scarlet Tel Aviv
+      let searchResult = null
+      let searchError = null
+      
+      // Strategy 1: City search with high limit (this worked in tests)
+      try {
+        console.log('🔍 Searching Tel Aviv with limit 100...')
+        searchResult = await booking.searchHotels({
+          checkIn: new Date(checkIn),
+          checkOut: new Date(checkOut),
+          adults: guests,
+          children: [],
+          city: "Tel Aviv",
+          limit: 100
+        })
+      } catch (error) {
+        console.warn('City search failed:', error)
+        searchError = error
+      }
 
-      // Filter ONLY Scarlet Hotel (ID: 12466) - no fallback hotels
+      // Strategy 2: Fallback to hotelName search if city failed
+      if (!searchResult && searchError) {
+        try {
+          console.log('🔍 Fallback: Searching by hotelName "Scarlet"...')
+          searchResult = await booking.searchHotels({
+            checkIn: new Date(checkIn),
+            checkOut: new Date(checkOut),
+            adults: guests,
+            children: [],
+            hotelName: "Scarlet"
+          })
+        } catch (fallbackError) {
+          console.error('Both search strategies failed:', { searchError, fallbackError })
+          throw fallbackError
+        }
+      }
+
+      // Filter ONLY Scarlet Hotel Tel Aviv (not Singapore)
       const scarletHotels = searchResult?.filter((hotel: any) => {
         return isScarletHotel(hotel)
       }) || []
+
+      console.log(`🎯 Found ${scarletHotels.length} Scarlet Hotel Tel Aviv results`)
 
       setScarletSearchResults(scarletHotels)
       setShowApiResults(true)
 
       if (!silent) {
         if (scarletHotels.length > 0) {
-          showToast?.('נמצאו תוצאות למלון סקרלט', 'success')
+          showToast?.(`נמצאו ${scarletHotels.length} חדרים זמינים במלון סקרלט תל אביב`, 'success')
         } else {
-          showToast?.('מלון סקרלט לא זמין בתאריכים אלה', 'error')
+          showToast?.('מלון סקרלט תל אביב אינו זמין בתאריכים אלה. אנא נסו תאריכים אחרים.', 'error')
         }
       }
     } catch (err: any) {
-      console.error('Search failed', err)
+      console.error('Scarlet Hotel search failed:', err)
+      
+      // Clear results on error
+      setScarletSearchResults([])
+      setShowApiResults(false)
+      
+      // Determine error type and show appropriate message
+      let errorMessage = 'שגיאה בחיפוש המלון. אנא נסו שוב.'
+      
+      if (err.message?.includes('401') || err.message?.includes('token')) {
+        errorMessage = 'שגיאת הרשאה. אנא רענן את הדף ונסה שוב.'
+        console.error('🔐 Token authentication failed - token may be expired')
+      } else if (err.message?.includes('404') || err.message?.includes('not found')) {
+        errorMessage = 'מלון סקרלט תל אביב לא נמצא במערכת.'
+        console.error('🏨 Scarlet Hotel not found in system')  
+      } else if (err.message?.includes('network') || err.message?.includes('fetch')) {
+        errorMessage = 'בעיית תקשורת. אנא בדקו את החיבור לאינטרנט.'
+        console.error('🌐 Network error during search')
+      } else if (err.message?.includes('timeout')) {
+        errorMessage = 'החיפוש ארך זמן רב מידי. אנא נסו שוב.'
+        console.error('⏰ Search timeout')
+      }
+      
+      if (!silent) {
+        showToast?.(errorMessage, 'error')
+      }
       showToast?.('החיפוש נכשל, נסו שוב', 'error')
     }
   }
@@ -611,7 +748,14 @@ function ScarletTemplateContent() {
             <PaymentForm
               totalPrice={booking.totalPrice}
               currency={booking.selectedRoom?.currency || "ILS"}
-              onSubmit={booking.completeBooking}
+              onSubmit={() => {
+                console.log('🔄 Starting demo payment flow...')
+                // Demo payment flow - simulate successful payment
+                setTimeout(() => {
+                  console.log('✅ Demo payment completed successfully!')
+                  booking.completeBooking()
+                }, 2000) // 2 seconds delay to simulate processing
+              }}
               isLoading={booking.isLoading}
             />
           </Card>

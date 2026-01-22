@@ -7,6 +7,7 @@ import { MOCK_HOTELS } from "@/lib/demo/mock-data"
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+    console.log("🔍 API SEARCH - Body received:", JSON.stringify(body, null, 2))
 
   const { hotelName, city, adults, children, stars, limit } = body    // Support both old and new parameter formats
     // Old: dateFrom, dateTo, hotelName, city
@@ -15,6 +16,13 @@ export async function POST(request: NextRequest) {
     const dateTo = body.dateTo || body.checkOut
     const cityParam = body.city || body.destination
     const paxParam = body.pax || { adults: body.adults || 2, children: body.children || [], rooms: body.rooms || 1 }
+
+    console.log("🔍 API SEARCH - Parameters parsed:")
+    console.log("dateFrom:", dateFrom)
+    console.log("dateTo:", dateTo) 
+    console.log("cityParam:", cityParam)
+    console.log("hotelName:", hotelName)
+    console.log("DEMO_MODE:", DEMO_MODE)
 
     if (!dateFrom || !dateTo) {
       return NextResponse.json({ error: "dateFrom and dateTo are required" }, { status: 400 })
@@ -50,6 +58,18 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    console.log("🌐 REAL API MODE: Calling Medici API...")
+    console.log("mediciApi parameters:", {
+      dateFrom,
+      dateTo,
+      hotelName: hotelName || undefined,
+      city: city || undefined,
+      adults: adults || 2,
+      children: children || [],
+      stars: stars ? Number(stars) : undefined,
+      limit: limit ? Number(limit) : 20,
+    })
+
     const results = await mediciApi.searchHotels({
       dateFrom,
       dateTo,
@@ -60,6 +80,11 @@ export async function POST(request: NextRequest) {
       stars: stars ? Number(stars) : undefined,
       limit: limit ? Number(limit) : 20,
     })
+
+    console.log("🎯 Medici API returned:", results.length, "results")
+    if (results.length > 0) {
+      console.log("First result:", JSON.stringify(results[0], null, 2))
+    }
 
     const groupedResults = await Promise.all(
       results.map(async (hotel: any) => {

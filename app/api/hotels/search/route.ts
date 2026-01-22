@@ -33,7 +33,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (DEMO_MODE) {
-      console.log("🎭 DEMO MODE: Using mock hotel data")
+      console.log("🎭 DEMO MODE: Using mock hotel data - BUT DEMO_MODE IS DISABLED!")
+      // THIS SHOULD NOT RUN ANYMORE - DEMO_MODE IS FALSE
 
       await new Promise((resolve) => setTimeout(resolve, 800))
 
@@ -88,6 +89,10 @@ export async function POST(request: NextRequest) {
     } else {
       console.log("⚠️  No results from Medici API - falling back to mock data with dynamic prices")
       
+      // THIS IS THE NEW FALLBACK CODE - SHOULD SHOW DYNAMIC PRICES
+      const dateVariation = new Date(dateFrom).getDate() % 10
+      console.log("Date variation for pricing:", dateVariation)
+      
       // Fallback to mock data but with potentially dynamic pricing based on dates
       const mockResults = MOCK_HOTELS.map((hotel) => ({
         hotelId: hotel.hotelId,
@@ -101,22 +106,26 @@ export async function POST(request: NextRequest) {
         facilities: hotel.facilities,
         rooms: hotel.rooms.map(room => ({
           ...room,
-          // Add some date-based price variation
-          price: room.price + (new Date(dateFrom).getDate() % 10) * 10,
-          buyPrice: room.buyPrice + (new Date(dateFrom).getDate() % 10) * 10,
+          // Add some date-based price variation - THIS IS THE KEY CHANGE
+          price: room.price + dateVariation * 25,
+          buyPrice: room.buyPrice + dateVariation * 25,
         })),
         requestJson: JSON.stringify({ 
           fallback: true, 
+          dateVariation,
+          timestamp: new Date().toISOString(),
           originalParams: { dateFrom, dateTo, hotelName, city, adults, children } 
         }),
-        responseJson: JSON.stringify({ fallback: "medici_api_failed" }),
+        responseJson: JSON.stringify({ fallback: "medici_api_failed", dateVariation }),
       }))
 
       return NextResponse.json({
         success: true,
         data: mockResults,
         count: mockResults.length,
-        note: "Using fallback data - Medici API unavailable"
+        note: `Fallback mode - Medici API unavailable. Dynamic pricing: +${dateVariation * 25}₪ based on date ${dateFrom}`,
+        fallbackMode: true,
+        timestamp: new Date().toISOString()
       })
     }
 

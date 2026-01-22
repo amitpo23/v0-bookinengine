@@ -1,6 +1,7 @@
 import type { PreBookResponse, BookResponse } from "@/lib/api/medici-types"
 
-export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true"
+// Force REAL API mode - no more demo/mock data
+export const DEMO_MODE = false
 
 export async function mockPreBook(): Promise<PreBookResponse> {
   await new Promise((resolve) => setTimeout(resolve, 1000))

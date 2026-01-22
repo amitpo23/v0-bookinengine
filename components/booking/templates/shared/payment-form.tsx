@@ -79,6 +79,19 @@ export function PaymentForm({ totalPrice, currency, onSubmit, isLoading, variant
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6" dir="rtl">
+      {/* Demo Mode Notice */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+          <h4 className="font-medium text-blue-900">מצב בדיקה (Demo Mode)</h4>
+        </div>
+        <p className="text-sm text-blue-700 mt-1">
+          ⚡ זוהי הזמנת בדיקה - לא יחויב תשלום אמיתי
+          <br />
+          📧 יישלח מייל אישור להדגמה
+        </p>
+      </div>
+
       <div className={`p-6 rounded-lg border ${containerClass}`}>
         <div className="flex items-center gap-2 mb-4">
           <CreditCard className="w-5 h-5" />

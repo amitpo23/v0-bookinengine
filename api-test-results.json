@@ -1,0 +1,26 @@
+{
+  "timestamp": "2026-01-20T13:29:02.873Z",
+  "summary": {
+    "passed": 1,
+    "total": 4,
+    "allPassed": false
+  },
+  "tests": [
+    {
+      "name": "Token Validity",
+      "passed": true
+    },
+    {
+      "name": "API Connectivity",
+      "passed": false
+    },
+    {
+      "name": "Real Data (Not Mock)",
+      "passed": false
+    },
+    {
+      "name": "Data Diversity",
+      "passed": false
+    }
+  ]
+}

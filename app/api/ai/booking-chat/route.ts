@@ -2,6 +2,7 @@ import { generateText } from "ai"
 import type { HotelConfig } from "@/types/saas"
 import { getBookingAgentPrompt } from "@/lib/prompts/booking-agent-prompt"
 import { emailService } from "@/lib/email/email-service"
+import { SearchLogger } from "@/lib/search-logger"
 import { format } from "date-fns"
 
 const MEDICI_API_BASE = "https://medici-backend.azurewebsites.net"
@@ -398,6 +399,26 @@ export async function POST(req: Request) {
             })
             .join("\n\n")
 
+          // Log the search
+          SearchLogger.logSearch({
+            hotelName: hotelApiName,
+            city: searchParams.city || hotelCity,
+            dateFrom: searchParams.dateFrom,
+            dateTo: searchParams.dateTo,
+            adults: searchParams.adults || 2,
+            children: searchParams.children || 0,
+            resultsCount: formattedRooms.length,
+            foundHotels: rooms.length,
+            foundRooms: formattedRooms.length,
+            success: true,
+            source: "chat",
+            channel: "web",
+            metadata: {
+              hotelId: hotelConfig?.id,
+              userMessage: messages[messages.length - 1]?.content.substring(0, 100),
+            }
+          }).catch(err => console.error("Failed to log search:", err))
+
           return Response.json({
             message:
               cleanText +
@@ -423,6 +444,26 @@ export async function POST(req: Request) {
         }
       } catch (error) {
         console.error("[v0] Search error:", error)
+        
+        // Log the failed search
+        SearchLogger.logSearch({
+          hotelName: hotelApiName,
+          city: searchParams?.city || hotelCity,
+          dateFrom: searchParams?.dateFrom,
+          dateTo: searchParams?.dateTo,
+          adults: searchParams?.adults || 2,
+          children: searchParams?.children || 0,
+          resultsCount: 0,
+          success: false,
+          errorMessage: error instanceof Error ? error.message : "Unknown search error",
+          source: "chat",
+          channel: "web",
+          metadata: {
+            hotelId: hotelConfig?.id,
+            error: error instanceof Error ? error.toString() : String(error),
+          }
+        }).catch(err => console.error("Failed to log search error:", err))
+        
         const cleanText = text.replace(/\[SEARCH\].*?\[\/SEARCH\]/s, "").trim()
         return Response.json({
           message:

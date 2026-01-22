@@ -367,6 +367,11 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background" dir={dir}>
+      {/* DEPLOYMENT TEST - 2026-01-22 14:35 */}
+      <div className="bg-red-500 text-white text-center p-2 font-bold">
+        🚀 DEPLOYMENT TEST - REAL API ACTIVE - Version 2026-01-22-14:35
+      </div>
+      
       {/* Hero Section */}
       <header className="bg-gradient-to-b from-primary/10 to-background border-b border-border">
         <nav className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">

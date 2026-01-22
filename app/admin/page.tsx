@@ -25,6 +25,7 @@ import { RoomTypesManagement } from "@/components/admin/room-types-management"
 import { TemplatesManagement } from "@/components/admin/templates-management"
 import { ActivityLogsManagement } from "@/components/admin/activity-logs-management"
 import { SessionsManagement } from "@/components/admin/sessions-management"
+import { SearchLogsManagement } from "@/components/admin/search-logs-management"
 import { KnowledgeBaseManagement } from "@/components/admin/knowledge-base-management"
 import { RoomsShowcase } from "@/components/admin/rooms-showcase"
 import dynamic from "next/dynamic"
@@ -110,6 +111,7 @@ function AdminDashboardContent() {
     promotions: { title: "ניהול מבצעים", subtitle: "צור ונהל מבצעים ומבצעים מיוחדים למובייל" },
     templates: { title: "ניהול טמפלטים", subtitle: "שליטה מלאה על כל הטמפלטים, סטטוס והרשאות" },
     activitylogs: { title: "יומן פעילות", subtitle: "מעקב אחר כל הפעילות במערכת" },
+    searchlogs: { title: "יומן חיפושים", subtitle: "מעקב אחר כל החיפושים והשאילתות" },
     sessions: { title: "כניסות משתמשים", subtitle: "ניהול סשנים פעילים והיסטוריה" },
     systemlogs: { title: "לוגים", subtitle: "לוגים טכניים ושגיאות מערכת" },
     knowledge: { title: "מרכז ידע והנחיות", subtitle: "מדריכים, הנחיות ומדיניות מערכת" },
@@ -212,6 +214,7 @@ function AdminDashboardContent() {
           {activeTab === "promotions" && <PromotionsManagement />}
           {activeTab === "templates" && <TemplatesManagement />}
           {activeTab === "activitylogs" && <ActivityLogsManagement />}
+          {activeTab === "searchlogs" && <SearchLogsManagement />}
           {activeTab === "sessions" && <SessionsManagement />}
           {activeTab === "systemlogs" && <div className="text-center py-12 text-muted-foreground">לוגים טכניים - בקרוב</div>}
           {activeTab === "knowledge" && <KnowledgeBaseManagement />}

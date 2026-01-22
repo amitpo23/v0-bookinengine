@@ -11,6 +11,7 @@ export interface SearchParams {
   children: number[]
   hotelName?: string
   city?: string
+  limit?: number
 }
 
 export interface RoomResult {
@@ -113,6 +114,7 @@ export function useBookingEngine() {
           city: params.city,
           adults: params.adults,
           children: params.children,
+          limit: params.limit,
         }),
       })
 

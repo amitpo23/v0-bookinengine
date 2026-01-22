@@ -1,5 +1,5 @@
 (globalThis.TURBOPACK || (globalThis.TURBOPACK = [])).push([
-    "chunks/turbopack-edge-wrapper_b4efa779.js",
+    "chunks/turbopack-edge-wrapper_215e79b4.js",
     {"otherChunks":["chunks/_3d4b1240._.js","chunks/[root-of-the-server]__f2b15f93._.js"],"runtimeModuleIds":["[project]/edge-wrapper.js { MODULE => \"[project]/node_modules/next/dist/esm/build/templates/middleware.js { INNER_MIDDLEWARE_MODULE => \\\"[project]/middleware.ts [middleware-edge] (ecmascript)\\\" } [middleware-edge] (ecmascript)\" } [middleware-edge] (ecmascript)"]}
 ]);
 (() => {
@@ -9,7 +9,7 @@ if (!Array.isArray(globalThis.TURBOPACK)) {
 
 const CHUNK_BASE_PATH = "";
 const CHUNK_SUFFIX_PATH = "";
-const RELATIVE_ROOT_PATH = "..";
+const RELATIVE_ROOT_PATH = "../..";
 const RUNTIME_PUBLIC_PATH = "";
 /**
  * This file contains runtime types and functions that are shared between all
@@ -1745,4 +1745,4 @@ chunkListsToRegister.forEach(registerChunkList);
 })();
 
 
-//# sourceMappingURL=edge-wrapper_b4efa779.js.map
+//# sourceMappingURL=edge-wrapper_215e79b4.js.map

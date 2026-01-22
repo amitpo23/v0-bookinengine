@@ -224,6 +224,7 @@ const menuItems = [
   { id: "features", label: "ניהול תכונות", icon: ZapIcon, isNew: true },
   { id: "templates", label: "ניהול טמפלטים", icon: LayersIcon, isNew: true, isPro: true },
   { id: "activitylogs", label: "יומן פעילות", icon: ActivityIcon, isNew: true },
+  { id: "searchlogs", label: "יומן חיפושים", icon: ActivityIcon, isNew: true },
   { id: "sessions", label: "כניסות משתמשים", icon: UsersIcon, isNew: true },
   { id: "systemlogs", label: "לוגים", icon: FileTextIcon, isNew: true },
   { id: "knowledge", label: "מרכז ידע", icon: BookOpenIcon, isNew: true },

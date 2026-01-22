@@ -27,8 +27,150 @@ import { ErrorBoundary } from "@/components/error-boundary"
 import { AnimatedCard, showToast } from "@/components/templates/enhanced-ui"
 import { motion, AnimatePresence } from "framer-motion"
 
+// Helper function to normalize API rooms to display format
+// Customized for Scarlet Hotel Tel Aviv with room types found in API tests
+function normalizeApiRoom(apiRoom: any, index: number) {
+  // Based on API test results, we found: Standard Triple ($256.98), Standard Double, etc.
+  const roomName = (apiRoom.roomName || '').toLowerCase()
+  const roomCategory = (apiRoom.roomCategory || '').toLowerCase()
+  
+  // Define room configurations based on actual Scarlet Tel Aviv room types
+  let roomConfig = {
+    emoji: '💎',
+    hebrewName: 'חדר סטנדרט',
+    tagline: 'חדר עם כל הנוחיות',
+    description: 'חדר מעוצב בסגנון בוטיק במלון סקרלט תל אביב',
+    features: ["מיטה נוחה", "טלוויזיה חכמה", "מיזוג אוויר", "נוף לעיר"],
+    isPremium: false,
+    wowFactor: false,
+  }
+  
+  // Standard Triple - found in API tests at $256.98
+  if (roomName.includes('triple')) {
+    roomConfig = {
+      emoji: '🏛️',
+      hebrewName: 'חדר משולש סטנדרט',
+      tagline: 'מושלם לשלושה אורחים',
+      description: 'חדר מרווח לשלושה אורחים ברחוב גורדון המפורסם, בלב תל אביב התוססת.',
+      features: [
+        "מיטה זוגית + מיטה יחיד",
+        "שטח מרווח - 35 מ״ר",
+        "נוף לרחוב גורדון",
+        "מקלחון זכוכית",
+        "פינת קפה מאובזרת",
+        "מיזוג אוויר מתקדם"
+      ],
+      isPremium: true,
+      wowFactor: true,
+    }
+  }
+  
+  // Standard Double - common room type
+  else if (roomName.includes('double')) {
+    roomConfig = {
+      emoji: '💎',
+      hebrewName: 'חדר זוגי סטנדרט',
+      tagline: 'חדר זוגי בסגנון בוטיק',
+      description: 'חדר זוגי אלגנטי ברחוב גורדון, במיקום מיוחד של תל אביב ליד החוף.',
+      features: [
+        "מיטה זוגית King Size",
+        "נוף לעיר תל אביב",
+        "עיצוב בוטיק ייחודי", 
+        "אמבטיה מודרנית",
+        "טלוויזיה חכמה",
+        "כספת דיגיטלית"
+      ],
+      isPremium: false,
+      wowFactor: false,
+    }
+  }
+  
+  // Classic rooms (if found in future API calls)
+  else if (roomName.includes('classic')) {
+    roomConfig = {
+      emoji: '✨',
+      hebrewName: 'חדר קלאסי',
+      tagline: 'עיצוב קלאסי מעודן',
+      description: 'חדר מעוצב בסגנון קלאסי עם נגיעות מודרניות, המשלב בין אלגנטיות לנוחות.',
+      features: [
+        "עיצוב קלאסי מעודן",
+        "מיטה אורתופדית",
+        "פינת ישיבה נוחה",
+        "חדר רחצה מאובזר",
+        "נוף פנורמי",
+        "שירות חדרים 24/7"
+      ],
+      isPremium: true,
+      wowFactor: false,
+    }
+  }
+
+  return {
+    id: apiRoom.roomId || apiRoom.code || `scarlet-room-${index}`,
+    name: roomConfig.hebrewName,
+    hebrewName: roomConfig.hebrewName,
+    emoji: roomConfig.emoji,
+    tagline: roomConfig.tagline,
+    description: roomConfig.description,
+    size: apiRoom.size || 20,
+    maxGuests: isTriple ? 3 : 2,
+    basePrice: Math.round(apiRoom.buyPrice || 0),
+    currency: apiRoom.currency || "USD",
+    features: roomConfig.features,
+    isPremium: roomConfig.isPremium,
+    wowFactor: roomConfig.wowFactor,
+    images: [
+      // Use real Scarlet hotel images
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/classic-balcony/SCARLET%20DAY2-1.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/classic-balcony/SCARLET%20DAY2-2.jpg",
+      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/classic-balcony/SCARLET%20DAY2-3.jpg"
+    ],
+    apiRoom: apiRoom // Keep original API data for reference
+  }
+}
+
 function ScarletTemplateContent() {
   const { t, locale, dir } = useI18n()
+  
+  // Helper function to check if a hotel is Scarlet Hotel Tel Aviv
+  // Based on API test results: "Scarlet Hotel" at "J. L. Gordon St 17"
+  const isScarletHotel = (hotel: any) => {
+    if (!hotel) return false
+    const hotelName = (hotel.hotelName || hotel.name || '').toLowerCase()
+    const address = (hotel.address || '').toLowerCase()
+    
+    // Must have "scarlet" in the name - this is the key identifier
+    const hasScarletnName = hotelName.includes('scarlet')
+    
+    // Check for Tel Aviv Scarlet specifically - allow multiple address formats
+    const isTelAvivScarlet = (
+      hasScarletnName && (
+        hotelName.includes('tel aviv') ||
+        address.includes('tel aviv') ||
+        address.includes('j. l. gordon') ||
+        address.includes('gordon st 17') ||
+        address.includes('dizengoff') ||
+        hotelName === 'scarlet hotel'
+      )
+    )
+    
+    // Exclude Singapore Scarlet (33 ERSKINE ROAD)
+    const isSingaporeScarlet = (
+      hasScarletnName && address.includes('erskine road')
+    )
+
+    // Must have "scarlet" in name AND be Tel Aviv location (not Singapore)
+    return hasScarletnName && isTelAvivScarlet && !isSingaporeScarlet
+  }
+  
+  // Get filtered Scarlet results
+  const getScarletResults = () => {
+    if (!booking.searchResults || booking.searchResults.length === 0) return null
+    
+    // Find Scarlet hotel in results
+    const scarletHotel = booking.searchResults.find(isScarletHotel)
+    return scarletHotel || null
+  }
   
   // Set document metadata dynamically
   useEffect(() => {
@@ -122,8 +264,10 @@ function ScarletTemplateContent() {
   const [roomImageIndexes, setRoomImageIndexes] = useState<Record<string, number>>({})
   const [backgroundImageIndex, setBackgroundImageIndex] = useState(0)
   const [showAiChat, setShowAiChat] = useState(false)
-  const [showApiResults, setShowApiResults] = useState(false)
+  const [showApiResults, setShowApiResults] = useState(true) // Start with true to prefer API results
   const [prebookExpiry, setPrebookExpiry] = useState<Date | null>(null)
+  const [scarletSearchResults, setScarletSearchResults] = useState<any[]>([])
+  const [hasAutoSearched, setHasAutoSearched] = useState(false)
 
   // Track page view on mount
   useEffect(() => {
@@ -140,6 +284,19 @@ function ScarletTemplateContent() {
     })
   }, [])
 
+  // Debug: Log API results
+  useEffect(() => {
+    console.log('=== SCARLET DEBUG ===')
+    console.log('showApiResults:', showApiResults)
+    console.log('scarletSearchResults:', scarletSearchResults)
+    console.log('scarletSearchResults.length:', scarletSearchResults?.length || 0)
+    if (scarletSearchResults.length > 0) {
+      console.log('First hotel:', scarletSearchResults[0])
+      console.log('Rooms in first hotel:', scarletSearchResults[0]?.rooms?.length || 0)
+      console.log('First 3 rooms:', scarletSearchResults[0]?.rooms?.slice(0, 3))
+    }
+  }, [showApiResults, scarletSearchResults])
+
   // Auto-rotate background images every 5 seconds
   useEffect(() => {
     console.log('Setting up background image rotation for', scarletHotelConfig.images.length, 'images')
@@ -154,12 +311,47 @@ function ScarletTemplateContent() {
     return () => clearInterval(interval)
   }, [])
 
+  // Prefill dates so search can run immediately
+  useEffect(() => {
+    if (!checkIn) {
+      setCheckIn(format(addDays(new Date(), 1), "yyyy-MM-dd"))
+    }
+    if (!checkOut) {
+      setCheckOut(format(addDays(new Date(), 3), "yyyy-MM-dd"))
+    }
+  }, [])
+
+  // Keep scarlet results in sync with booking search results (so UI always shows live API data)
+  useEffect(() => {
+    if (!booking.searchResults || booking.searchResults.length === 0) return
+    const scarletHotels = booking.searchResults.filter(isScarletHotel)
+    if (scarletHotels.length > 0) {
+      setScarletSearchResults(scarletHotels)
+      setShowApiResults(true)
+    }
+  }, [booking.searchResults])
+
+  // Auto-run search once dates exist (so Scarlet page renders live data on load)
+  useEffect(() => {
+    console.log('Auto search effect - checkIn:', checkIn, 'checkOut:', checkOut, 'hasAutoSearched:', hasAutoSearched)
+    if (!checkIn || !checkOut || hasAutoSearched) return
+    
+    console.log('Starting auto search...')
+    setHasAutoSearched(true)
+    handleSearch(true).catch((err) => console.error('Auto search failed', err))
+  }, [checkIn, checkOut, hasAutoSearched])
+
   // Real API Search
-  const handleSearch = async () => {
+  const handleSearch = async (silent?: boolean) => {
+    console.log('handleSearch called! checkIn:', checkIn, 'checkOut:', checkOut)
+
     if (!checkIn || !checkOut) {
-      showToast?.("אנא בחר תאריכי צ'ק-אין וצ'ק-אאוט", "error")
+      showToast?.('אנא בחרו תאריכים', 'error')
       return
     }
+
+    setShowApiResults(false)
+    setScarletSearchResults([])
 
     trackSearch(`${checkIn} to ${checkOut}, ${guests} guests`, {
       check_in: checkIn,
@@ -168,21 +360,100 @@ function ScarletTemplateContent() {
       hotel_id: scarletHotelConfig.hotelId
     })
 
-    // Call real Medici API - search by hotel name "Scarlet"
-    await booking.searchHotels({
-      checkIn: new Date(checkIn),
-      checkOut: new Date(checkOut),
-      adults: guests,
-      children: [],
-      hotelName: "Scarlet", // Search specifically for Scarlet hotel
-      city: "Tel Aviv",
-    })
+    try {
+      // Multi-strategy search for Scarlet Hotel Tel Aviv
+      // Based on API tests: city search with higher limit finds Scarlet Tel Aviv
+      let searchResult = null
+      let searchError = null
+      
+      // Strategy 1: City search with high limit (this worked in tests)
+      try {
+        console.log('🔍 Searching Tel Aviv with limit 100...')
+        searchResult = await booking.searchHotels({
+          checkIn: new Date(checkIn),
+          checkOut: new Date(checkOut),
+          adults: guests,
+          children: [],
+          city: "Tel Aviv",
+          limit: 100
+        })
+      } catch (error) {
+        console.warn('City search failed:', error)
+        searchError = error
+      }
 
-    setShowApiResults(true)
+      // Strategy 2: Fallback to hotelName search if city failed
+      if (!searchResult && searchError) {
+        try {
+          console.log('🔍 Fallback: Searching by hotelName "Scarlet"...')
+          searchResult = await booking.searchHotels({
+            checkIn: new Date(checkIn),
+            checkOut: new Date(checkOut),
+            adults: guests,
+            children: [],
+            hotelName: "Scarlet"
+          })
+        } catch (fallbackError) {
+          console.error('Both search strategies failed:', { searchError, fallbackError })
+          throw fallbackError
+        }
+      }
+
+      // Filter ONLY Scarlet Hotel Tel Aviv (not Singapore)
+      const scarletHotels = searchResult?.filter((hotel: any) => {
+        return isScarletHotel(hotel)
+      }) || []
+
+      console.log(`🎯 Found ${scarletHotels.length} Scarlet Hotel Tel Aviv results`)
+
+      setScarletSearchResults(scarletHotels)
+      setShowApiResults(true)
+
+      if (!silent) {
+        if (scarletHotels.length > 0) {
+          showToast?.(`נמצאו ${scarletHotels.length} חדרים זמינים במלון סקרלט תל אביב`, 'success')
+        } else {
+          showToast?.('מלון סקרלט תל אביב אינו זמין בתאריכים אלה. אנא נסו תאריכים אחרים.', 'error')
+        }
+      }
+    } catch (err: any) {
+      console.error('Scarlet Hotel search failed:', err)
+      
+      // Clear results on error
+      setScarletSearchResults([])
+      setShowApiResults(false)
+      
+      // Determine error type and show appropriate message
+      let errorMessage = 'שגיאה בחיפוש המלון. אנא נסו שוב.'
+      
+      if (err.message?.includes('401') || err.message?.includes('token')) {
+        errorMessage = 'שגיאת הרשאה. אנא רענן את הדף ונסה שוב.'
+        console.error('🔐 Token authentication failed - token may be expired')
+      } else if (err.message?.includes('404') || err.message?.includes('not found')) {
+        errorMessage = 'מלון סקרלט תל אביב לא נמצא במערכת.'
+        console.error('🏨 Scarlet Hotel not found in system')  
+      } else if (err.message?.includes('network') || err.message?.includes('fetch')) {
+        errorMessage = 'בעיית תקשורת. אנא בדקו את החיבור לאינטרנט.'
+        console.error('🌐 Network error during search')
+      } else if (err.message?.includes('timeout')) {
+        errorMessage = 'החיפוש ארך זמן רב מידי. אנא נסו שוב.'
+        console.error('⏰ Search timeout')
+      }
+      
+      if (!silent) {
+        showToast?.(errorMessage, 'error')
+      }
+      showToast?.('החיפוש נכשל, נסו שוב', 'error')
+    }
   }
 
   // Handle room selection with PreBook
   const handleSelectRoom = async (room: any) => {
+    console.log('=== ROOM SELECTION STARTED ===')
+    console.log('Room clicked:', room)
+    console.log('checkIn:', checkIn, 'checkOut:', checkOut)
+    console.log('scarletSearchResults:', scarletSearchResults)
+
     if (!checkIn || !checkOut) {
       // Use static room data if no dates selected
       window.location.href = `/templates/scarlet/booking?room=${room.id}&checkIn=${addDays(new Date(), 1).toISOString()}&checkOut=${addDays(new Date(), 3).toISOString()}&guests=${guests}`
@@ -190,9 +461,22 @@ function ScarletTemplateContent() {
     }
 
     // If we have API results, do a real prebook
-    if (booking.searchResults.length > 0) {
-      const hotel = booking.searchResults[0]
-      const apiRoom = hotel.rooms.find((r: any) => r.roomName.includes(room.name) || r.roomCategory?.includes(room.id)) || hotel.rooms[0]
+    if (scarletSearchResults.length > 0) {
+      const hotel = scarletSearchResults[0]
+      console.log('Hotel from API:', hotel)
+      console.log('Hotel rooms:', hotel.rooms)
+      
+      // Get the API room - if room has apiRoom property, use it, otherwise find it or use first room
+      const apiRoom = room.apiRoom || hotel.rooms.find((r: any) => 
+        r.roomId === room.id || 
+        r.roomName === room.name ||
+        r.roomName.includes(room.name)
+      ) || hotel.rooms[0]
+      
+      console.log('Selected room:', room)
+      console.log('Found API room:', apiRoom)
+      console.log('API room has code?', !!apiRoom?.code)
+      console.log('API room has roomId?', !!apiRoom?.roomId)
       
       if (apiRoom) {
         const hotelResult = {
@@ -229,7 +513,16 @@ function ScarletTemplateContent() {
           available: 5,
         }
 
+        console.log('=== CALLING PREBOOK ===')
+        console.log('hotelResult:', hotelResult)
+        console.log('roomResult:', roomResult)
+
         const success = await booking.selectRoom(hotelResult, roomResult)
+        
+        console.log('=== PREBOOK RESULT ===')
+        console.log('success:', success)
+        console.log('booking.prebookData:', booking.prebookData)
+        
         if (success) {
           // Set prebook expiry (30 minutes)
           setPrebookExpiry(new Date(Date.now() + 30 * 60 * 1000))
@@ -375,7 +668,10 @@ function ScarletTemplateContent() {
 
               <div className="flex items-end">
                 <Button
-                  onClick={handleSearch}
+                  onClick={() => {
+                    console.log('Button clicked!')
+                    handleSearch()
+                  }}
                   disabled={booking.isLoading}
                   className="w-full h-[52px] bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg shadow-red-500/50 disabled:opacity-50"
                 >
@@ -403,7 +699,7 @@ function ScarletTemplateContent() {
             {showApiResults && booking.searchResults.length > 0 && (
               <div className="mt-4 p-4 bg-green-900/30 border border-green-500/30 rounded-lg">
                 <p className="text-green-400 text-center">
-                  ✅ נמצאו {booking.searchResults.reduce((acc, h) => acc + h.rooms.length, 0)} חדרים זמינים בתאריכים שבחרת!
+                  ✅ נמצאו {booking.searchResults[0]?.rooms?.length || 0} חדרים זמינים בתאריכים שבחרת!
                 </p>
               </div>
             )}
@@ -458,7 +754,14 @@ function ScarletTemplateContent() {
             <PaymentForm
               totalPrice={booking.totalPrice}
               currency={booking.selectedRoom?.currency || "ILS"}
-              onSubmit={booking.completeBooking}
+              onSubmit={() => {
+                console.log('🔄 Starting demo payment flow...')
+                // Demo payment flow - simulate successful payment
+                setTimeout(() => {
+                  console.log('✅ Demo payment completed successfully!')
+                  booking.completeBooking()
+                }, 2000) // 2 seconds delay to simulate processing
+              }}
               isLoading={booking.isLoading}
             />
           </Card>
@@ -510,165 +813,6 @@ function ScarletTemplateContent() {
         </section>
       )}
 
-      {/* API Results Section - Show real room prices when search is done */}
-      {showApiResults && booking.searchResults.length > 0 && (
-        <section id="api-results" className="py-20 px-4 max-w-7xl mx-auto bg-gradient-to-b from-black to-gray-900">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
-              🎉 חדרים זמינים בתאריכים שלך
-            </h2>
-            <p className="text-xl text-gray-300">
-              {format(new Date(checkIn), "dd/MM/yyyy")} - {format(new Date(checkOut), "dd/MM/yyyy")} | {guests} אורחים
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {booking.searchResults.flatMap((hotel: any) =>
-              hotel.rooms.map((apiRoom: any, roomIndex: number) => {
-                // Try to match with static room for images
-                const matchedStaticRoom = scarletRoomTypes.find(
-                  (sr) => 
-                    apiRoom.roomName?.toLowerCase().includes(sr.name.toLowerCase()) ||
-                    apiRoom.roomCategory?.toLowerCase().includes(sr.id.replace(/-/g, ' '))
-                ) || scarletRoomTypes[roomIndex % scarletRoomTypes.length]
-
-                return (
-                  <Card
-                    key={`${hotel.hotelId}-${apiRoom.code || roomIndex}`}
-                    className="bg-gray-900/80 border-green-500/30 hover:border-green-500/50 transition-all overflow-hidden group"
-                  >
-                    {/* Room Image */}
-                    <div className="relative h-48 overflow-hidden">
-                      <img
-                        src={apiRoom.images?.[0] || matchedStaticRoom?.images?.[0] || hotel.imageUrl}
-                        alt={apiRoom.roomName}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                      
-                      {/* Price Badge */}
-                      <div className="absolute bottom-4 right-4 bg-green-600/90 backdrop-blur-md px-4 py-2 rounded-full">
-                        <div className="text-xl font-bold text-white">
-                          {apiRoom.currency === 'ILS' ? '₪' : apiRoom.currency === 'USD' ? '$' : '€'}
-                          {Math.round(apiRoom.buyPrice)}
-                        </div>
-                        <div className="text-xs text-gray-200">לכל השהות</div>
-                      </div>
-
-                      {/* Board Type Badge */}
-                      <div className="absolute top-4 left-4 bg-blue-600/90 backdrop-blur-md px-3 py-1 rounded-full text-sm font-medium">
-                        {apiRoom.boardType === 'BB' ? '🍳 ארוחת בוקר' :
-                         apiRoom.boardType === 'HB' ? '🍽️ חצי פנסיון' :
-                         apiRoom.boardType === 'FB' ? '🍴 פנסיון מלא' :
-                         apiRoom.boardType === 'AI' ? '🌟 הכל כלול' :
-                         '🛏️ לינה בלבד'}
-                      </div>
-                    </div>
-
-                    {/* Room Details */}
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold text-white mb-2">{apiRoom.roomName}</h3>
-                      <p className="text-gray-400 text-sm mb-4">
-                        {apiRoom.roomCategory || 'Standard'} | עד {apiRoom.maxOccupancy || 2} אורחים
-                      </p>
-
-                      {/* Amenities */}
-                      {apiRoom.amenities && apiRoom.amenities.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {apiRoom.amenities.slice(0, 4).map((amenity: string, idx: number) => (
-                            <Badge key={idx} variant="outline" className="text-xs border-gray-600">
-                              {amenity}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Cancellation Policy */}
-                      <div className="flex items-center gap-2 text-sm mb-4">
-                        {apiRoom.cancellationPolicy === 'free' ? (
-                          <span className="text-green-400">✓ ביטול חינם</span>
-                        ) : (
-                          <span className="text-yellow-400">⚠️ מדיניות ביטול מיוחדת</span>
-                        )}
-                      </div>
-
-                      {/* Book Button */}
-                      <Button
-                        onClick={() => {
-                          const hotelResult = {
-                            hotelId: hotel.hotelId,
-                            hotelName: hotel.hotelName || 'Scarlet Hotel',
-                            city: hotel.city || 'Tel Aviv',
-                            stars: hotel.stars || 4,
-                            address: hotel.address || '',
-                            imageUrl: hotel.imageUrl || matchedStaticRoom?.images?.[0],
-                            images: hotel.images || matchedStaticRoom?.images || [],
-                            description: hotel.description || '',
-                            facilities: hotel.facilities || [],
-                            rooms: [],
-                          }
-
-                          const roomResult = {
-                            code: apiRoom.code,
-                            roomId: apiRoom.roomId,
-                            roomName: apiRoom.roomName,
-                            roomCategory: apiRoom.roomCategory,
-                            categoryId: apiRoom.categoryId || 1,
-                            boardId: apiRoom.boardId || 2,
-                            boardType: apiRoom.boardType || 'BB',
-                            buyPrice: apiRoom.buyPrice,
-                            originalPrice: apiRoom.originalPrice || apiRoom.buyPrice * 1.2,
-                            currency: apiRoom.currency || 'ILS',
-                            maxOccupancy: apiRoom.maxOccupancy || 2,
-                            size: apiRoom.size || matchedStaticRoom?.size || 20,
-                            view: apiRoom.view || '',
-                            bedding: apiRoom.bedding || '',
-                            amenities: apiRoom.amenities || matchedStaticRoom?.features || [],
-                            images: apiRoom.images || matchedStaticRoom?.images || [],
-                            cancellationPolicy: apiRoom.cancellationPolicy || 'free',
-                            available: apiRoom.available || 5,
-                          }
-
-                          booking.selectRoom(hotelResult, roomResult).then((success) => {
-                            if (success) {
-                              setPrebookExpiry(new Date(Date.now() + 30 * 60 * 1000))
-                              trackEvent({
-                                event: 'room_selected',
-                                room_name: apiRoom.roomName,
-                                price: apiRoom.buyPrice,
-                                hotel_id: hotel.hotelId
-                              })
-                            }
-                          })
-                        }}
-                        disabled={booking.isLoading}
-                        className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold"
-                      >
-                        {booking.isLoading ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin ml-2" />
-                            מעבד...
-                          </>
-                        ) : (
-                          '🔒 הזמן עכשיו'
-                        )}
-                      </Button>
-                    </div>
-                  </Card>
-                )
-              })
-            )}
-          </div>
-
-          {/* Show message if no rooms available */}
-          {booking.searchResults.every((h: any) => !h.rooms || h.rooms.length === 0) && (
-            <div className="text-center py-12">
-              <p className="text-xl text-gray-400">לא נמצאו חדרים זמינים בתאריכים אלה. נסה תאריכים אחרים.</p>
-            </div>
-          )}
-        </section>
-      )}
-
       {/* Rooms Section */}
       <section className="py-20 px-4 max-w-7xl mx-auto">
         <div className="text-center mb-16">
@@ -681,7 +825,39 @@ function ScarletTemplateContent() {
         </div>
 
         <div className="space-y-16">
-          {scarletRoomTypes.map((room, index) => (
+          {(() => {
+            const shouldShowApi = showApiResults && scarletSearchResults.length > 0
+            
+            // If no API results and search was attempted, show loading or error message
+            if (showApiResults && scarletSearchResults.length === 0) {
+              return (
+                <div className="text-center py-16">
+                  <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-8">
+                    <h3 className="text-xl font-semibold text-white mb-4">🔍 מחפש חדרים זמינים...</h3>
+                    <p className="text-gray-300">אנא המתן בזמן שאנו בודקים זמינות במלון סקרלט תל אביב</p>
+                  </div>
+                </div>
+              )
+            }
+            
+            const roomsToRender = shouldShowApi 
+              ? (scarletSearchResults[0]?.rooms || []).map((apiRoom: any, idx: number) => normalizeApiRoom(apiRoom, idx))
+              : scarletRoomTypes // Fallback to static rooms only if API not attempted
+            
+            console.log('=== ROOM RENDER ===')
+            console.log('showApiResults:', showApiResults)
+            console.log('scarletSearchResults.length:', scarletSearchResults?.length || 0)
+            console.log('shouldShowApi:', shouldShowApi)
+            console.log('roomsToRender.length:', roomsToRender.length)
+            console.log('First room:', roomsToRender[0])
+            if (roomsToRender[0]) {
+              console.log('First room price (basePrice):', roomsToRender[0].basePrice)
+              console.log('First room currency:', roomsToRender[0].currency)
+              console.log('First room apiRoom:', roomsToRender[0].apiRoom)
+            }
+            
+            return roomsToRender
+          })().map((room, index) => (
             <Card
               key={room.id}
               className={`bg-gradient-to-br ${
@@ -794,7 +970,9 @@ function ScarletTemplateContent() {
 
                   {/* Price Tag */}
                   <div className="absolute bottom-4 left-4 bg-red-600/90 backdrop-blur-md px-6 py-3 rounded-full">
-                    <div className="text-2xl font-bold">₪{room.basePrice}</div>
+                    <div className="text-2xl font-bold">
+                      {room.currency === 'USD' ? '$' : room.currency === 'EUR' ? '€' : '₪'}{room.basePrice}
+                    </div>
                     <div className="text-xs text-gray-200">{t('perNight')}</div>
                   </div>
                 </div>

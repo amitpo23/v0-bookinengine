@@ -12,8 +12,15 @@ import { apiLogger } from "@/lib/logging/api-logger"
 const MEDICI_BASE_URL = process.env.MEDICI_BASE_URL || "https://medici-backend.azurewebsites.net"
 const MEDICI_IMAGES_BASE = "https://medici-images.azurewebsites.net/images/"
 
-// IMPORTANT: Use hardcoded token (UserId:11, expires 2066) - DO NOT use env variable as it may have old token
-const MEDICI_TOKEN = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIxMSIsIm5iZiI6MTc2ODQ1NzU5NSwiZXhwIjoyMDgzOTkwMzk1LCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.g-CO7I75BlowE-F3J3GqlXsbIgNtG8_w2v1WMwG6djE"
+// KNOWAA TOKEN (partnerships@knowaaglobal.com, UserId:24, expires 2067) 
+// PRIMARY TOKEN - B2B Medici has issues, use Knowaa
+const KNOWAA_TOKEN = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIyNCIsIm5iZiI6MTc1MjEzMjc3NywiZXhwIjoyMDY3NjY1NTc3LCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.1cKlbn5cAHTc6n2MALkaHtBCs-gmQ5HWssF4UPyZII0"
+
+// B2B MEDICI TOKEN (UserId:11, expires 2083) - BACKUP ONLY (has issues)
+const MEDICI_TOKEN_LEGACY = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIxMSIsIm5iZiI6MTc2ODQ1NzU5NSwiZXhwIjoyMDgzOTkwMzk1LCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.g-CO7I75BlowE-F3J3GqlXsbIgNtG8_w2v1WMwG6djE"
+
+// Use KNOWAA token as primary
+const MEDICI_TOKEN = process.env.KNOWAA_BEARER_TOKEN || KNOWAA_TOKEN
 
 // =====================
 // TYPES
@@ -88,7 +95,7 @@ export class MediciApiClient {
           endpoint,
           duration,
         })
-        return {} as T
+        return { _status: 204 } as T
       }
 
       if (!response.ok) {
@@ -153,6 +160,8 @@ export class MediciApiClient {
     stars?: number
     limit?: number
   }): Promise<HotelSearchResult[]> {
+    console.log("🔍 MediciApi.searchHotels called with params:", params)
+    
     const pax = params.rooms || [
       {
         adults: params.adults || 2,
@@ -175,18 +184,32 @@ export class MediciApiClient {
       searchBody.city = params.city
     }
 
-    const response = await this.request<any>("/api/hotels/GetInnstantSearchPrice", {
-      method: "POST",
-      body: JSON.stringify(searchBody),
-    })
+    console.log("🌐 Making request to Medici API:")
+    console.log("URL:", `${this.baseUrl}/api/hotels/GetInnstantSearchPrice`)
+    console.log("Body:", JSON.stringify(searchBody, null, 2))
+    console.log("Token (first 20 chars):", this.token.substring(0, 20) + "...")
 
-    const hotels = this.transformSearchResults(response)
+    try {
+      const response = await this.request<any>("/api/hotels/GetInnstantSearchPrice", {
+        method: "POST",
+        body: JSON.stringify(searchBody),
+      })
 
-    return hotels.map((hotel) => ({
-      ...hotel,
-      requestJson: params,
-      responseJson: response,
-    }))
+      console.log("✅ Medici API response received, length:", JSON.stringify(response).length)
+      const hotels = this.transformSearchResults(response)
+      console.log("🏨 Transformed to", hotels.length, "hotels")
+
+      return hotels.map((hotel) => ({
+        ...hotel,
+        requestJson: JSON.stringify(params),
+        responseJson: JSON.stringify(response),
+      }))
+    } catch (error) {
+      console.error("❌ Medici API search failed:", error)
+      
+      // Return empty array instead of throwing - let the caller handle it
+      return []
+    }
   }
 
   // =====================
@@ -262,6 +285,8 @@ export class MediciApiClient {
         body: JSON.stringify(bookBody),
       })
 
+      console.log('[DEBUG] Book API Response:', JSON.stringify(response, null, 2))
+
       const bookingID =
         response?.bookRes?.content?.bookingID ||
         response?.content?.bookingID ||
@@ -276,6 +301,8 @@ export class MediciApiClient {
         ""
 
       const status = response?.bookRes?.content?.status || response?.content?.status || response?.status || ""
+
+      console.log('[DEBUG] Parsed:', { bookingID, supplierReference, status })
 
       const isSuccess = status === "confirmed"
 
@@ -612,7 +639,11 @@ export class MediciApiClient {
           roomCode = tempCode
         }
 
-        const price = extractPriceFromRoom(roomItem)
+        // Extract price from room item first, then fallback to parent item (hotel level)
+        let price = extractPriceFromRoom(roomItem)
+        if (price === 0) {
+          price = extractPriceFromRoom(item) // Fallback to hotel-level price
+        }
 
         hotel.rooms.push({
           code: roomCode,

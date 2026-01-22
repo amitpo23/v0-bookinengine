@@ -6,6 +6,7 @@ import { MOCK_HOTELS } from "@/lib/demo/mock-data"
 
 export async function POST(request: NextRequest) {
   try {
+    // Force deployment timestamp: 2026-01-22 08:15 UTC
     const body = await request.json()
     console.log("🔍 API SEARCH - Body received:", JSON.stringify(body, null, 2))
 

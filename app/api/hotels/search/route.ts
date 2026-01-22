@@ -6,9 +6,9 @@ import { MOCK_HOTELS } from "@/lib/demo/mock-data"
 
 export async function POST(request: NextRequest) {
   try {
-    // Force deployment timestamp: 2026-01-22 08:15 UTC
+    // FORCE NEW DEPLOYMENT: 2026-01-22 14:10 - REAL API ONLY!!!
     const body = await request.json()
-    console.log("🔍 API SEARCH - Body received:", JSON.stringify(body, null, 2))
+    console.log("🔥 REAL API SEARCH V2026-01-22-14:10 - Body received:", JSON.stringify(body, null, 2))
 
   const { hotelName, city, adults, children, stars, limit } = body    // Support both old and new parameter formats
     // Old: dateFrom, dateTo, hotelName, city
@@ -18,12 +18,13 @@ export async function POST(request: NextRequest) {
     const cityParam = body.city || body.destination
     const paxParam = body.pax || { adults: body.adults || 2, children: body.children || [], rooms: body.rooms || 1 }
 
-    console.log("🔍 API SEARCH - Parameters parsed:")
+    console.log("� REAL API SEARCH V2026-01-22-14:10 - Parameters parsed:")
     console.log("dateFrom:", dateFrom)
     console.log("dateTo:", dateTo) 
     console.log("cityParam:", cityParam)
     console.log("hotelName:", hotelName)
     console.log("DEMO_MODE:", DEMO_MODE)
+    console.log("🚀 FORCING REAL API CALL - NO MOCK ALLOWED!")
 
     if (!dateFrom || !dateTo) {
       return NextResponse.json({ error: "dateFrom and dateTo are required" }, { status: 400 })
@@ -72,6 +73,7 @@ export async function POST(request: NextRequest) {
       limit: limit ? Number(limit) : 20,
     })
 
+    console.log("🚀 Making REAL API call to Medici...")
     const results = await mediciApi.searchHotels({
       dateFrom,
       dateTo,
@@ -83,9 +85,16 @@ export async function POST(request: NextRequest) {
       limit: limit ? Number(limit) : 20,
     })
 
-    console.log("🎯 Medici API returned:", results.length, "results")
+    console.log("🎯 Medici REAL API returned:", results.length, "results - VERSION 2026-01-22-14:10")
     if (results.length > 0) {
-      console.log("First result:", JSON.stringify(results[0], null, 2))
+      console.log("✅ SUCCESS - First real result:", JSON.stringify(results[0], null, 2))
+      return NextResponse.json({
+        success: true,
+        data: results,
+        count: results.length,
+        version: "REAL_API_SUCCESS_2026-01-22-14:10",
+        timestamp: new Date().toISOString()
+      })
     } else {
       console.log("⚠️  No results from Medici API - falling back to mock data with dynamic prices")
       

@@ -261,7 +261,7 @@ function ScarletTemplateContent() {
   const [roomImageIndexes, setRoomImageIndexes] = useState<Record<string, number>>({})
   const [backgroundImageIndex, setBackgroundImageIndex] = useState(0)
   const [showAiChat, setShowAiChat] = useState(false)
-  const [showApiResults, setShowApiResults] = useState(false)
+  const [showApiResults, setShowApiResults] = useState(true) // Start with true to prefer API results
   const [prebookExpiry, setPrebookExpiry] = useState<Date | null>(null)
   const [scarletSearchResults, setScarletSearchResults] = useState<any[]>([])
   const [hasAutoSearched, setHasAutoSearched] = useState(false)
@@ -316,7 +316,7 @@ function ScarletTemplateContent() {
     if (!checkOut) {
       setCheckOut(format(addDays(new Date(), 3), "yyyy-MM-dd"))
     }
-  }, [checkIn, checkOut])
+  }, [])
 
   // Keep scarlet results in sync with booking search results (so UI always shows live API data)
   useEffect(() => {
@@ -330,7 +330,10 @@ function ScarletTemplateContent() {
 
   // Auto-run search once dates exist (so Scarlet page renders live data on load)
   useEffect(() => {
+    console.log('Auto search effect - checkIn:', checkIn, 'checkOut:', checkOut, 'hasAutoSearched:', hasAutoSearched)
     if (!checkIn || !checkOut || hasAutoSearched) return
+    
+    console.log('Starting auto search...')
     setHasAutoSearched(true)
     handleSearch(true).catch((err) => console.error('Auto search failed', err))
   }, [checkIn, checkOut, hasAutoSearched])
@@ -821,9 +824,22 @@ function ScarletTemplateContent() {
         <div className="space-y-16">
           {(() => {
             const shouldShowApi = showApiResults && scarletSearchResults.length > 0
+            
+            // If no API results and search was attempted, show loading or error message
+            if (showApiResults && scarletSearchResults.length === 0) {
+              return (
+                <div className="text-center py-16">
+                  <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-8">
+                    <h3 className="text-xl font-semibold text-white mb-4">🔍 מחפש חדרים זמינים...</h3>
+                    <p className="text-gray-300">אנא המתן בזמן שאנו בודקים זמינות במלון סקרלט תל אביב</p>
+                  </div>
+                </div>
+              )
+            }
+            
             const roomsToRender = shouldShowApi 
               ? (scarletSearchResults[0]?.rooms || []).map((apiRoom: any, idx: number) => normalizeApiRoom(apiRoom, idx))
-              : scarletRoomTypes
+              : scarletRoomTypes // Fallback to static rooms only if API not attempted
             
             console.log('=== ROOM RENDER ===')
             console.log('showApiResults:', showApiResults)

@@ -335,8 +335,13 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$logging$2f$api$2d$log
 ;
 const MEDICI_BASE_URL = process.env.MEDICI_BASE_URL || "https://medici-backend.azurewebsites.net";
 const MEDICI_IMAGES_BASE = "https://medici-images.azurewebsites.net/images/";
-// IMPORTANT: Use hardcoded token (UserId:11, expires 2066) - DO NOT use env variable as it may have old token
-const MEDICI_TOKEN = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIxMSIsIm5iZiI6MTc2ODQ1NzU5NSwiZXhwIjoyMDgzOTkwMzk1LCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.g-CO7I75BlowE-F3J3GqlXsbIgNtG8_w2v1WMwG6djE";
+// KNOWAA TOKEN (partnerships@knowaaglobal.com, UserId:24, expires 2067) 
+// PRIMARY TOKEN - B2B Medici has issues, use Knowaa
+const KNOWAA_TOKEN = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIyNCIsIm5iZiI6MTc1MjEzMjc3NywiZXhwIjoyMDY3NjY1NTc3LCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.1cKlbn5cAHTc6n2MALkaHtBCs-gmQ5HWssF4UPyZII0";
+// B2B MEDICI TOKEN (UserId:11, expires 2083) - BACKUP ONLY (has issues)
+const MEDICI_TOKEN_LEGACY = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIxMSIsIm5iZiI6MTc2ODQ1NzU5NSwiZXhwIjoyMDgzOTkwMzk1LCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.g-CO7I75BlowE-F3J3GqlXsbIgNtG8_w2v1WMwG6djE";
+// Use KNOWAA token as primary
+const MEDICI_TOKEN = process.env.KNOWAA_BEARER_TOKEN || KNOWAA_TOKEN;
 const BOARD_TYPES = {
     1: {
         code: "RO",
@@ -425,7 +430,9 @@ class MediciApiClient {
                     endpoint,
                     duration
                 });
-                return {};
+                return {
+                    _status: 204
+                };
             }
             if (!response.ok) {
                 const errorBody = await response.text();
@@ -556,9 +563,15 @@ class MediciApiClient {
                 method: "POST",
                 body: JSON.stringify(bookBody)
             });
+            console.log('[DEBUG] Book API Response:', JSON.stringify(response, null, 2));
             const bookingID = response?.bookRes?.content?.bookingID || response?.content?.bookingID || response?.bookingId || response?.bookingID || "";
             const supplierReference = response?.bookRes?.content?.services?.[0]?.supplier?.reference || response?.content?.services?.[0]?.supplier?.reference || response?.supplierReference || "";
             const status = response?.bookRes?.content?.status || response?.content?.status || response?.status || "";
+            console.log('[DEBUG] Parsed:', {
+                bookingID,
+                supplierReference,
+                status
+            });
             const isSuccess = status === "confirmed";
             return {
                 success: isSuccess,

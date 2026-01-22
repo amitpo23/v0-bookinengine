@@ -142,12 +142,15 @@ function ScarletTemplateContent() {
     // Must have "scarlet" in the name - this is the key identifier
     const hasScarletnName = hotelName.includes('scarlet')
     
-    // Check for Tel Aviv Scarlet specifically
+    // Check for Tel Aviv Scarlet specifically - allow multiple address formats
     const isTelAvivScarlet = (
       hasScarletnName && (
-        hotelName === 'scarlet hotel' ||
+        hotelName.includes('tel aviv') ||
+        address.includes('tel aviv') ||
         address.includes('j. l. gordon') ||
-        address.includes('gordon st 17')
+        address.includes('gordon st 17') ||
+        address.includes('dizengoff') ||
+        hotelName === 'scarlet hotel'
       )
     )
     

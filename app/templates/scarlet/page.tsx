@@ -133,34 +133,48 @@ function ScarletTemplateContent() {
   const { t, locale, dir } = useI18n()
   
   // Helper function to check if a hotel is Scarlet Hotel Tel Aviv
-  // Based on API test results: "Scarlet Hotel" at "J. L. Gordon St 17"
+  // Based on API test results: 
+  // - "Scarlet Hotel" at "J. L. Gordon St 17" (lat:32.08, lon:34.77)
+  // - "Dave Gordon TLV" at "17 J.L Gordon St." (lat:32.08, lon:34.77) - SAME LOCATION!
   const isScarletHotel = (hotel: any) => {
     if (!hotel) return false
     const hotelName = (hotel.hotelName || hotel.name || '').toLowerCase()
     const address = (hotel.address || '').toLowerCase()
     
-    // Must have "scarlet" in the name - this is the key identifier
-    const hasScarletnName = hotelName.includes('scarlet')
+    // Check for Scarlet name
+    const hasScarletName = hotelName.includes('scarlet')
     
-    // Check for Tel Aviv Scarlet specifically - allow multiple address formats
-    const isTelAvivScarlet = (
-      hasScarletnName && (
-        hotelName.includes('tel aviv') ||
-        address.includes('tel aviv') ||
-        address.includes('j. l. gordon') ||
-        address.includes('gordon st 17') ||
-        address.includes('dizengoff') ||
-        hotelName === 'scarlet hotel'
-      )
+    // Check for Dave Gordon (same hotel, different API name)
+    const isDaveGordon = hotelName.includes('dave gordon') || hotelName.includes('gordon tlv')
+    
+    // Check if it's at Gordon Street address (both hotels are at Gordon St 17)
+    const isGordonStreetAddress = (
+      address.includes('j. l. gordon') ||
+      address.includes('gordon st 17') ||
+      address.includes('j.l gordon')
+    )
+    
+    // Check for Tel Aviv location
+    const isTelAvivLocation = (
+      hotelName.includes('tel aviv') ||
+      hotelName.includes('tlv') ||
+      address.includes('tel aviv')
     )
     
     // Exclude Singapore Scarlet (33 ERSKINE ROAD)
-    const isSingaporeScarlet = (
-      hasScarletnName && address.includes('erskine road')
-    )
+    const isSingaporeScarlet = address.includes('erskine road')
 
-    // Must have "scarlet" in name AND be Tel Aviv location (not Singapore)
-    return hasScarletnName && isTelAvivScarlet && !isSingaporeScarlet
+    // Accept either:
+    // 1. "Scarlet Hotel" at Gordon Street / Tel Aviv
+    // 2. "Dave Gordon TLV" (same location as Scarlet)
+    return (
+      !isSingaporeScarlet && (
+        // Scarlet at Gordon St or Tel Aviv
+        (hasScarletName && (isGordonStreetAddress || isTelAvivLocation || hotelName === 'scarlet hotel')) ||
+        // Dave Gordon (same physical hotel)
+        isDaveGordon
+      )
+    )
   }
   
   // Get filtered Scarlet results

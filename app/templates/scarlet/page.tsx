@@ -825,24 +825,37 @@ function ScarletTemplateContent() {
         </div>
 
         <div className="space-y-16">
-          {(() => {
+          {/* Notice when API returns no results */}
+          {showApiResults && scarletSearchResults.length === 0 && !booking.isLoading && (
+            <div className="text-center py-8">
+              <div className="bg-gradient-to-br from-pink-900/30 to-gray-900/50 backdrop-blur-sm border border-pink-500/30 rounded-xl p-6 max-w-2xl mx-auto">
+                <h3 className="text-xl font-semibold text-white mb-2">🏨 חדרי מלון סקרלט תל אביב</h3>
+                <p className="text-gray-300 mb-4">להזמנת חדרים ובדיקת זמינות, אנא צרו קשר ישירות עם המלון</p>
+                <a href={`tel:${scarletHotelConfig.contact.phone}`} className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-600 to-red-600 text-white px-6 py-3 rounded-full font-semibold hover:from-pink-500 hover:to-red-500 transition-all">
+                  📞 {scarletHotelConfig.contact.phone}
+                </a>
+              </div>
+            </div>
+          )}
+          
+          {/* Loading state */}
+          {booking.isLoading && (
+            <div className="text-center py-16">
+              <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-8">
+                <Loader2 className="w-12 h-12 text-pink-500 mx-auto mb-4 animate-spin" />
+                <h3 className="text-xl font-semibold text-white mb-4">🔍 מחפש חדרים זמינים...</h3>
+                <p className="text-gray-300">אנא המתן בזמן שאנו בודקים זמינות במלון סקרלט תל אביב</p>
+              </div>
+            </div>
+          )}
+          
+          {/* Room cards - always show either API results or static rooms */}
+          {!booking.isLoading && (() => {
             const shouldShowApi = showApiResults && scarletSearchResults.length > 0
-            
-            // If no API results and search was attempted, show loading or error message
-            if (showApiResults && scarletSearchResults.length === 0) {
-              return (
-                <div className="text-center py-16">
-                  <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-8">
-                    <h3 className="text-xl font-semibold text-white mb-4">🔍 מחפש חדרים זמינים...</h3>
-                    <p className="text-gray-300">אנא המתן בזמן שאנו בודקים זמינות במלון סקרלט תל אביב</p>
-                  </div>
-                </div>
-              )
-            }
             
             const roomsToRender = shouldShowApi 
               ? (scarletSearchResults[0]?.rooms || []).map((apiRoom: any, idx: number) => normalizeApiRoom(apiRoom, idx))
-              : scarletRoomTypes // Fallback to static rooms only if API not attempted
+              : scarletRoomTypes // Fallback to static rooms
             
             console.log('=== ROOM RENDER ===')
             console.log('showApiResults:', showApiResults)

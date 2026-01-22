@@ -1,0 +1,10 @@
+var R=require("../../../../chunks/[turbopack]_runtime.js")("server/app/api/hotel-booking-ai/stream/route.js")
+R.c("server/chunks/[root-of-the-server]__234da318._.js")
+R.c("server/chunks/node_modules_formdata-node_lib_esm_File_ccf0a600.js")
+R.c("server/chunks/lib_hotel-booking-ai_index_ts_4df987ec._.js")
+R.c("server/chunks/_6123dc2f._.js")
+R.c("server/chunks/[root-of-the-server]__a6ccf781._.js")
+R.c("server/chunks/[root-of-the-server]__1d4dcfb0._.js")
+R.c("server/chunks/_next-internal_server_app_api_hotel-booking-ai_stream_route_actions_921f2748.js")
+R.m(149936)
+module.exports=R.m(149936).exports

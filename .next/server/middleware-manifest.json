@@ -1,0 +1,63 @@
+{
+  "version": 3,
+  "middleware": {
+    "/": {
+      "files": [
+        "server/edge/chunks/[root-of-the-server]__b0766c94._.js",
+        "server/edge/chunks/node_modules_49d813cb._.js",
+        "server/edge/chunks/turbopack-edge-wrapper_659e9c52.js"
+      ],
+      "name": "middleware",
+      "page": "/",
+      "matchers": [
+        {
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/((?!_next\\/static|_next\\/image|favicon.ico).*))(\\\\.json)?[\\/#\\?]?$",
+          "originalSource": "/((?!_next/static|_next/image|favicon.ico).*)"
+        }
+      ],
+      "wasm": [],
+      "assets": [],
+      "env": {
+        "__NEXT_BUILD_ID": "AKDZomf734HdK6Qc0CL0s",
+        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "FotGCptBgEqZLKHKdmeHVkczf2U258ZQXfY3A03s5eU=",
+        "__NEXT_PREVIEW_MODE_ID": "643f948f263fa825b07481a29ebfbc9a",
+        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "7de3230867d9d0e682034a6606b5c814570da7e6c401f6cc988c19116cd2aaaf",
+        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "e956781a688c7b43cd7a27f0e774a7b0f8c246af147518d4c7728158a39a0495"
+      }
+    }
+  },
+  "sortedMiddleware": [
+    "/"
+  ],
+  "functions": {
+    "/api/ai-chat/route": {
+      "files": [
+        "server/middleware-build-manifest.js",
+        "server/interception-route-rewrite-manifest.js",
+        "server/server-reference-manifest.js",
+        "server/app/api/ai-chat/route_client-reference-manifest.js",
+        "server/edge/chunks/_next-internal_server_app_api_ai-chat_route_actions_30e53794.js",
+        "server/edge/chunks/[root-of-the-server]__77139d96._.js",
+        "server/edge/chunks/node_modules_7180cc42._.js",
+        "server/edge/chunks/turbopack-edge-wrapper_585ca208.js"
+      ],
+      "name": "app/api/ai-chat/route",
+      "page": "/api/ai-chat/route",
+      "matchers": [
+        {
+          "regexp": "^/api/ai-chat(?:/)?$",
+          "originalSource": "/api/ai-chat"
+        }
+      ],
+      "wasm": [],
+      "assets": [],
+      "env": {
+        "__NEXT_BUILD_ID": "AKDZomf734HdK6Qc0CL0s",
+        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "FotGCptBgEqZLKHKdmeHVkczf2U258ZQXfY3A03s5eU=",
+        "__NEXT_PREVIEW_MODE_ID": "643f948f263fa825b07481a29ebfbc9a",
+        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "7de3230867d9d0e682034a6606b5c814570da7e6c401f6cc988c19116cd2aaaf",
+        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "e956781a688c7b43cd7a27f0e774a7b0f8c246af147518d4c7728158a39a0495"
+      }
+    }
+  }
+}

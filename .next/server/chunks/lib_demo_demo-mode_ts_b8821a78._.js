@@ -1,0 +1,3 @@
+module.exports=[582109,e=>{"use strict";async function o(){return await new Promise(e=>setTimeout(e,1e3)),{success:!0,preBookId:Math.floor(1e5*Math.random()),token:`DEMO_TOKEN_${Date.now()}`,status:"done",priceConfirmed:1200,currency:"ILS",requestJson:'{"demo":"prebook"}',responseJson:'{"status":"success"}'}}async function s(){return await new Promise(e=>setTimeout(e,1500)),{success:!0,bookingId:`DEMO${Date.now()}`,supplierReference:`REF${Math.floor(1e6*Math.random())}`,status:"confirmed"}}e.s(["DEMO_MODE",0,!1,"mockBook",()=>s,"mockPreBook",()=>o])}];
+
+//# sourceMappingURL=lib_demo_demo-mode_ts_b8821a78._.js.map

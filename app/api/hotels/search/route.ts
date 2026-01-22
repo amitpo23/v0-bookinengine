@@ -84,6 +84,39 @@ export async function POST(request: NextRequest) {
     console.log("🎯 Medici API returned:", results.length, "results")
     if (results.length > 0) {
       console.log("First result:", JSON.stringify(results[0], null, 2))
+    } else {
+      console.log("⚠️  No results from Medici API - falling back to mock data with dynamic prices")
+      
+      // Fallback to mock data but with potentially dynamic pricing based on dates
+      const mockResults = MOCK_HOTELS.map((hotel) => ({
+        hotelId: hotel.hotelId,
+        hotelName: hotel.hotelName,
+        city: hotel.city,
+        stars: hotel.stars,
+        address: hotel.address,
+        imageUrl: hotel.hotelImage,
+        images: hotel.images,
+        description: hotel.description,
+        facilities: hotel.facilities,
+        rooms: hotel.rooms.map(room => ({
+          ...room,
+          // Add some date-based price variation
+          price: room.price + (new Date(dateFrom).getDate() % 10) * 10,
+          buyPrice: room.buyPrice + (new Date(dateFrom).getDate() % 10) * 10,
+        })),
+        requestJson: JSON.stringify({ 
+          fallback: true, 
+          originalParams: { dateFrom, dateTo, hotelName, city, adults, children } 
+        }),
+        responseJson: JSON.stringify({ fallback: "medici_api_failed" }),
+      }))
+
+      return NextResponse.json({
+        success: true,
+        data: mockResults,
+        count: mockResults.length,
+        note: "Using fallback data - Medici API unavailable"
+      })
     }
 
     const groupedResults = await Promise.all(

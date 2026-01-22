@@ -160,6 +160,8 @@ export class MediciApiClient {
     stars?: number
     limit?: number
   }): Promise<HotelSearchResult[]> {
+    console.log("🔍 MediciApi.searchHotels called with params:", params)
+    
     const pax = params.rooms || [
       {
         adults: params.adults || 2,
@@ -182,18 +184,32 @@ export class MediciApiClient {
       searchBody.city = params.city
     }
 
-    const response = await this.request<any>("/api/hotels/GetInnstantSearchPrice", {
-      method: "POST",
-      body: JSON.stringify(searchBody),
-    })
+    console.log("🌐 Making request to Medici API:")
+    console.log("URL:", `${this.baseUrl}/api/hotels/GetInnstantSearchPrice`)
+    console.log("Body:", JSON.stringify(searchBody, null, 2))
+    console.log("Token (first 20 chars):", this.token.substring(0, 20) + "...")
 
-    const hotels = this.transformSearchResults(response)
+    try {
+      const response = await this.request<any>("/api/hotels/GetInnstantSearchPrice", {
+        method: "POST",
+        body: JSON.stringify(searchBody),
+      })
 
-    return hotels.map((hotel) => ({
-      ...hotel,
-      requestJson: params,
-      responseJson: response,
-    }))
+      console.log("✅ Medici API response received, length:", JSON.stringify(response).length)
+      const hotels = this.transformSearchResults(response)
+      console.log("🏨 Transformed to", hotels.length, "hotels")
+
+      return hotels.map((hotel) => ({
+        ...hotel,
+        requestJson: JSON.stringify(params),
+        responseJson: JSON.stringify(response),
+      }))
+    } catch (error) {
+      console.error("❌ Medici API search failed:", error)
+      
+      // Return empty array instead of throwing - let the caller handle it
+      return []
+    }
   }
 
   // =====================

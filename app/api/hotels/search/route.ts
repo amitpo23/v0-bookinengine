@@ -1,54 +1,29 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { mediciApi } from "@/lib/api/medici-client"
 import { enrichHotelData } from "@/lib/api/hotel-enrichment"
-import { DEMO_MODE } from "@/lib/demo/demo-mode"
-import { MOCK_HOTELS } from "@/lib/demo/mock-data"
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
-  const { hotelName, city, adults, children, stars, limit } = body    // Support both old and new parameter formats
+    const { hotelName, city, adults, children, stars, limit } = body
+    
+    // Support both old and new parameter formats
     // Old: dateFrom, dateTo, hotelName, city
     // New: destination, checkIn, checkOut, pax
     const dateFrom = body.dateFrom || body.checkIn
     const dateTo = body.dateTo || body.checkOut
     const cityParam = body.city || body.destination
-    const paxParam = body.pax || { adults: body.adults || 2, children: body.children || [], rooms: body.rooms || 1 }
 
     if (!dateFrom || !dateTo) {
       return NextResponse.json({ error: "dateFrom and dateTo are required" }, { status: 400 })
     }
 
-    if (!hotelName && !cityParam) {      return NextResponse.json({ error: "Either hotelName or city is required" }, { status: 400 })
+    if (!hotelName && !cityParam) {
+      return NextResponse.json({ error: "Either hotelName or city is required" }, { status: 400 })
     }
 
-    if (DEMO_MODE) {
-      console.log("🎭 DEMO MODE: Using mock hotel data")
-
-      await new Promise((resolve) => setTimeout(resolve, 800))
-
-      const mockResults = MOCK_HOTELS.map((hotel) => ({
-        hotelId: hotel.hotelId,
-        hotelName: hotel.hotelName,
-        city: hotel.city,
-        stars: hotel.stars,
-        address: hotel.address,
-        imageUrl: hotel.hotelImage,
-        images: hotel.images,
-        description: hotel.description,
-        facilities: hotel.facilities,
-        rooms: hotel.rooms,
-        requestJson: hotel.requestJson,
-        responseJson: hotel.responseJson,
-      }))
-
-      return NextResponse.json({
-        success: true,
-        data: mockResults,
-        count: mockResults.length,
-      })
-    }
+    console.log("🔍 Searching Medici API for:", { hotelName, city: cityParam, dateFrom, dateTo })
 
     const results = await mediciApi.searchHotels({
       dateFrom,

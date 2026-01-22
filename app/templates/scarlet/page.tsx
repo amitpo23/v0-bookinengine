@@ -168,13 +168,14 @@ function ScarletTemplateContent() {
       hotel_id: scarletHotelConfig.hotelId
     })
 
-    // Call real Medici API
+    // Call real Medici API - search by hotel name "Scarlet"
     await booking.searchHotels({
       checkIn: new Date(checkIn),
       checkOut: new Date(checkOut),
       adults: guests,
       children: [],
-      city: "Tel Aviv", // Search Tel Aviv hotels
+      hotelName: "Scarlet", // Search specifically for Scarlet hotel
+      city: "Tel Aviv",
     })
 
     setShowApiResults(true)
@@ -506,6 +507,165 @@ function ScarletTemplateContent() {
               <Sparkles className="h-8 w-8 text-white animate-spin-slow flex-shrink-0" />
             </div>
           </div>
+        </section>
+      )}
+
+      {/* API Results Section - Show real room prices when search is done */}
+      {showApiResults && booking.searchResults.length > 0 && (
+        <section id="api-results" className="py-20 px-4 max-w-7xl mx-auto bg-gradient-to-b from-black to-gray-900">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+              🎉 חדרים זמינים בתאריכים שלך
+            </h2>
+            <p className="text-xl text-gray-300">
+              {format(new Date(checkIn), "dd/MM/yyyy")} - {format(new Date(checkOut), "dd/MM/yyyy")} | {guests} אורחים
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {booking.searchResults.flatMap((hotel: any) =>
+              hotel.rooms.map((apiRoom: any, roomIndex: number) => {
+                // Try to match with static room for images
+                const matchedStaticRoom = scarletRoomTypes.find(
+                  (sr) => 
+                    apiRoom.roomName?.toLowerCase().includes(sr.name.toLowerCase()) ||
+                    apiRoom.roomCategory?.toLowerCase().includes(sr.id.replace(/-/g, ' '))
+                ) || scarletRoomTypes[roomIndex % scarletRoomTypes.length]
+
+                return (
+                  <Card
+                    key={`${hotel.hotelId}-${apiRoom.code || roomIndex}`}
+                    className="bg-gray-900/80 border-green-500/30 hover:border-green-500/50 transition-all overflow-hidden group"
+                  >
+                    {/* Room Image */}
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={apiRoom.images?.[0] || matchedStaticRoom?.images?.[0] || hotel.imageUrl}
+                        alt={apiRoom.roomName}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                      
+                      {/* Price Badge */}
+                      <div className="absolute bottom-4 right-4 bg-green-600/90 backdrop-blur-md px-4 py-2 rounded-full">
+                        <div className="text-xl font-bold text-white">
+                          {apiRoom.currency === 'ILS' ? '₪' : apiRoom.currency === 'USD' ? '$' : '€'}
+                          {Math.round(apiRoom.buyPrice)}
+                        </div>
+                        <div className="text-xs text-gray-200">לכל השהות</div>
+                      </div>
+
+                      {/* Board Type Badge */}
+                      <div className="absolute top-4 left-4 bg-blue-600/90 backdrop-blur-md px-3 py-1 rounded-full text-sm font-medium">
+                        {apiRoom.boardType === 'BB' ? '🍳 ארוחת בוקר' :
+                         apiRoom.boardType === 'HB' ? '🍽️ חצי פנסיון' :
+                         apiRoom.boardType === 'FB' ? '🍴 פנסיון מלא' :
+                         apiRoom.boardType === 'AI' ? '🌟 הכל כלול' :
+                         '🛏️ לינה בלבד'}
+                      </div>
+                    </div>
+
+                    {/* Room Details */}
+                    <div className="p-6">
+                      <h3 className="text-xl font-bold text-white mb-2">{apiRoom.roomName}</h3>
+                      <p className="text-gray-400 text-sm mb-4">
+                        {apiRoom.roomCategory || 'Standard'} | עד {apiRoom.maxOccupancy || 2} אורחים
+                      </p>
+
+                      {/* Amenities */}
+                      {apiRoom.amenities && apiRoom.amenities.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {apiRoom.amenities.slice(0, 4).map((amenity: string, idx: number) => (
+                            <Badge key={idx} variant="outline" className="text-xs border-gray-600">
+                              {amenity}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Cancellation Policy */}
+                      <div className="flex items-center gap-2 text-sm mb-4">
+                        {apiRoom.cancellationPolicy === 'free' ? (
+                          <span className="text-green-400">✓ ביטול חינם</span>
+                        ) : (
+                          <span className="text-yellow-400">⚠️ מדיניות ביטול מיוחדת</span>
+                        )}
+                      </div>
+
+                      {/* Book Button */}
+                      <Button
+                        onClick={() => {
+                          const hotelResult = {
+                            hotelId: hotel.hotelId,
+                            hotelName: hotel.hotelName || 'Scarlet Hotel',
+                            city: hotel.city || 'Tel Aviv',
+                            stars: hotel.stars || 4,
+                            address: hotel.address || '',
+                            imageUrl: hotel.imageUrl || matchedStaticRoom?.images?.[0],
+                            images: hotel.images || matchedStaticRoom?.images || [],
+                            description: hotel.description || '',
+                            facilities: hotel.facilities || [],
+                            rooms: [],
+                          }
+
+                          const roomResult = {
+                            code: apiRoom.code,
+                            roomId: apiRoom.roomId,
+                            roomName: apiRoom.roomName,
+                            roomCategory: apiRoom.roomCategory,
+                            categoryId: apiRoom.categoryId || 1,
+                            boardId: apiRoom.boardId || 2,
+                            boardType: apiRoom.boardType || 'BB',
+                            buyPrice: apiRoom.buyPrice,
+                            originalPrice: apiRoom.originalPrice || apiRoom.buyPrice * 1.2,
+                            currency: apiRoom.currency || 'ILS',
+                            maxOccupancy: apiRoom.maxOccupancy || 2,
+                            size: apiRoom.size || matchedStaticRoom?.size || 20,
+                            view: apiRoom.view || '',
+                            bedding: apiRoom.bedding || '',
+                            amenities: apiRoom.amenities || matchedStaticRoom?.features || [],
+                            images: apiRoom.images || matchedStaticRoom?.images || [],
+                            cancellationPolicy: apiRoom.cancellationPolicy || 'free',
+                            available: apiRoom.available || 5,
+                          }
+
+                          booking.selectRoom(hotelResult, roomResult).then((success) => {
+                            if (success) {
+                              setPrebookExpiry(new Date(Date.now() + 30 * 60 * 1000))
+                              trackEvent({
+                                event: 'room_selected',
+                                room_name: apiRoom.roomName,
+                                price: apiRoom.buyPrice,
+                                hotel_id: hotel.hotelId
+                              })
+                            }
+                          })
+                        }}
+                        disabled={booking.isLoading}
+                        className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold"
+                      >
+                        {booking.isLoading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                            מעבד...
+                          </>
+                        ) : (
+                          '🔒 הזמן עכשיו'
+                        )}
+                      </Button>
+                    </div>
+                  </Card>
+                )
+              })
+            )}
+          </div>
+
+          {/* Show message if no rooms available */}
+          {booking.searchResults.every((h: any) => !h.rooms || h.rooms.length === 0) && (
+            <div className="text-center py-12">
+              <p className="text-xl text-gray-400">לא נמצאו חדרים זמינים בתאריכים אלה. נסה תאריכים אחרים.</p>
+            </div>
+          )}
         </section>
       )}
 

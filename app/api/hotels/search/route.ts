@@ -1,142 +1,40 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { mediciApi } from "@/lib/api/medici-client"
 import { enrichHotelData } from "@/lib/api/hotel-enrichment"
-import { DEMO_MODE } from "@/lib/demo/demo-mode"
-import { MOCK_HOTELS } from "@/lib/demo/mock-data"
 
 export async function POST(request: NextRequest) {
   try {
-    // FORCE NEW DEPLOYMENT: 2026-01-22 14:10 - REAL API ONLY!!!
     const body = await request.json()
-    console.log("🔥 REAL API SEARCH V2026-01-22-14:10 - Body received:", JSON.stringify(body, null, 2))
+    console.log("🔥 REAL API - Body received:", JSON.stringify(body, null, 2))
 
-  const { hotelName, city, adults, children, stars, limit } = body    // Support both old and new parameter formats
-    // Old: dateFrom, dateTo, hotelName, city
-    // New: destination, checkIn, checkOut, pax
+    const { hotelName, city, adults, children, stars, limit } = body
+    
     const dateFrom = body.dateFrom || body.checkIn
     const dateTo = body.dateTo || body.checkOut
     const cityParam = body.city || body.destination
-    const paxParam = body.pax || { adults: body.adults || 2, children: body.children || [], rooms: body.rooms || 1 }
 
-    console.log("� REAL API SEARCH V2026-01-22-14:10 - Parameters parsed:")
-    console.log("dateFrom:", dateFrom)
-    console.log("dateTo:", dateTo) 
-    console.log("cityParam:", cityParam)
-    console.log("hotelName:", hotelName)
-    console.log("DEMO_MODE:", DEMO_MODE)
-    console.log("🚀 FORCING REAL API CALL - NO MOCK ALLOWED!")
+    console.log("🔍 Searching Medici API for:", { hotelName, city: cityParam, dateFrom, dateTo })
 
     if (!dateFrom || !dateTo) {
       return NextResponse.json({ error: "dateFrom and dateTo are required" }, { status: 400 })
     }
 
-    if (!hotelName && !cityParam) {      return NextResponse.json({ error: "Either hotelName or city is required" }, { status: 400 })
+    if (!hotelName && !cityParam) {
+      return NextResponse.json({ error: "Either hotelName or city is required" }, { status: 400 })
     }
 
-    if (DEMO_MODE) {
-      console.log("🎭 DEMO MODE: Using mock hotel data - BUT DEMO_MODE IS DISABLED!")
-      // THIS SHOULD NOT RUN ANYMORE - DEMO_MODE IS FALSE
-
-      await new Promise((resolve) => setTimeout(resolve, 800))
-
-      const mockResults = MOCK_HOTELS.map((hotel) => ({
-        hotelId: hotel.hotelId,
-        hotelName: hotel.hotelName,
-        city: hotel.city,
-        stars: hotel.stars,
-        address: hotel.address,
-        imageUrl: hotel.hotelImage,
-        images: hotel.images,
-        description: hotel.description,
-        facilities: hotel.facilities,
-        rooms: hotel.rooms,
-        requestJson: hotel.requestJson,
-        responseJson: hotel.responseJson,
-      }))
-
-      return NextResponse.json({
-        success: true,
-        data: mockResults,
-        count: mockResults.length,
-      })
-    }
-
-    console.log("🌐 REAL API MODE: Calling Medici API...")
-    console.log("mediciApi parameters:", {
-      dateFrom,
-      dateTo,
-      hotelName: hotelName || undefined,
-      city: city || undefined,
-      adults: adults || 2,
-      children: children || [],
-      stars: stars ? Number(stars) : undefined,
-      limit: limit ? Number(limit) : 20,
-    })
-
-    console.log("🚀 Making REAL API call to Medici...")
     const results = await mediciApi.searchHotels({
       dateFrom,
       dateTo,
       hotelName: hotelName || undefined,
-      city: city || undefined,
+      city: cityParam || undefined,
       adults: adults || 2,
       children: children || [],
       stars: stars ? Number(stars) : undefined,
       limit: limit ? Number(limit) : 20,
     })
 
-    console.log("🎯 Medici REAL API returned:", results.length, "results - VERSION 2026-01-22-14:10")
-    if (results.length > 0) {
-      console.log("✅ SUCCESS - First real result:", JSON.stringify(results[0], null, 2))
-      return NextResponse.json({
-        success: true,
-        data: results,
-        count: results.length,
-        version: "REAL_API_SUCCESS_2026-01-22-14:10",
-        timestamp: new Date().toISOString()
-      })
-    } else {
-      console.log("⚠️  No results from Medici API - falling back to mock data with dynamic prices")
-      
-      // THIS IS THE NEW FALLBACK CODE - SHOULD SHOW DYNAMIC PRICES
-      const dateVariation = new Date(dateFrom).getDate() % 10
-      console.log("Date variation for pricing:", dateVariation)
-      
-      // Fallback to mock data but with potentially dynamic pricing based on dates
-      const mockResults = MOCK_HOTELS.map((hotel) => ({
-        hotelId: hotel.hotelId,
-        hotelName: hotel.hotelName,
-        city: hotel.city,
-        stars: hotel.stars,
-        address: hotel.address,
-        imageUrl: hotel.hotelImage,
-        images: hotel.images,
-        description: hotel.description,
-        facilities: hotel.facilities,
-        rooms: hotel.rooms.map(room => ({
-          ...room,
-          // Add some date-based price variation - THIS IS THE KEY CHANGE
-          price: room.price + dateVariation * 25,
-          buyPrice: room.buyPrice + dateVariation * 25,
-        })),
-        requestJson: JSON.stringify({ 
-          fallback: true, 
-          dateVariation,
-          timestamp: new Date().toISOString(),
-          originalParams: { dateFrom, dateTo, hotelName, city, adults, children } 
-        }),
-        responseJson: JSON.stringify({ fallback: "medici_api_failed", dateVariation }),
-      }))
-
-      return NextResponse.json({
-        success: true,
-        data: mockResults,
-        count: mockResults.length,
-        note: `Fallback mode - Medici API unavailable. Dynamic pricing: +${dateVariation * 25}₪ based on date ${dateFrom}`,
-        fallbackMode: true,
-        timestamp: new Date().toISOString()
-      })
-    }
+    console.log("🎯 Medici API returned:", results.length, "results")
 
     const groupedResults = await Promise.all(
       results.map(async (hotel: any) => {
@@ -175,16 +73,14 @@ export async function POST(request: NextRequest) {
             images: room.images || [],
             cancellationPolicy: room.cancellationPolicy || "free",
             available: room.available || room.quantity?.max || 1,
-            requestJson: room.requestJson || roomCode, // Add requestJson for PreBook
+            requestJson: room.requestJson || roomCode,
           }
         })
 
-        // Enrich hotel data if missing information
         let enrichedDescription = hotel.description || ""
         let enrichedImages = hotel.images || []
         let enrichedFacilities = hotel.facilities || hotel.amenities || []
 
-        // Only enrich if data is missing or incomplete
         const needsEnrichment =
           !enrichedDescription ||
           enrichedDescription.length < 50 ||

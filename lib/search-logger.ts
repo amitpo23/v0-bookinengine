@@ -3,12 +3,16 @@
  * Logs all search queries to the database for analytics and admin viewing
  */
 
-import { createClient } from "@supabase/supabase-js"
+import { createClient, SupabaseClient } from "@supabase/supabase-js"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
 
-const supabase = createClient(supabaseUrl, supabaseKey)
+// Only create client if we have valid credentials
+let supabase: SupabaseClient | null = null
+if (supabaseUrl && supabaseKey) {
+  supabase = createClient(supabaseUrl, supabaseKey)
+}
 
 export interface SearchLogParams {
   // Hotel context
@@ -55,6 +59,12 @@ export class SearchLogger {
    * Log a search operation
    */
   static async logSearch(params: SearchLogParams): Promise<void> {
+    // Skip logging if supabase is not configured
+    if (!supabase) {
+      console.log("[SearchLogger] Skipping log - Supabase not configured")
+      return
+    }
+    
     try {
       // Format dates if provided
       const dateFrom =
@@ -118,6 +128,12 @@ export class SearchLogger {
       offset?: number
     },
   ) {
+    // Skip if supabase is not configured
+    if (!supabase) {
+      console.log("[SearchLogger] Skipping getLogs - Supabase not configured")
+      return { logs: [], total: 0, limit: filters?.limit ?? 50, offset: filters?.offset ?? 0 }
+    }
+    
     const limit = filters?.limit ?? 50
     const offset = filters?.offset ?? 0
 
@@ -175,6 +191,12 @@ export class SearchLogger {
     dateFrom?: Date
     dateTo?: Date
   }) {
+    // Skip if supabase is not configured
+    if (!supabase) {
+      console.log("[SearchLogger] Skipping getSearchStats - Supabase not configured")
+      return { totalSearches: 0, successfulSearches: 0, failedSearches: 0, avgDurationMs: 0 }
+    }
+    
     let totalQuery = supabase.from("search_logs").select("*", { count: "exact", head: true })
     let successQuery = supabase
       .from("search_logs")

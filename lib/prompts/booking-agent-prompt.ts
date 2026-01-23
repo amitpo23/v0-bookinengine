@@ -468,7 +468,73 @@ Be a world-class hotel booking and inventory assistant:
 - Maximize clarity and conversion (help the guest actually complete a good booking),
 - While strictly respecting the API responses and hotel rules.`
 
-export function getBookingAgentPrompt(language: "he" | "en", hotelName: string, hotelCity: string, today: string) {
+import { scarletKnowledgeBase, scarletSystemInstructions } from "@/lib/hotels/scarlet-ai-knowledge"
+
+export function getBookingAgentPrompt(
+  language: "he" | "en", 
+  hotelName: string, 
+  hotelCity: string, 
+  today: string,
+  hotelId?: string,
+  knowledgeBase?: string,
+  systemInstructions?: string
+) {
+  // If Scarlet Hotel, use advanced knowledge base and instructions
+  if (hotelId === "scarlet-hotel") {
+    const scarletPrompt = `
+${scarletSystemInstructions}
+
+--------------------------------------------------
+מידע נוסף למלון סקרלט
+--------------------------------------------------
+
+מידע על המלון:
+${JSON.stringify(scarletKnowledgeBase.identity, null, 2)}
+
+מיקום:
+${JSON.stringify(scarletKnowledgeBase.location, null, 2)}
+
+חדרים זמינים:
+${scarletKnowledgeBase.rooms.map((room, idx) => `
+${idx + 1}. ${room.name}
+   - מחיר: ${room.price}₪
+   - שטח: ${room.size} מ"ר
+   - מתאים ל: ${room.maxGuests} אורחים
+   - תיאור: ${room.description}
+   - תכונות: ${room.detailedFeatures?.bedding}, ${room.detailedFeatures?.bathroom}
+`).join('\n')}
+
+שירותים:
+${JSON.stringify(scarletKnowledgeBase.services, null, 2)}
+
+מבצעים פעילים:
+${scarletKnowledgeBase.promotions.map((p: any) => `- ${p.name}: ${p.description}`).join('\n')}
+
+מדיניות:
+${JSON.stringify(scarletKnowledgeBase.policies, null, 2)}
+
+שאלות נפוצות:
+${scarletKnowledgeBase.faq.map((faq: any) => `ש: ${faq.q}\nת: ${faq.a}`).join('\n\n')}
+
+--------------------------------------------------
+פורמט קריאה לחיפוש - מלון סקרלט בלבד
+--------------------------------------------------
+**חשוב:** תמיד חפש רק את מלון סקרלט תל אביב. לא מלונות אחרים!
+
+כשיש לך תאריכים ומספר אורחים, הוסף:
+[SEARCH]{"dateFrom": "YYYY-MM-DD", "dateTo": "YYYY-MM-DD", "adults": 2, "children": [], "city": "Tel Aviv"}[/SEARCH]
+
+דוגמה:
+[SEARCH]{"dateFrom": "2025-08-01", "dateTo": "2025-08-03", "adults": 2, "children": [], "city": "Tel Aviv"}[/SEARCH]
+
+התאריך היום: ${today}
+מזהה מלון ב-API: 863233
+שם מלון ב-API: Scarlet Hotel Tel Aviv
+`
+    return scarletPrompt
+  }
+
+  // Default prompt for other hotels
   const basePrompt = language === "he" ? BOOKING_AGENT_PROMPT_HE : BOOKING_AGENT_PROMPT_EN
 
   const contextInfo =

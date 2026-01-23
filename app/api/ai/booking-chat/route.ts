@@ -42,6 +42,7 @@ async function searchMediciHotels(params: {
   dateTo: string
   adults: number
   children: number[]
+  filterHotelId?: string // Optional filter for specific hotel only
 }) {
   console.log("[v0] Searching Medici API with params:", params)
 
@@ -90,6 +91,14 @@ async function searchMediciHotels(params: {
 
     const data = await response.json()
     console.log("[v0] Response items count:", data?.items?.length || 0)
+
+    // Filter results by hotel ID if filterHotelId is provided
+    if (params.filterHotelId && data?.items) {
+      data.items = data.items.filter((hotel: any) => 
+        hotel.hotelId?.toString() === params.filterHotelId
+      )
+      console.log(`[v0] Filtered to hotel ID ${params.filterHotelId}, remaining items:`, data.items.length)
+    }
 
     return {
       results: data,
@@ -306,7 +315,15 @@ export async function POST(req: Request) {
 
     const today = new Date().toISOString().split("T")[0]
 
-    const systemPrompt = getBookingAgentPrompt(language, hotelName, hotelCity, today)
+    const systemPrompt = getBookingAgentPrompt(
+      language, 
+      hotelName, 
+      hotelCity, 
+      today,
+      hotelConfig?.id,
+      hotelConfig?.knowledgeBase,
+      hotelConfig?.systemInstructions
+    )
 
     console.log("[v0] Calling AI model...")
 
@@ -336,6 +353,7 @@ export async function POST(req: Request) {
           dateTo: searchParams.dateTo,
           adults: searchParams.adults || 2,
           children: searchParams.children || [],
+          filterHotelId: hotelConfig?.id === "scarlet-hotel" ? "863233" : undefined, // Filter Scarlet only
         })
 
         let rooms: any[] = []

@@ -3,6 +3,11 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import type { HotelConfig } from "@/types/saas"
 import { scarletHotelConfig } from "@/lib/hotels/scarlet-config"
+import { 
+  scarletKnowledgeBase, 
+  scarletSystemInstructions, 
+  scarletAISkills 
+} from "@/lib/hotels/scarlet-ai-knowledge"
 
 interface HotelConfigContextType {
   currentHotel: HotelConfig | null
@@ -113,7 +118,9 @@ const scarletHotelConfigData: HotelConfig = {
 - המלץ על חדרים בהתאם לצרכים
 - הדגש את המבצעים הרלוונטיים
 - שאל שאלות מבררות כדי להבין את הצרכים`,
-    knowledgeBase: JSON.stringify(scarletHotelConfig),
+    systemInstructions: scarletSystemInstructions,
+    knowledgeBase: JSON.stringify(scarletKnowledgeBase),
+    aiSkills: scarletAISkills,
   },
 }
 

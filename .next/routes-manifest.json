@@ -747,6 +747,12 @@
       "namedRegex": "^/templates/scarlet(?:/)?$"
     },
     {
+      "page": "/templates/scarlet/ai-chat",
+      "regex": "^/templates/scarlet/ai\\-chat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/templates/scarlet/ai\\-chat(?:/)?$"
+    },
+    {
       "page": "/templates/scarlet/booking",
       "regex": "^/templates/scarlet/booking(?:/)?$",
       "routeKeys": {},

@@ -57,6 +57,10 @@ export interface HotelConfig {
     language: "he" | "en" | "both"
     primaryColor: string
   }
+  // Advanced AI Settings (optional)
+  systemInstructions?: string
+  knowledgeBase?: string
+  aiSkills?: any
 }
 
 export interface Tenant {

@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/templates/layout,_N_T_/templates/scarlet/layout,_N_T_/templates/scarlet/booking/layout,_N_T_/templates/scarlet/booking/page,_N_T_/templates/scarlet/booking"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/templates/scarlet/booking/__PAGE__",
+    "/templates/scarlet/booking",
+    "/templates/scarlet",
+    "/templates",
+    "/_index",
+    "/_head"
+  ]
+}

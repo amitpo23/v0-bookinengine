@@ -4,54 +4,99 @@ import { useState } from "react"
 import { HotelConfigProvider } from "@/lib/hotel-config-context"
 import { ChatInterface } from "@/components/ai-chat/chat-interface"
 import { Button } from "@/components/ui/button"
-import { Moon, Sun, Sparkles, Calendar, MessageCircle, MapPin, Heart, Search } from "lucide-react"
+import { 
+  Moon, Sun, Sparkles, Calendar, MessageCircle, MapPin, Heart, Search, 
+  Calculator, CreditCard, Star, Ticket, Crown, Cloud, TrendingUp, BarChart 
+} from "lucide-react"
 
-// Scarlet Hotel AI Agent Configuration with Advanced Skills
+// Scarlet Hotel AI Agent Configuration with 13 Advanced Skills
 const scarletAgent = {
   id: "scarlet-concierge",
   name: "קונסיירז' סקרלט",
   englishName: "Scarlet Concierge",
   avatar: "/scarlet-logo.png",
-  description: "הקונסיירז' הוירטואלי של מלון סקרלט תל אביב",
+  description: "הקונסיירז' הוירטואלי המתקדם של מלון סקרלט תל אביב עם 13 יכולות חכמות",
   tagline: "היכן שהאורבני פוגש את הרומנטי",
   
-  // Advanced Capabilities with Skills
+  // 13 Advanced Capabilities with Skills
   capabilities: [
     {
       icon: <Search className="h-5 w-5" />,
       title: "חיפוש חכם",
       description: "בדיקת זמינות בזמן אמת ומחירים מעודכנים",
-      skill: "availability_check"
+      skill: "availabilityCheck"
     },
     {
       icon: <Heart className="h-5 w-5" />,
-      title: "המלצות מותאמות אישית",
+      title: "המלצות אישיות",
       description: "המלצת החדר המושלם לפי צרכים ותקציב",
-      skill: "room_recommendation"
+      skill: "roomRecommendation"
     },
     {
-      icon: <Calendar className="h-5 w-5" />,
-      title: "הזמנות מיידיות",
+      icon: <Calculator className="h-5 w-5" />,
+      title: "חישוב מחירים",
+      description: "מחשבון מחיר מדויק כולל מבצעים והנחות",
+      skill: "priceCalculation"
+    },
+    {
+      icon: <CreditCard className="h-5 w-5" />,
+      title: "ליווי הזמנה",
       description: "תהליך הזמנה מלא עם אישור בזמן אמת",
-      skill: "booking_assistant"
-    },
-    {
-      icon: <MessageCircle className="h-5 w-5" />,
-      title: "שירות 24/7",
-      description: "תמיכה בעברית ואנגלית בכל שעה",
-      skill: "customer_support"
+      skill: "bookingAssistant"
     },
     {
       icon: <MapPin className="h-5 w-5" />,
       title: "מומחה מקומי",
       description: "המלצות על מסעדות, אטרקציות וחיי לילה",
-      skill: "local_expert"
+      skill: "localExpert"
     },
     {
       icon: <Sparkles className="h-5 w-5" />,
-      title: "חבילות מיוחדות",
-      description: "חבילות רומנטיות, חגיגות ובקשות מיוחדות",
-      skill: "special_requests"
+      title: "בקשות מיוחדות",
+      description: "חבילות רומנטיות, חגיגות ובקשות אישיות",
+      skill: "specialRequests"
+    },
+    {
+      icon: <Star className="h-5 w-5" />,
+      title: "ביקורות",
+      description: "ביקורות אמיתיות ודירוגים מפורטים (4.7/5)",
+      skill: "reviewsSystem"
+    },
+    {
+      icon: <Ticket className="h-5 w-5" />,
+      title: "מבצעים",
+      description: "קופונים, הנחות ומבצעי פלאש בלעדיים",
+      skill: "promotionsManager"
+    },
+    {
+      icon: <Crown className="h-5 w-5" />,
+      title: "מועדון VIP",
+      description: "הרשמה למועדון והטבות אקסקלוסיביות",
+      skill: "loyaltyProgram"
+    },
+    {
+      icon: <Cloud className="h-5 w-5" />,
+      title: "מזג אוויר",
+      description: "תחזית מזג אוויר ואטרקציות בתאריכי השהייה",
+      skill: "weatherAndAttractions"
+    },
+    {
+      icon: <TrendingUp className="h-5 w-5" />,
+      title: "טרנדים",
+      description: "תובנות על תקופות פופולריות ויעדים חמים",
+      skill: "travelTrends"
+    },
+    {
+      icon: <MessageCircle className="h-5 w-5" />,
+      title: "WhatsApp",
+      description: "תמיכה מהירה בוואטסאפ 24/7",
+      skill: "whatsappSupport"
+    },
+    {
+      icon: <BarChart className="h-5 w-5" />,
+      title: "מעקב חכם",
+      description: "המלצות משופרות לפי התנהגות",
+      skill: "analyticsTracking"
     }
   ],
 

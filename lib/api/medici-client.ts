@@ -22,6 +22,9 @@ const MEDICI_TOKEN_LEGACY = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGR
 // Use KNOWAA token as primary
 const MEDICI_TOKEN = process.env.KNOWAA_BEARER_TOKEN || KNOWAA_TOKEN
 
+// KNOWAA LIVE Aether Token - Required for Scarlet Hotel (863233) and full inventory
+const KNOWAA_LIVE_AETHER_TOKEN = "$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku"
+
 // =====================
 // TYPES
 // =====================
@@ -176,6 +179,7 @@ export class MediciApiClient {
       stars: params.stars || null,
       limit: params.limit || null,
       ShowExtendedData: true, // Get images, description, facilities from Medici
+      aetherAccessToken: KNOWAA_LIVE_AETHER_TOKEN, // Required for Scarlet Hotel and full inventory
     }
 
     if (params.hotelName) {

@@ -28,104 +28,69 @@ import { AnimatedCard, showToast } from "@/components/templates/enhanced-ui"
 import { motion, AnimatePresence } from "framer-motion"
 
 // Helper function to normalize API rooms to display format
-// Customized for Scarlet Hotel Tel Aviv with room types found in API tests
+// Maps Knowaa API results to Scarlet Hotel template room types
+// API Room Mapping (based on actual Knowaa Live results):
+// - "standard" + "triple" → deluxe-balcony-bathtub (3 guests, $110.11)
+// - "suite" + "double" → suite (2-4 guests, $275.46)
 function normalizeApiRoom(apiRoom: any, index: number) {
-  // Based on API test results, we found: Standard Triple ($256.98), Standard Double, etc.
   const roomName = (apiRoom.roomName || '').toLowerCase()
-  const roomCategory = (apiRoom.roomCategory || '').toLowerCase()
+  const roomCategory = (apiRoom.roomCategory || apiRoom.category || '').toLowerCase()
+  const bedding = (apiRoom.bedding || '').toLowerCase()
   
-  // Define room configurations based on actual Scarlet Tel Aviv room types
-  let roomConfig = {
-    emoji: '💎',
-    hebrewName: 'חדר סטנדרט',
-    tagline: 'חדר עם כל הנוחיות',
-    description: 'חדר מעוצב בסגנון בוטיק במלון סקרלט תל אביב',
-    features: ["מיטה נוחה", "טלוויזיה חכמה", "מיזוג אוויר", "נוף לעיר"],
-    isPremium: false,
-    wowFactor: false,
+  console.log('🔄 Normalizing API room:', { roomName, roomCategory, bedding, price: apiRoom.buyPrice })
+  
+  // MAPPING TABLE: API → Template
+  // standard+triple → deluxe-balcony-bathtub (דלאקס עם מרפסת ואמבטיה)
+  // suite+double → suite (הסוויטה)
+  
+  let templateRoom = scarletRoomTypes[0] // Default fallback
+  let matchReason = 'default'
+  
+  // Match 1: Standard Triple → Deluxe Balcony & Bathtub (3 guests)
+  if (roomCategory.includes('standard') && (bedding.includes('triple') || roomName.includes('triple'))) {
+    templateRoom = scarletRoomTypes.find(r => r.id === 'deluxe-balcony-bathtub') || scarletRoomTypes[5]
+    matchReason = 'standard+triple→deluxe-balcony-bathtub'
   }
   
-  // Standard Triple - found in API tests at $256.98
-  if (roomName.includes('triple')) {
-    roomConfig = {
-      emoji: '🏛️',
-      hebrewName: 'חדר משולש סטנדרט',
-      tagline: 'מושלם לשלושה אורחים',
-      description: 'חדר מרווח לשלושה אורחים ברחוב גורדון המפורסם, בלב תל אביב התוססת.',
-      features: [
-        "מיטה זוגית + מיטה יחיד",
-        "שטח מרווח - 35 מ״ר",
-        "נוף לרחוב גורדון",
-        "מקלחון זכוכית",
-        "פינת קפה מאובזרת",
-        "מיזוג אוויר מתקדם"
-      ],
-      isPremium: true,
-      wowFactor: true,
-    }
+  // Match 2: Suite Double → The Suite (2-5 guests)
+  else if (roomCategory.includes('suite') || roomName.includes('suite')) {
+    templateRoom = scarletRoomTypes.find(r => r.id === 'suite') || scarletRoomTypes[6]
+    matchReason = 'suite→suite'
   }
   
-  // Standard Double - common room type
-  else if (roomName.includes('double')) {
-    roomConfig = {
-      emoji: '💎',
-      hebrewName: 'חדר זוגי סטנדרט',
-      tagline: 'חדר זוגי בסגנון בוטיק',
-      description: 'חדר זוגי אלגנטי ברחוב גורדון, במיקום מיוחד של תל אביב ליד החוף.',
-      features: [
-        "מיטה זוגית King Size",
-        "נוף לעיר תל אביב",
-        "עיצוב בוטיק ייחודי", 
-        "אמבטיה מודרנית",
-        "טלוויזיה חכמה",
-        "כספת דיגיטלית"
-      ],
-      isPremium: false,
-      wowFactor: false,
-    }
+  // Match 3: Standard Double → Classic Double (fallback for 2 guests)
+  else if (roomCategory.includes('standard') && (bedding.includes('double') || roomName.includes('double'))) {
+    templateRoom = scarletRoomTypes.find(r => r.id === 'classic-double') || scarletRoomTypes[0]
+    matchReason = 'standard+double→classic-double'
   }
   
-  // Classic rooms (if found in future API calls)
-  else if (roomName.includes('classic')) {
-    roomConfig = {
-      emoji: '✨',
-      hebrewName: 'חדר קלאסי',
-      tagline: 'עיצוב קלאסי מעודן',
-      description: 'חדר מעוצב בסגנון קלאסי עם נגיעות מודרניות, המשלב בין אלגנטיות לנוחות.',
-      features: [
-        "עיצוב קלאסי מעודן",
-        "מיטה אורתופדית",
-        "פינת ישיבה נוחה",
-        "חדר רחצה מאובזר",
-        "נוף פנורמי",
-        "שירות חדרים 24/7"
-      ],
-      isPremium: true,
-      wowFactor: false,
-    }
+  // Match 4: Deluxe → Deluxe Room (4 guests)
+  else if (roomCategory.includes('deluxe')) {
+    templateRoom = scarletRoomTypes.find(r => r.id === 'deluxe') || scarletRoomTypes[4]
+    matchReason = 'deluxe→deluxe'
   }
+  
+  console.log(`✅ Matched: ${matchReason}`, templateRoom.id, templateRoom.hebrewName)
 
+  // Return normalized room with REAL API price and template styling
   return {
     id: apiRoom.roomId || apiRoom.code || `scarlet-room-${index}`,
-    name: roomConfig.hebrewName,
-    hebrewName: roomConfig.hebrewName,
-    emoji: roomConfig.emoji,
-    tagline: roomConfig.tagline,
-    description: roomConfig.description,
-    size: apiRoom.size || 20,
-    maxGuests: isTriple ? 3 : 2,
-    basePrice: Math.round(apiRoom.buyPrice || 0),
+    name: templateRoom.name,
+    hebrewName: templateRoom.hebrewName,
+    emoji: templateRoom.emoji,
+    tagline: templateRoom.tagline,
+    description: templateRoom.description,
+    size: templateRoom.size,
+    maxGuests: templateRoom.maxGuests,
+    basePrice: Math.round(apiRoom.buyPrice || 0), // REAL API PRICE!
     currency: apiRoom.currency || "USD",
-    features: roomConfig.features,
-    isPremium: roomConfig.isPremium,
-    wowFactor: roomConfig.wowFactor,
-    images: [
-      // Use real Scarlet hotel images
-      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/classic-balcony/SCARLET%20DAY2-1.jpg",
-      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/classic-balcony/SCARLET%20DAY2-2.jpg",
-      "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/classic-balcony/SCARLET%20DAY2-3.jpg"
-    ],
-    apiRoom: apiRoom // Keep original API data for reference
+    features: templateRoom.features,
+    isPremium: templateRoom.isPremium || false,
+    wowFactor: templateRoom.wowFactor || false,
+    special: templateRoom.special,
+    suitableFor: templateRoom.suitableFor,
+    images: templateRoom.images,
+    apiRoom: apiRoom // Keep original API data for PreBook
   }
 }
 
@@ -327,11 +292,17 @@ function ScarletTemplateContent() {
 
   // Prefill dates so search can run immediately
   useEffect(() => {
+    console.log('=== PREFILL DATES EFFECT ===')
+    console.log('checkIn:', checkIn, 'checkOut:', checkOut)
     if (!checkIn) {
-      setCheckIn(format(addDays(new Date(), 1), "yyyy-MM-dd"))
+      const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd")
+      console.log('Setting checkIn to:', tomorrow)
+      setCheckIn(tomorrow)
     }
     if (!checkOut) {
-      setCheckOut(format(addDays(new Date(), 3), "yyyy-MM-dd"))
+      const dayAfter = format(addDays(new Date(), 3), "yyyy-MM-dd")
+      console.log('Setting checkOut to:', dayAfter)
+      setCheckOut(dayAfter)
     }
   }, [])
 

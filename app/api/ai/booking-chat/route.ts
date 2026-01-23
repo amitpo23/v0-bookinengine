@@ -4,6 +4,7 @@ import { getBookingAgentPrompt } from "@/lib/prompts/booking-agent-prompt"
 import { emailService } from "@/lib/email/email-service"
 import { SearchLogger } from "@/lib/search-logger"
 import { format } from "date-fns"
+import { ChatMemoryService } from "@/lib/services/chat-memory-service"
 
 const MEDICI_API_BASE = "https://medici-backend.azurewebsites.net"
 const MEDICI_IMAGES_BASE = "https://cdn.medicihotels.com/images/"
@@ -292,10 +293,11 @@ async function bookRoom(params: {
 
 export async function POST(req: Request) {
   try {
-    const { messages, hotelConfig, language, bookingState } = (await req.json()) as {
+    const { messages, hotelConfig, language, bookingState, sessionId } = (await req.json()) as {
       messages: { role: "user" | "assistant"; content: string }[]
       hotelConfig: HotelConfig
       language: "he" | "en"
+      sessionId?: string
       bookingState?: {
         step?: "search" | "select" | "prebook" | "details" | "book"
         selectedRoom?: any
@@ -305,17 +307,83 @@ export async function POST(req: Request) {
       }
     }
 
+    // Generate or use provided session ID
+    const currentSessionId = sessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    
+    // Initialize memory for this session
+    const memory = ChatMemoryService.getOrCreateMemory(currentSessionId, hotelConfig?.id || 'default')
+    
+    // Get last user message
+    const lastUserMessage = messages[messages.length - 1]
+    if (lastUserMessage?.role === 'user') {
+      // Add user message to memory
+      ChatMemoryService.addMessage(currentSessionId, 'user', lastUserMessage.content)
+      
+      // Check for admin trigger
+      if (ChatMemoryService.isAdminTrigger(lastUserMessage.content)) {
+        ChatMemoryService.activateAdminMode(currentSessionId)
+        
+        return Response.json({
+          text: `🔐 **מצב מנהל הופעל!**
+
+שלום מנהל המלון! עכשיו אתה יכול:
+
+1. **לעדכן הנחיות מערכת** - רק תגיד:
+   - "הנחיות חדשות: [ההנחיות שלך]"
+   - "עדכן הנחיות: [ההנחיות החדשות]"
+   
+2. **לשנות התנהגות ה-AI** - למשל:
+   - "הנחיות חדשות: תהיה יותר פורמלי ומקצועי"
+   - "עדכן הנחיות: תן דגש על המבצעים והקופונים"
+   - "הנחיות חדשות: תהיה יותר רומנטי וחם בתגובות"
+
+3. **ההנחיות ישמרו** למשך כל השיחה ויחולו על כל התגובות הבאות.
+
+מה תרצה לעדכן?`,
+          sessionId: currentSessionId,
+          adminMode: true
+        })
+      }
+      
+      // Check if in admin mode and extracting instructions
+      if (ChatMemoryService.isAdminMode(currentSessionId)) {
+        const extractedInstructions = ChatMemoryService.extractAndSaveInstructions(
+          currentSessionId, 
+          lastUserMessage.content
+        )
+        
+        if (extractedInstructions) {
+          return Response.json({
+            text: `✅ **הנחיות עודכנו בהצלחה!**
+
+📝 ההנחיות החדשות:
+"${extractedInstructions}"
+
+ההנחיות האלה יחולו על כל התגובות שלי מעכשיו. אני אתאים את הסגנון, הטון והתוכן שלי בהתאם.
+
+רוצה לבדוק? שאל אותי שאלה והראה לך איך אני משתמש בהנחיות החדשות! 🚀`,
+            sessionId: currentSessionId,
+            adminMode: true,
+            customInstructions: extractedInstructions
+          })
+        }
+      }
+    }
+
     const isHebrew = language === "he"
     const hotelName = hotelConfig?.name || "Dizengoff Inn"
     const hotelApiName = hotelConfig?.apiSettings?.mediciHotelName || DEFAULT_HOTEL_NAME
     const hotelCity = hotelConfig?.apiSettings?.mediciCity || hotelConfig?.city || "Tel Aviv"
 
     console.log("[v0] Chat request - Hotel:", hotelName, "API Name:", hotelApiName)
+    console.log("[v0] Session ID:", currentSessionId)
+    console.log("[v0] Admin Mode:", ChatMemoryService.isAdminMode(currentSessionId))
     console.log("[v0] Booking state:", bookingState)
 
     const today = new Date().toISOString().split("T")[0]
 
-    const systemPrompt = getBookingAgentPrompt(
+    // Get base system prompt
+    let systemPrompt = getBookingAgentPrompt(
       language, 
       hotelName, 
       hotelCity, 
@@ -324,6 +392,17 @@ export async function POST(req: Request) {
       hotelConfig?.knowledgeBase,
       hotelConfig?.systemInstructions
     )
+    
+    // Add custom instructions if in admin mode
+    const customInstructions = ChatMemoryService.getCustomInstructions(currentSessionId)
+    if (customInstructions) {
+      systemPrompt += `\n\n## 🔐 הנחיות מותאמות אישית ממנהל המלון (עדיפות גבוהה!):\n${customInstructions}\n\nהנחיות אלה חשובות ביותר ודורסות הנחיות אחרות במקרה של סתירה.`
+      console.log("[v0] Applied custom instructions from admin")
+    }
+    
+    // Add conversation history context
+    const conversationSummary = ChatMemoryService.getSummary(currentSessionId)
+    systemPrompt += `\n\n## 💬 הקשר שיחה:\n${conversationSummary}`
 
     console.log("[v0] Calling AI model...")
 
@@ -337,6 +416,9 @@ export async function POST(req: Request) {
     })
 
     console.log("[v0] AI response:", text.slice(0, 500))
+    
+    // Add AI response to memory
+    ChatMemoryService.addMessage(currentSessionId, 'assistant', text)
 
     const searchMatch = text.match(/\[SEARCH\](.*?)\[\/SEARCH\]/s)
     if (searchMatch) {
@@ -631,7 +713,14 @@ export async function POST(req: Request) {
       .replace(/\[BOOK\].*?\[\/BOOK\]/s, "")
       .trim()
 
-    return Response.json({ message: cleanText })
+    // Return response with session ID and memory info
+    return Response.json({ 
+      message: cleanText,
+      sessionId: currentSessionId,
+      hasMemory: memory.messages.length > 0,
+      messageCount: memory.metadata.messageCount,
+      adminMode: ChatMemoryService.isAdminMode(currentSessionId)
+    })
   } catch (error) {
     console.error("[v0] AI Chat error:", error)
     return Response.json(

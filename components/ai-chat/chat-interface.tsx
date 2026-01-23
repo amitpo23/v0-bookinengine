@@ -318,6 +318,11 @@ export function ChatInterface({
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [sessionId, setSessionId] = useState<string>(() => 
+    `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  )
+  const [adminMode, setAdminMode] = useState(false)
+  const [messageCount, setMessageCount] = useState(0)
   const [selectedRoom, setSelectedRoom] = useState<BookingRoom | null>(null)
   const [searchContext, setSearchContext] = useState<{
     dateFrom: string
@@ -398,16 +403,33 @@ export function ChatInterface({
           })),
           hotelConfig: hotel,
           language,
+          sessionId, // Include session ID for memory
           bookingState: {
-            searchContext,
-            jsonRequest,
-            preBookData,
+            step: preBookData ? "book" : selectedRoomForBooking ? "prebook" : "search",
             selectedRoom: selectedRoomForBooking,
+            jsonRequest: jsonRequest,
+            preBookData: preBookData,
+            searchContext: searchContext,
           },
         }),
       })
 
       const data = await response.json()
+      
+      // Update session ID if returned from server
+      if (data.sessionId) {
+        setSessionId(data.sessionId)
+      }
+      
+      // Update admin mode status
+      if (data.adminMode !== undefined) {
+        setAdminMode(data.adminMode)
+      }
+      
+      // Update message count
+      if (data.messageCount !== undefined) {
+        setMessageCount(data.messageCount)
+      }
 
       if (data.searchContext) {
         setSearchContext(data.searchContext)
@@ -526,30 +548,38 @@ export function ChatInterface({
                 className="w-12 h-12 rounded-full object-cover shadow-lg"
               />
             ) : (
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 via-cyan-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                <ArrowLeft className="h-4 w-4" />
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                <Sparkles className="h-6 w-6 text-white" />
               </div>
             )}
-            <span
-              className={cn(
-                "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full",
-                darkMode ? "border-2 border-black" : "border-2 border-white",
-              )}
-            />
+            {adminMode && (
+              <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center shadow-lg animate-pulse">
+                <span className="text-[10px] font-bold text-white">🔐</span>
+              </div>
+            )}
           </div>
-          <div className="flex-1">
-            <h3 className={cn("font-bold text-lg", darkMode ? "text-white" : "text-slate-900")}>
-              {agentName || hotel?.name || "AI Assistant"}
-            </h3>
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 text-xs text-emerald-500">
-                <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                {isRtl ? "מקוון" : "Online"}
+          <div className="flex-1 min-w-0">
+            <h2 className={cn("font-semibold text-base truncate", darkMode ? "text-slate-100" : "text-slate-900")}>
+              {agentName || hotel.name}
+              {adminMode && (
+                <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-medium">
+                  {isRtl ? "מצב מנהל" : "Admin Mode"}
+                </span>
+              )}
+            </h2>
+            <div className="flex items-center gap-3 text-xs">
+              <span className={cn("flex items-center gap-1", darkMode ? "text-emerald-400" : "text-emerald-600")}>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                {isRtl ? "פעיל עכשיו" : "Active now"}
               </span>
-              <span className={darkMode ? "text-slate-600" : "text-slate-400"}>•</span>
-              <span className={cn("text-xs", darkMode ? "text-slate-400" : "text-slate-500")}>
-                {isRtl ? "זמן תגובה: מיידי" : "Response: Instant"}
-              </span>
+              {messageCount > 0 && (
+                <span className={cn(darkMode ? "text-slate-500" : "text-slate-500")}>
+                  • {messageCount} {isRtl ? "הודעות" : "messages"}
+                </span>
+              )}
             </div>
           </div>
         </div>

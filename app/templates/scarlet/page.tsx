@@ -306,6 +306,21 @@ function ScarletTemplateContent() {
     }
   }, [])
 
+  // Auto-adjust checkout date if it's before or equal to checkin date
+  useEffect(() => {
+    if (checkIn && checkOut) {
+      const checkInDate = new Date(checkIn)
+      const checkOutDate = new Date(checkOut)
+      
+      // If checkout is before or same as checkin, set it to checkin + 1 day
+      if (checkOutDate <= checkInDate) {
+        const newCheckOut = format(addDays(checkInDate, 1), "yyyy-MM-dd")
+        console.log('Auto-adjusting checkout from', checkOut, 'to', newCheckOut)
+        setCheckOut(newCheckOut)
+      }
+    }
+  }, [checkIn])
+
   // Keep scarlet results in sync with booking search results (so UI always shows live API data)
   useEffect(() => {
     if (!booking.searchResults || booking.searchResults.length === 0) return
@@ -628,6 +643,7 @@ function ScarletTemplateContent() {
                 <input
                   type="date"
                   value={checkOut}
+                  min={checkIn ? format(addDays(new Date(checkIn), 1), "yyyy-MM-dd") : ""}
                   onChange={(e) => setCheckOut(e.target.value)}
                   className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
                 />

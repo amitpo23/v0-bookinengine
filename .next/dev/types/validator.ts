@@ -308,6 +308,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../../app/templates/scarlet/ai-chat/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/templates/scarlet/ai-chat">> = Specific
+  const handler = {} as typeof import("../../../app/templates/scarlet/ai-chat/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../app/templates/scarlet/booking/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/templates/scarlet/booking">> = Specific

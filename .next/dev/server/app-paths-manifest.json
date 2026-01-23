@@ -1,3 +1,4 @@
 {
-  "/api/hotels/search/route": "app/api/hotels/search/route.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/templates/scarlet/ai-chat/page": "app/templates/scarlet/ai-chat/page.js"
 }

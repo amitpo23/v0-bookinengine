@@ -541,47 +541,27 @@ function ScarletTemplateContent() {
   const { t, locale, dir } = useI18n()
   
   // Helper function to check if a hotel is Scarlet Hotel Tel Aviv
-  // CRITICAL: Only accept hotel ID 863233 from Static Data API
+  // CRITICAL: ONLY accept hotel ID 863233 - no fallbacks!
   const isScarletHotel = (hotel: any) => {
     if (!hotel) return false
     
-    // PRIMARY CHECK: Hotel ID must be exactly 863233
+    // STRICT CHECK: Hotel ID MUST be exactly 863233
     const hotelId = String(hotel.hotelId || hotel.id || '')
+    
+    // Explicitly reject Dave Gordon TLV (850086) - it's a different hotel
+    if (hotelId === '850086') {
+      console.log('❌ Rejected Dave Gordon TLV (850086) - not Scarlet Hotel')
+      return false
+    }
+    
+    // Accept ONLY Scarlet Hotel with ID 863233
     if (hotelId === '863233') {
       console.log('✅ Scarlet Hotel found by ID:', hotelId, hotel.hotelName)
       return true
     }
     
-    // FALLBACK: Check name only if ID check fails (but log warning)
-    const hotelName = (hotel.hotelName || hotel.name || '').toLowerCase()
-    const address = (hotel.address || '').toLowerCase()
-    
-    const hasScarletName = hotelName.includes('scarlet')
-    const isDaveGordon = hotelName.includes('dave gordon') || hotelName.includes('gordon tlv')
-    const isGordonStreetAddress = (
-      address.includes('j. l. gordon') ||
-      address.includes('gordon st 17') ||
-      address.includes('j.l gordon')
-    )
-    const isTelAvivLocation = (
-      hotelName.includes('tel aviv') ||
-      hotelName.includes('tlv') ||
-      address.includes('tel aviv')
-    )
-    const isSingaporeScarlet = address.includes('erskine road')
-
-    const isMatch = (
-      !isSingaporeScarlet && (
-        (hasScarletName && (isGordonStreetAddress || isTelAvivLocation)) ||
-        isDaveGordon
-      )
-    )
-    
-    if (isMatch) {
-      console.warn('⚠️ Scarlet matched by name/address (no ID match):', hotelId, hotel.hotelName)
-    }
-    
-    return isMatch
+    // No fallbacks - reject everything else
+    return false
   }
   
   // Get filtered Scarlet results

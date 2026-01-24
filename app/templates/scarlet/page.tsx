@@ -844,20 +844,11 @@ function ScarletTemplateContent() {
 
       console.log(`🎯 Found ${scarletHotels.length} Scarlet Hotel Tel Aviv results`)
 
-      // If API found Scarlet Hotel with rooms - show API results
-      // Otherwise, fallback to static room data
-      if (scarletHotels.length > 0 && scarletHotels[0]?.rooms?.length > 0) {
-        setScarletSearchResults(scarletHotels)
-        setShowApiResults(true)
-      } else {
-        // No results from API - show static rooms from scarletRoomTypes
-        setScarletSearchResults([])
-        setShowApiResults(false)
-        console.log('📋 Showing static room data (API returned no Scarlet results)')
-      }
+      setScarletSearchResults(scarletHotels)
+      setShowApiResults(true)
 
       // ===== LOG SEARCH TO ADMIN =====
-      const roomCount = scarletHotels[0]?.rooms?.length || scarletRoomTypes.length
+      const roomCount = scarletHotels[0]?.rooms?.length || 0
       logToAdmin({
         stage: 'search',
         sessionId: getSessionId(),
@@ -871,9 +862,6 @@ function ScarletTemplateContent() {
       if (!silent) {
         if (scarletHotels.length > 0 && scarletHotels[0]?.rooms?.length > 0) {
           showToast?.(`נמצאו ${scarletHotels[0].rooms.length} חדרים זמינים במלון סקרלט תל אביב`, 'success')
-        } else {
-          // Show static rooms with a friendly message
-          showToast?.(`מציג ${scarletRoomTypes.length} סוגי חדרים זמינים במלון סקרלט`, 'success')
         }
       }
     } catch (err: any) {
@@ -1476,19 +1464,6 @@ function ScarletTemplateContent() {
         </div>
 
         <div className="space-y-16">
-          {/* Notice when API returns no results */}
-          {showApiResults && scarletSearchResults.length === 0 && !booking.isLoading && (
-            <div className="text-center py-8">
-              <div className="bg-gradient-to-br from-pink-900/30 to-gray-900/50 backdrop-blur-sm border border-pink-500/30 rounded-xl p-6 max-w-2xl mx-auto">
-                <h3 className="text-xl font-semibold text-white mb-2">🏨 חדרי מלון סקרלט תל אביב</h3>
-                <p className="text-gray-300 mb-4">להזמנת חדרים ובדיקת זמינות, אנא צרו קשר ישירות עם המלון</p>
-                <a href={`tel:${scarletHotelConfig.contact.phone}`} className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-600 to-red-600 text-white px-6 py-3 rounded-full font-semibold hover:from-pink-500 hover:to-red-500 transition-all">
-                  📞 {scarletHotelConfig.contact.phone}
-                </a>
-              </div>
-            </div>
-          )}
-          
           {/* Loading state */}
           {booking.isLoading && (
             <div className="text-center py-16">
@@ -1500,13 +1475,13 @@ function ScarletTemplateContent() {
             </div>
           )}
           
-          {/* Room cards - always show either API results or static rooms */}
+          {/* Room cards - show API results */}
           {!booking.isLoading && (() => {
             const shouldShowApi = showApiResults && scarletSearchResults.length > 0
             
             const roomsToRender = shouldShowApi 
               ? (scarletSearchResults[0]?.rooms || []).map((apiRoom: any, idx: number) => normalizeApiRoom(apiRoom, idx))
-              : scarletRoomTypes // Fallback to static rooms
+              : []
             
             console.log('=== ROOM RENDER ===')
             console.log('showApiResults:', showApiResults)

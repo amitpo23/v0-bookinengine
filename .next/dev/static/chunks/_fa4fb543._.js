@@ -7211,16 +7211,17 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$i18n$2f$context$2e$ts
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$booking$2f$language$2d$switcher$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/booking/language-switcher.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$hooks$2f$use$2d$booking$2d$engine$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/hooks/use-booking-engine.ts [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$booking$2f$templates$2f$shared$2f$index$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/components/booking/templates/shared/index.ts [app-client] (ecmascript) <locals>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$booking$2f$templates$2f$shared$2f$guest$2d$details$2d$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/booking/templates/shared/guest-details-form.tsx [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$booking$2f$templates$2f$shared$2f$payment$2d$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/booking/templates/shared/payment-form.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$booking$2f$templates$2f$shared$2f$booking$2d$confirmation$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/booking/templates/shared/booking-confirmation.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$booking$2f$prebook$2d$timer$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/booking/prebook-timer.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$addDays$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/date-fns/addDays.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/client/app-dir/link.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$error$2d$boundary$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/error-boundary.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$templates$2f$enhanced$2d$ui$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/templates/enhanced-ui.tsx [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/input.tsx [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/label.tsx [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$checkbox$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/checkbox.tsx [app-client] (ecmascript)");
 ;
-var _s = __turbopack_context__.k.signature();
+var _s = __turbopack_context__.k.signature(), _s1 = __turbopack_context__.k.signature(), _s2 = __turbopack_context__.k.signature();
 "use client";
 ;
 ;
@@ -7246,6 +7247,912 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
+;
+;
+;
+// ============= ADMIN TRACKING =============
+// Helper function to log search/booking activity to admin
+const logToAdmin = async (data)=>{
+    try {
+        await fetch('/api/admin/template-logs', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                templateId: 'scarlet',
+                ...data,
+                source: document.referrer ? new URL(document.referrer).hostname : 'direct',
+                referrer: document.referrer,
+                userAgent: navigator.userAgent
+            })
+        });
+    } catch (error) {
+        console.warn('Failed to log to admin:', error);
+    }
+};
+// Helper to track abandoned bookings
+const trackAbandoned = async (data)=>{
+    try {
+        await fetch('/api/admin/abandoned-bookings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                templateId: 'scarlet',
+                hotelId: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hotels$2f$scarlet$2d$config$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["scarletHotelConfig"].hotelId,
+                hotelName: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hotels$2f$scarlet$2d$config$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["scarletHotelConfig"].hebrewName,
+                currency: 'ILS',
+                source: document.referrer ? new URL(document.referrer).hostname : 'direct',
+                ...data
+            })
+        });
+    } catch (error) {
+        console.warn('Failed to track abandoned booking:', error);
+    }
+};
+// Generate unique session ID for tracking
+const getSessionId = ()=>{
+    if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+    ;
+    let sessionId = sessionStorage.getItem('scarlet_session_id');
+    if (!sessionId) {
+        sessionId = `sess_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+        sessionStorage.setItem('scarlet_session_id', sessionId);
+    }
+    return sessionId;
+};
+// Custom Payment Form for Scarlet (works with useBookingEngine)
+function ScarletPaymentForm({ totalPrice, currency, onSubmit, isProcessing }) {
+    _s();
+    const [cardNumber, setCardNumber] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
+    const [expiry, setExpiry] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
+    const [cvv, setCvv] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
+    const [cardName, setCardName] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
+    const [agreed, setAgreed] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [errors, setErrors] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])({});
+    const formatCardNumber = (value)=>{
+        const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
+        const matches = v.match(/\d{4,16}/g);
+        const match = matches && matches[0] || "";
+        const parts = [];
+        for(let i = 0, len = match.length; i < len; i += 4){
+            parts.push(match.substring(i, i + 4));
+        }
+        return parts.length ? parts.join(" ") : value;
+    };
+    const formatExpiry = (value)=>{
+        const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
+        if (v.length >= 2) return v.slice(0, 2) + "/" + v.slice(2, 4);
+        return v;
+    };
+    const validate = ()=>{
+        const newErrors = {};
+        if (!cardNumber.replace(/\s/g, "").match(/^\d{16}$/)) newErrors.cardNumber = "מספר כרטיס לא תקין";
+        if (!expiry.match(/^\d{2}\/\d{2}$/)) newErrors.expiry = "תוקף לא תקין";
+        if (!cvv.match(/^\d{3,4}$/)) newErrors.cvv = "CVV לא תקין";
+        if (!cardName.trim()) newErrors.cardName = "שדה חובה";
+        if (!agreed) newErrors.agreed = "יש לאשר את תנאי ההזמנה";
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+    const handleSubmit = (e)=>{
+        e.preventDefault();
+        if (validate()) onSubmit();
+    };
+    const formatPrice = (price)=>{
+        return new Intl.NumberFormat("he-IL", {
+            style: "currency",
+            currency: currency || "USD",
+            minimumFractionDigits: 2
+        }).format(price);
+    };
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
+        onSubmit: handleSubmit,
+        className: "space-y-6",
+        children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "bg-gray-800/50 rounded-xl p-6 border border-gray-700",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex items-center justify-between mb-4",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                className: "text-xl font-semibold text-white flex items-center gap-2",
+                                children: "💳 פרטי כרטיס אשראי"
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 174,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "text-sm text-green-400 flex items-center gap-1",
+                                children: "🔒 מאובטח SSL"
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 177,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                        lineNumber: 173,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "space-y-4",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
+                                        className: "text-gray-300",
+                                        children: "מספר כרטיס"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 184,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
+                                        value: cardNumber,
+                                        onChange: (e)=>setCardNumber(formatCardNumber(e.target.value)),
+                                        placeholder: "1234 5678 9012 3456",
+                                        maxLength: 19,
+                                        dir: "ltr",
+                                        className: `bg-white text-black ${errors.cardNumber ? "border-red-500" : ""}`
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 185,
+                                        columnNumber: 13
+                                    }, this),
+                                    errors.cardNumber && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                        className: "text-xs text-red-400 mt-1",
+                                        children: errors.cardNumber
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 193,
+                                        columnNumber: 35
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 183,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
+                                        className: "text-gray-300",
+                                        children: "שם בעל הכרטיס"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 197,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
+                                        value: cardName,
+                                        onChange: (e)=>setCardName(e.target.value),
+                                        placeholder: "ישראל ישראלי",
+                                        dir: "rtl",
+                                        className: `bg-white text-black ${errors.cardName ? "border-red-500" : ""}`
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 198,
+                                        columnNumber: 13
+                                    }, this),
+                                    errors.cardName && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                        className: "text-xs text-red-400 mt-1",
+                                        children: errors.cardName
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 205,
+                                        columnNumber: 33
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 196,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "grid grid-cols-2 gap-4",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
+                                                className: "text-gray-300",
+                                                children: "תוקף"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                lineNumber: 210,
+                                                columnNumber: 15
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
+                                                value: expiry,
+                                                onChange: (e)=>setExpiry(formatExpiry(e.target.value)),
+                                                placeholder: "MM/YY",
+                                                maxLength: 5,
+                                                dir: "ltr",
+                                                className: `bg-white text-black ${errors.expiry ? "border-red-500" : ""}`
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                lineNumber: 211,
+                                                columnNumber: 15
+                                            }, this),
+                                            errors.expiry && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                className: "text-xs text-red-400 mt-1",
+                                                children: errors.expiry
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                lineNumber: 219,
+                                                columnNumber: 33
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 209,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
+                                                className: "text-gray-300",
+                                                children: "CVV"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                lineNumber: 222,
+                                                columnNumber: 15
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
+                                                value: cvv,
+                                                onChange: (e)=>setCvv(e.target.value.replace(/\D/g, "").slice(0, 4)),
+                                                placeholder: "123",
+                                                maxLength: 4,
+                                                type: "password",
+                                                dir: "ltr",
+                                                className: `bg-white text-black ${errors.cvv ? "border-red-500" : ""}`
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                lineNumber: 223,
+                                                columnNumber: 15
+                                            }, this),
+                                            errors.cvv && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                className: "text-xs text-red-400 mt-1",
+                                                children: errors.cvv
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                lineNumber: 232,
+                                                columnNumber: 30
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 221,
+                                        columnNumber: 13
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 208,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                        lineNumber: 182,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/app/templates/scarlet/page.tsx",
+                lineNumber: 172,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "flex items-start gap-2",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$checkbox$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Checkbox"], {
+                        id: "terms",
+                        checked: agreed,
+                        onCheckedChange: (checked)=>setAgreed(checked === true),
+                        className: "mt-1"
+                    }, void 0, false, {
+                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                        lineNumber: 239,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "space-y-1",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
+                                htmlFor: "terms",
+                                className: "text-sm text-gray-300 cursor-pointer",
+                                children: [
+                                    "קראתי ואני מסכים/ה ל",
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
+                                        href: "#",
+                                        className: "text-pink-400 hover:underline mx-1",
+                                        children: "תנאי השימוש"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 248,
+                                        columnNumber: 13
+                                    }, this),
+                                    "ול",
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
+                                        href: "#",
+                                        className: "text-pink-400 hover:underline mx-1",
+                                        children: "מדיניות הביטולים"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 250,
+                                        columnNumber: 13
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 246,
+                                columnNumber: 11
+                            }, this),
+                            errors.agreed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                className: "text-xs text-red-400",
+                                children: errors.agreed
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 252,
+                                columnNumber: 29
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                        lineNumber: 245,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/app/templates/scarlet/page.tsx",
+                lineNumber: 238,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "bg-gradient-to-r from-green-900/30 to-emerald-900/30 rounded-xl p-4 border border-green-500/30",
+                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "flex items-center justify-between",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "flex items-center gap-3",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center",
+                                    children: "🛡️"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/templates/scarlet/page.tsx",
+                                    lineNumber: 259,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    className: "text-lg text-white",
+                                    children: "סה״כ לתשלום"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/templates/scarlet/page.tsx",
+                                    lineNumber: 262,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/app/templates/scarlet/page.tsx",
+                            lineNumber: 258,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                            className: "text-3xl font-bold text-white",
+                            children: formatPrice(totalPrice)
+                        }, void 0, false, {
+                            fileName: "[project]/app/templates/scarlet/page.tsx",
+                            lineNumber: 264,
+                            columnNumber: 11
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/app/templates/scarlet/page.tsx",
+                    lineNumber: 257,
+                    columnNumber: 9
+                }, this)
+            }, void 0, false, {
+                fileName: "[project]/app/templates/scarlet/page.tsx",
+                lineNumber: 256,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
+                type: "submit",
+                className: "w-full h-14 text-lg font-semibold bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white",
+                disabled: isProcessing,
+                children: isProcessing ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                    className: "flex items-center gap-2",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$loader$2d$circle$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Loader2$3e$__["Loader2"], {
+                            className: "w-5 h-5 animate-spin"
+                        }, void 0, false, {
+                            fileName: "[project]/app/templates/scarlet/page.tsx",
+                            lineNumber: 275,
+                            columnNumber: 13
+                        }, this),
+                        "מעבד הזמנה..."
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/app/templates/scarlet/page.tsx",
+                    lineNumber: 274,
+                    columnNumber: 11
+                }, this) : "אשר הזמנה ושלם"
+            }, void 0, false, {
+                fileName: "[project]/app/templates/scarlet/page.tsx",
+                lineNumber: 268,
+                columnNumber: 7
+            }, this)
+        ]
+    }, void 0, true, {
+        fileName: "[project]/app/templates/scarlet/page.tsx",
+        lineNumber: 171,
+        columnNumber: 5
+    }, this);
+}
+_s(ScarletPaymentForm, "tvvafvgvVQxn3CocgRwIeyUuw4Y=");
+_c = ScarletPaymentForm;
+// Custom Guest Form for Scarlet (light background, good contrast)
+function ScarletGuestForm({ onSubmit, isLoading }) {
+    _s1();
+    const [formData, setFormData] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])({
+        title: 'mr',
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        country: 'IL',
+        city: '',
+        address: '',
+        specialRequests: ''
+    });
+    const [errors, setErrors] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])({});
+    const validate = ()=>{
+        const newErrors = {};
+        if (!formData.firstName.trim()) newErrors.firstName = "שדה חובה";
+        if (!formData.lastName.trim()) newErrors.lastName = "שדה חובה";
+        if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) newErrors.email = "אימייל לא תקין";
+        if (!formData.phone.match(/^[\d\-\+\s]{9,15}$/)) newErrors.phone = "טלפון לא תקין";
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+    const handleSubmit = (e)=>{
+        e.preventDefault();
+        if (validate()) {
+            onSubmit(formData);
+        }
+    };
+    const handleChange = (field, value)=>{
+        setFormData((prev)=>({
+                ...prev,
+                [field]: value
+            }));
+        if (errors[field]) {
+            setErrors((prev)=>({
+                    ...prev,
+                    [field]: ''
+                }));
+        }
+    };
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
+        onSubmit: handleSubmit,
+        className: "space-y-6",
+        children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "grid grid-cols-4 gap-4",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
+                                className: "text-gray-700 font-medium",
+                                children: "תואר *"
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 336,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
+                                value: formData.title,
+                                onChange: (e)=>handleChange('title', e.target.value),
+                                className: "w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-pink-500 focus:border-pink-500",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                        value: "mr",
+                                        children: "מר"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 342,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                        value: "mrs",
+                                        children: "גברת"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 343,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                        value: "ms",
+                                        children: "גב׳"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 344,
+                                        columnNumber: 13
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 337,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                        lineNumber: 335,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "col-span-3",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
+                                className: "text-gray-700 font-medium",
+                                children: "שם פרטי *"
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 348,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
+                                value: formData.firstName,
+                                onChange: (e)=>handleChange('firstName', e.target.value),
+                                placeholder: "הכנס שם פרטי",
+                                className: `mt-1 bg-white text-gray-900 border-gray-300 placeholder-gray-400 ${errors.firstName ? "border-red-500" : ""}`
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 349,
+                                columnNumber: 11
+                            }, this),
+                            errors.firstName && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                className: "text-xs text-red-500 mt-1",
+                                children: errors.firstName
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 355,
+                                columnNumber: 32
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                        lineNumber: 347,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/app/templates/scarlet/page.tsx",
+                lineNumber: 334,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "grid grid-cols-2 gap-4",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
+                                className: "text-gray-700 font-medium",
+                                children: "שם משפחה *"
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 362,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
+                                value: formData.lastName,
+                                onChange: (e)=>handleChange('lastName', e.target.value),
+                                placeholder: "הכנס שם משפחה",
+                                className: `mt-1 bg-white text-gray-900 border-gray-300 placeholder-gray-400 ${errors.lastName ? "border-red-500" : ""}`
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 363,
+                                columnNumber: 11
+                            }, this),
+                            errors.lastName && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                className: "text-xs text-red-500 mt-1",
+                                children: errors.lastName
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 369,
+                                columnNumber: 31
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                        lineNumber: 361,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
+                                className: "text-gray-700 font-medium",
+                                children: "דוא״ל *"
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 372,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
+                                type: "email",
+                                value: formData.email,
+                                onChange: (e)=>handleChange('email', e.target.value),
+                                placeholder: "your@email.com",
+                                dir: "ltr",
+                                className: `mt-1 bg-white text-gray-900 border-gray-300 placeholder-gray-400 ${errors.email ? "border-red-500" : ""}`
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 373,
+                                columnNumber: 11
+                            }, this),
+                            errors.email && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                className: "text-xs text-red-500 mt-1",
+                                children: errors.email
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 381,
+                                columnNumber: 28
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                        lineNumber: 371,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/app/templates/scarlet/page.tsx",
+                lineNumber: 360,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "grid grid-cols-2 gap-4",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
+                                className: "text-gray-700 font-medium",
+                                children: "טלפון *"
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 388,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
+                                type: "tel",
+                                value: formData.phone,
+                                onChange: (e)=>handleChange('phone', e.target.value),
+                                placeholder: "050-0000000",
+                                dir: "ltr",
+                                className: `mt-1 bg-white text-gray-900 border-gray-300 placeholder-gray-400 ${errors.phone ? "border-red-500" : ""}`
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 389,
+                                columnNumber: 11
+                            }, this),
+                            errors.phone && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                className: "text-xs text-red-500 mt-1",
+                                children: errors.phone
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 397,
+                                columnNumber: 28
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                        lineNumber: 387,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
+                                className: "text-gray-700 font-medium",
+                                children: "מדינה"
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 400,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
+                                value: formData.country,
+                                onChange: (e)=>handleChange('country', e.target.value),
+                                className: "w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-pink-500 focus:border-pink-500",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                        value: "IL",
+                                        children: "ישראל"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 406,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                        value: "US",
+                                        children: "ארה״ב"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 407,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                        value: "GB",
+                                        children: "בריטניה"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 408,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                        value: "FR",
+                                        children: "צרפת"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 409,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                        value: "DE",
+                                        children: "גרמניה"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 410,
+                                        columnNumber: 13
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 401,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                        lineNumber: 399,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/app/templates/scarlet/page.tsx",
+                lineNumber: 386,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "grid grid-cols-2 gap-4",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
+                                className: "text-gray-700 font-medium",
+                                children: "עיר"
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 418,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
+                                value: formData.city,
+                                onChange: (e)=>handleChange('city', e.target.value),
+                                placeholder: "שם העיר",
+                                className: "mt-1 bg-white text-gray-900 border-gray-300 placeholder-gray-400"
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 419,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                        lineNumber: 417,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
+                                className: "text-gray-700 font-medium",
+                                children: "כתובת"
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 427,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
+                                value: formData.address,
+                                onChange: (e)=>handleChange('address', e.target.value),
+                                placeholder: "רחוב ומספר",
+                                className: "mt-1 bg-white text-gray-900 border-gray-300 placeholder-gray-400"
+                            }, void 0, false, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 428,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                        lineNumber: 426,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/app/templates/scarlet/page.tsx",
+                lineNumber: 416,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$label$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Label"], {
+                        className: "text-gray-700 font-medium",
+                        children: "בקשות מיוחדות"
+                    }, void 0, false, {
+                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                        lineNumber: 439,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
+                        value: formData.specialRequests,
+                        onChange: (e)=>handleChange('specialRequests', e.target.value),
+                        placeholder: "אלרגיות, העדפות חדר, וכו׳",
+                        rows: 3,
+                        className: "w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                    }, void 0, false, {
+                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                        lineNumber: 440,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/app/templates/scarlet/page.tsx",
+                lineNumber: 438,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
+                type: "submit",
+                className: "w-full h-14 text-lg font-semibold bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-400 hover:to-red-400 text-white",
+                disabled: isLoading,
+                children: isLoading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                    className: "flex items-center gap-2",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$loader$2d$circle$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Loader2$3e$__["Loader2"], {
+                            className: "w-5 h-5 animate-spin"
+                        }, void 0, false, {
+                            fileName: "[project]/app/templates/scarlet/page.tsx",
+                            lineNumber: 457,
+                            columnNumber: 13
+                        }, this),
+                        "שומר פרטים..."
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/app/templates/scarlet/page.tsx",
+                    lineNumber: 456,
+                    columnNumber: 11
+                }, this) : "המשך לתשלום"
+            }, void 0, false, {
+                fileName: "[project]/app/templates/scarlet/page.tsx",
+                lineNumber: 450,
+                columnNumber: 7
+            }, this)
+        ]
+    }, void 0, true, {
+        fileName: "[project]/app/templates/scarlet/page.tsx",
+        lineNumber: 332,
+        columnNumber: 5
+    }, this);
+}
+_s1(ScarletGuestForm, "fbuMqy9DqnYFf4CB0vshk7Cq3uc=");
+_c1 = ScarletGuestForm;
 // Helper function to normalize API rooms to display format
 // Maps Knowaa API results to Scarlet Hotel template room types
 // API Room Mapping (based on actual Knowaa Live results):
@@ -7304,7 +8211,7 @@ function normalizeApiRoom(apiRoom, index) {
     };
 }
 function ScarletTemplateContent() {
-    _s();
+    _s2();
     const { t, locale, dir } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$i18n$2f$context$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useI18n"])();
     // Helper function to check if a hotel is Scarlet Hotel Tel Aviv
     // Based on API test results: 
@@ -7532,6 +8439,23 @@ function ScarletTemplateContent() {
             }
         }
     }["ScarletTemplateContent.useEffect"], []);
+    // Auto-adjust checkout date if it's before or equal to checkin date
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "ScarletTemplateContent.useEffect": ()=>{
+            if (checkIn && checkOut) {
+                const checkInDate = new Date(checkIn);
+                const checkOutDate = new Date(checkOut);
+                // If checkout is before or same as checkin, set it to checkin + 1 day
+                if (checkOutDate <= checkInDate) {
+                    const newCheckOut = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$addDays$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["addDays"])(checkInDate, 1), "yyyy-MM-dd");
+                    console.log('Auto-adjusting checkout from', checkOut, 'to', newCheckOut);
+                    setCheckOut(newCheckOut);
+                }
+            }
+        }
+    }["ScarletTemplateContent.useEffect"], [
+        checkIn
+    ]);
     // Keep scarlet results in sync with booking search results (so UI always shows live API data)
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "ScarletTemplateContent.useEffect": ()=>{
@@ -7622,6 +8546,17 @@ function ScarletTemplateContent() {
             console.log(`🎯 Found ${scarletHotels.length} Scarlet Hotel Tel Aviv results`);
             setScarletSearchResults(scarletHotels);
             setShowApiResults(true);
+            // ===== LOG SEARCH TO ADMIN =====
+            const roomCount = scarletHotels[0]?.rooms?.length || 0;
+            logToAdmin({
+                stage: 'search',
+                sessionId: getSessionId(),
+                dateFrom: checkIn,
+                dateTo: checkOut,
+                guests,
+                resultsCount: roomCount,
+                completed: false
+            });
             if (!silent) {
                 if (scarletHotels.length > 0) {
                     __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$templates$2f$enhanced$2d$ui$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["showToast"]?.(`נמצאו ${scarletHotels.length} חדרים זמינים במלון סקרלט תל אביב`, 'success');
@@ -7726,6 +8661,18 @@ function ScarletTemplateContent() {
                         price: roomResult.buyPrice,
                         hotel_id: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hotels$2f$scarlet$2d$config$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["scarletHotelConfig"].hotelId
                     });
+                    // ===== LOG ROOM SELECTION TO ADMIN =====
+                    logToAdmin({
+                        stage: 'room_selected',
+                        sessionId: getSessionId(),
+                        dateFrom: checkIn,
+                        dateTo: checkOut,
+                        guests,
+                        selectedRoom: room.hebrewName || room.name,
+                        selectedRoomCode: roomResult.code,
+                        priceShown: roomResult.buyPrice,
+                        completed: false
+                    });
                 }
                 return;
             }
@@ -7756,12 +8703,12 @@ function ScarletTemplateContent() {
                                 children: t('backToTemplates')
                             }, void 0, false, {
                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                lineNumber: 542,
+                                lineNumber: 1020,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 541,
+                            lineNumber: 1019,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7769,7 +8716,7 @@ function ScarletTemplateContent() {
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$booking$2f$language$2d$switcher$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["LanguageSwitcher"], {}, void 0, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 545,
+                                    lineNumber: 1023,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$social$2d$share$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SocialShare"], {
@@ -7784,7 +8731,7 @@ function ScarletTemplateContent() {
                                     className: "text-gray-300 hover:text-white"
                                 }, void 0, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 546,
+                                    lineNumber: 1024,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -7795,7 +8742,7 @@ function ScarletTemplateContent() {
                                             className: "w-4 h-4"
                                         }, void 0, false, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 554,
+                                            lineNumber: 1032,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -7803,35 +8750,35 @@ function ScarletTemplateContent() {
                                             children: t('myAccount')
                                         }, void 0, false, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 555,
+                                            lineNumber: 1033,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 553,
+                                    lineNumber: 1031,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$auth$2f$login$2d$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["LoginButton"], {}, void 0, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 557,
+                                    lineNumber: 1035,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 544,
+                            lineNumber: 1022,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                    lineNumber: 540,
+                    lineNumber: 1018,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                lineNumber: 539,
+                lineNumber: 1017,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -7850,7 +8797,7 @@ function ScarletTemplateContent() {
                                 "aria-label": `${__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hotels$2f$scarlet$2d$config$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["scarletHotelConfig"].hebrewName} hotel image ${index + 1}`
                             }, `bg-${index}`, false, {
                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                lineNumber: 568,
+                                lineNumber: 1046,
                                 columnNumber: 15
                             }, this)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "absolute inset-0 bg-gray-900",
@@ -7859,17 +8806,17 @@ function ScarletTemplateContent() {
                                 children: "Loading images..."
                             }, void 0, false, {
                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                lineNumber: 582,
+                                lineNumber: 1060,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 581,
+                            lineNumber: 1059,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                        lineNumber: 565,
+                        lineNumber: 1043,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7881,12 +8828,12 @@ function ScarletTemplateContent() {
                                     className: "h-16 w-16 text-red-500 animate-pulse"
                                 }, void 0, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 592,
+                                    lineNumber: 1070,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                lineNumber: 591,
+                                lineNumber: 1069,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
@@ -7894,7 +8841,7 @@ function ScarletTemplateContent() {
                                 children: "Scarlet"
                             }, void 0, false, {
                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                lineNumber: 595,
+                                lineNumber: 1073,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -7905,7 +8852,7 @@ function ScarletTemplateContent() {
                                 children: locale === 'he' ? __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hotels$2f$scarlet$2d$config$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["scarletHotelConfig"].hebrewName : t('scarletHotelName')
                             }, void 0, false, {
                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                lineNumber: 599,
+                                lineNumber: 1077,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -7916,7 +8863,7 @@ function ScarletTemplateContent() {
                                 children: locale === 'he' ? __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hotels$2f$scarlet$2d$config$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["scarletHotelConfig"].hebrewTagline : t('scarletTagline')
                             }, void 0, false, {
                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                lineNumber: 603,
+                                lineNumber: 1081,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
@@ -7935,14 +8882,14 @@ function ScarletTemplateContent() {
                                                                 className: "h-4 w-4 text-red-400"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 612,
+                                                                lineNumber: 1090,
                                                                 columnNumber: 19
                                                             }, this),
                                                             t('checkIn')
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 611,
+                                                        lineNumber: 1089,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -7952,13 +8899,13 @@ function ScarletTemplateContent() {
                                                         className: "w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 615,
+                                                        lineNumber: 1093,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 610,
+                                                lineNumber: 1088,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7971,30 +8918,31 @@ function ScarletTemplateContent() {
                                                                 className: "h-4 w-4 text-red-400"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 625,
+                                                                lineNumber: 1103,
                                                                 columnNumber: 19
                                                             }, this),
                                                             t('checkOut')
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 624,
+                                                        lineNumber: 1102,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                                                         type: "date",
                                                         value: checkOut,
+                                                        min: checkIn ? (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$addDays$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["addDays"])(new Date(checkIn), 1), "yyyy-MM-dd") : "",
                                                         onChange: (e)=>setCheckOut(e.target.value),
                                                         className: "w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 628,
+                                                        lineNumber: 1106,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 623,
+                                                lineNumber: 1101,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8007,14 +8955,14 @@ function ScarletTemplateContent() {
                                                                 className: "h-4 w-4 text-red-400"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 638,
+                                                                lineNumber: 1117,
                                                                 columnNumber: 19
                                                             }, this),
                                                             t('guests')
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 637,
+                                                        lineNumber: 1116,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -8037,18 +8985,18 @@ function ScarletTemplateContent() {
                                                                 ]
                                                             }, num, true, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 647,
+                                                                lineNumber: 1126,
                                                                 columnNumber: 21
                                                             }, this))
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 641,
+                                                        lineNumber: 1120,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 636,
+                                                lineNumber: 1115,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8066,7 +9014,7 @@ function ScarletTemplateContent() {
                                                                 className: "h-4 w-4 animate-spin ml-2"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 665,
+                                                                lineNumber: 1144,
                                                                 columnNumber: 23
                                                             }, this),
                                                             t('searching') || 'מחפש...'
@@ -8074,18 +9022,18 @@ function ScarletTemplateContent() {
                                                     }, void 0, true) : t('searchRooms')
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                    lineNumber: 655,
+                                                    lineNumber: 1134,
                                                     columnNumber: 17
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 654,
+                                                lineNumber: 1133,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                        lineNumber: 609,
+                                        lineNumber: 1087,
                                         columnNumber: 13
                                     }, this),
                                     booking.error && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$alert$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Alert"], {
@@ -8096,20 +9044,20 @@ function ScarletTemplateContent() {
                                                 className: "h-4 w-4"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 678,
+                                                lineNumber: 1157,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$alert$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertDescription"], {
                                                 children: booking.error
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 679,
+                                                lineNumber: 1158,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                        lineNumber: 677,
+                                        lineNumber: 1156,
                                         columnNumber: 15
                                     }, this),
                                     showApiResults && booking.searchResults.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8123,24 +9071,24 @@ function ScarletTemplateContent() {
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 686,
+                                            lineNumber: 1165,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                        lineNumber: 685,
+                                        lineNumber: 1164,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                lineNumber: 608,
+                                lineNumber: 1086,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                        lineNumber: 590,
+                        lineNumber: 1068,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8151,23 +9099,23 @@ function ScarletTemplateContent() {
                                 className: "w-1 h-3 bg-white/50 rounded-full"
                             }, void 0, false, {
                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                lineNumber: 697,
+                                lineNumber: 1176,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 696,
+                            lineNumber: 1175,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                        lineNumber: 695,
+                        lineNumber: 1174,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                lineNumber: 563,
+                lineNumber: 1041,
                 columnNumber: 7
             }, this),
             booking.step === 'details' && prebookExpiry && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8180,51 +9128,403 @@ function ScarletTemplateContent() {
                         warningMinutes: 5
                     }, void 0, false, {
                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                        lineNumber: 706,
+                        lineNumber: 1185,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                    lineNumber: 705,
+                    lineNumber: 1184,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                lineNumber: 704,
+                lineNumber: 1183,
                 columnNumber: 9
             }, this),
             booking.step === 'details' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
-                className: "py-12 px-4 max-w-4xl mx-auto",
-                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
-                    className: "bg-gray-900/80 border-red-500/30 p-8",
+                className: "py-12 px-4 max-w-6xl mx-auto",
+                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "grid md:grid-cols-3 gap-8",
                     children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-3xl font-bold mb-6 text-center bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent",
-                            children: "פרטי האורח"
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "md:col-span-2",
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
+                                className: "bg-white border-gray-200 p-8 shadow-lg",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
+                                        className: "text-3xl font-bold mb-6 text-center bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent",
+                                        children: "פרטי האורח"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 1201,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(ScarletGuestForm, {
+                                        onSubmit: (details)=>{
+                                            booking.setGuestInfo(details);
+                                            // ===== LOG GUEST DETAILS TO ADMIN =====
+                                            logToAdmin({
+                                                stage: 'guest_details',
+                                                sessionId: getSessionId(),
+                                                dateFrom: checkIn,
+                                                dateTo: checkOut,
+                                                guests,
+                                                selectedRoom: booking.selectedRoom?.roomName || booking.selectedRoom?.roomCategory,
+                                                selectedRoomCode: booking.selectedRoom?.code,
+                                                priceShown: booking.selectedRoom?.buyPrice,
+                                                customerEmail: details.email,
+                                                customerName: `${details.firstName} ${details.lastName}`,
+                                                customerPhone: details.phone,
+                                                completed: false
+                                            });
+                                            // Track potential abandoned booking
+                                            if (booking.selectedRoom) {
+                                                trackAbandoned({
+                                                    sessionId: getSessionId(),
+                                                    customerEmail: details.email,
+                                                    customerName: `${details.firstName} ${details.lastName}`,
+                                                    customerPhone: details.phone,
+                                                    roomType: booking.selectedRoom?.roomName || booking.selectedRoom?.roomCategory || 'Unknown',
+                                                    roomCode: booking.selectedRoom?.code,
+                                                    checkIn,
+                                                    checkOut,
+                                                    guests,
+                                                    totalPrice: booking.selectedRoom?.buyPrice || 0,
+                                                    stage: 'guest_details'
+                                                });
+                                            }
+                                        },
+                                        isLoading: booking.isLoading
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 1204,
+                                        columnNumber: 17
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 1200,
+                                columnNumber: 15
+                            }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 719,
+                            lineNumber: 1199,
                             columnNumber: 13
                         }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$booking$2f$templates$2f$shared$2f$guest$2d$details$2d$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["GuestDetailsForm"], {
-                            onSubmit: (details)=>{
-                                booking.setGuestInfo(details);
-                            },
-                            isLoading: booking.isLoading
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "md:col-span-1",
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
+                                className: "bg-gray-900 border-pink-500/30 p-6 sticky top-24",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                        className: "text-xl font-bold text-white mb-4 flex items-center gap-2",
+                                        children: "📋 סיכום הזמנה"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 1249,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "space-y-3 mb-4 pb-4 border-b border-gray-700",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "flex items-center gap-3",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "text-2xl",
+                                                    children: "🏨"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                    lineNumber: 1256,
+                                                    columnNumber: 21
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                            className: "text-white font-semibold",
+                                                            children: booking.selectedHotel?.hotelName || 'מלון סקרלט'
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                            lineNumber: 1258,
+                                                            columnNumber: 23
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                                            className: "text-gray-400 text-sm",
+                                                            children: "תל אביב"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                            lineNumber: 1259,
+                                                            columnNumber: 23
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                    lineNumber: 1257,
+                                                    columnNumber: 21
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/templates/scarlet/page.tsx",
+                                            lineNumber: 1255,
+                                            columnNumber: 19
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 1254,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "space-y-2 mb-4 pb-4 border-b border-gray-700",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "flex justify-between text-gray-300",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    children: "🛏️ חדר:"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                    lineNumber: 1267,
+                                                    columnNumber: 21
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "text-white",
+                                                    children: booking.selectedRoom?.roomName || booking.selectedRoom?.roomCategory || 'חדר נבחר'
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                    lineNumber: 1268,
+                                                    columnNumber: 21
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/templates/scarlet/page.tsx",
+                                            lineNumber: 1266,
+                                            columnNumber: 19
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 1265,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "space-y-2 mb-4 pb-4 border-b border-gray-700",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "flex justify-between text-gray-300",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        children: "📅 כניסה:"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                        lineNumber: 1275,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-white",
+                                                        children: booking.searchParams?.checkIn ? (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])(booking.searchParams.checkIn, 'dd/MM/yyyy') : '-'
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                        lineNumber: 1276,
+                                                        columnNumber: 21
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                lineNumber: 1274,
+                                                columnNumber: 19
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "flex justify-between text-gray-300",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        children: "📅 יציאה:"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                        lineNumber: 1279,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-white",
+                                                        children: booking.searchParams?.checkOut ? (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$date$2d$fns$2f$format$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["format"])(booking.searchParams.checkOut, 'dd/MM/yyyy') : '-'
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                        lineNumber: 1280,
+                                                        columnNumber: 21
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                lineNumber: 1278,
+                                                columnNumber: 19
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "flex justify-between text-gray-300",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        children: "🌙 לילות:"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                        lineNumber: 1283,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-white",
+                                                        children: booking.nights || 1
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                        lineNumber: 1284,
+                                                        columnNumber: 21
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                lineNumber: 1282,
+                                                columnNumber: 19
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 1273,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "space-y-2 mb-4 pb-4 border-b border-gray-700",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "flex justify-between text-gray-300",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    children: "👥 אורחים:"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                    lineNumber: 1291,
+                                                    columnNumber: 21
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "text-white",
+                                                    children: [
+                                                        booking.searchParams?.adults || 2,
+                                                        " מבוגרים"
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                    lineNumber: 1292,
+                                                    columnNumber: 21
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/templates/scarlet/page.tsx",
+                                            lineNumber: 1290,
+                                            columnNumber: 19
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 1289,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "space-y-2",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "flex justify-between text-gray-300",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        children: "מחיר ללילה:"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                        lineNumber: 1299,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-white",
+                                                        children: [
+                                                            "$",
+                                                            Math.round((booking.totalPrice || 0) / (booking.nights || 1))
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                        lineNumber: 1300,
+                                                        columnNumber: 21
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                lineNumber: 1298,
+                                                columnNumber: 19
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                className: "flex justify-between items-center pt-3 border-t border-gray-700",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-lg font-semibold text-white",
+                                                        children: "סה״כ לתשלום:"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                        lineNumber: 1303,
+                                                        columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "text-2xl font-bold text-green-400",
+                                                        children: [
+                                                            "$",
+                                                            booking.totalPrice?.toFixed(2) || '0.00'
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                        lineNumber: 1304,
+                                                        columnNumber: 21
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                lineNumber: 1302,
+                                                columnNumber: 19
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 1297,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "mt-4 pt-4 border-t border-gray-700 flex items-center gap-2 text-gray-400 text-sm",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                children: "🔒"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                lineNumber: 1310,
+                                                columnNumber: 19
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                children: "תשלום מאובטח SSL"
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                                lineNumber: 1311,
+                                                columnNumber: 19
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/app/templates/scarlet/page.tsx",
+                                        lineNumber: 1309,
+                                        columnNumber: 17
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/templates/scarlet/page.tsx",
+                                lineNumber: 1248,
+                                columnNumber: 15
+                            }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 722,
+                            lineNumber: 1247,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                    lineNumber: 718,
+                    lineNumber: 1197,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                lineNumber: 717,
+                lineNumber: 1196,
                 columnNumber: 9
             }, this),
             booking.step === 'payment' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -8237,35 +9537,113 @@ function ScarletTemplateContent() {
                             children: "תשלום"
                         }, void 0, false, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 736,
+                            lineNumber: 1323,
                             columnNumber: 13
                         }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$booking$2f$templates$2f$shared$2f$payment$2d$form$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PaymentForm"], {
+                        booking.error && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$alert$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Alert"], {
+                            className: "mb-6 border-red-500 bg-red-900/30",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$alert$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertCircle$3e$__["AlertCircle"], {
+                                    className: "h-4 w-4 text-red-400"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/templates/scarlet/page.tsx",
+                                    lineNumber: 1330,
+                                    columnNumber: 17
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$alert$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertDescription"], {
+                                    className: "text-red-300",
+                                    children: booking.error
+                                }, void 0, false, {
+                                    fileName: "[project]/app/templates/scarlet/page.tsx",
+                                    lineNumber: 1331,
+                                    columnNumber: 17
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/app/templates/scarlet/page.tsx",
+                            lineNumber: 1329,
+                            columnNumber: 15
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(ScarletPaymentForm, {
                             totalPrice: booking.totalPrice,
-                            currency: booking.selectedRoom?.currency || "ILS",
-                            onSubmit: ()=>{
-                                console.log('🔄 Starting demo payment flow...');
-                                // Demo payment flow - simulate successful payment
-                                setTimeout(()=>{
-                                    console.log('✅ Demo payment completed successfully!');
-                                    booking.completeBooking();
-                                }, 2000); // 2 seconds delay to simulate processing
+                            currency: booking.selectedRoom?.currency || "USD",
+                            onSubmit: async ()=>{
+                                console.log('🔄 Starting booking completion...');
+                                // ===== LOG PAYMENT STAGE TO ADMIN =====
+                                logToAdmin({
+                                    stage: 'payment',
+                                    sessionId: getSessionId(),
+                                    dateFrom: checkIn,
+                                    dateTo: checkOut,
+                                    guests,
+                                    selectedRoom: booking.selectedRoom?.roomName || booking.selectedRoom?.roomCategory,
+                                    selectedRoomCode: booking.selectedRoom?.code,
+                                    priceShown: booking.totalPrice,
+                                    customerEmail: booking.guestInfo?.email,
+                                    customerName: booking.guestInfo ? `${booking.guestInfo.firstName} ${booking.guestInfo.lastName}` : undefined,
+                                    customerPhone: booking.guestInfo?.phone,
+                                    completed: false
+                                });
+                                try {
+                                    const success = await booking.completeBooking();
+                                    if (success) {
+                                        console.log('✅ Booking completed successfully!');
+                                        __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$templates$2f$enhanced$2d$ui$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["showToast"]?.('ההזמנה אושרה בהצלחה! 🎉', 'success');
+                                        // ===== LOG COMPLETED BOOKING TO ADMIN =====
+                                        logToAdmin({
+                                            stage: 'confirmed',
+                                            sessionId: getSessionId(),
+                                            dateFrom: checkIn,
+                                            dateTo: checkOut,
+                                            guests,
+                                            selectedRoom: booking.selectedRoom?.roomName || booking.selectedRoom?.roomCategory,
+                                            selectedRoomCode: booking.selectedRoom?.code,
+                                            priceShown: booking.totalPrice,
+                                            customerEmail: booking.guestInfo?.email,
+                                            customerName: booking.guestInfo ? `${booking.guestInfo.firstName} ${booking.guestInfo.lastName}` : undefined,
+                                            customerPhone: booking.guestInfo?.phone,
+                                            completed: true
+                                        });
+                                    } else {
+                                        console.error('❌ Booking failed');
+                                        __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$templates$2f$enhanced$2d$ui$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["showToast"]?.('ההזמנה נכשלה. אנא נסה שוב.', 'error');
+                                        // Track abandoned at payment stage
+                                        if (booking.selectedRoom && booking.guestInfo) {
+                                            trackAbandoned({
+                                                sessionId: getSessionId(),
+                                                customerEmail: booking.guestInfo.email,
+                                                customerName: `${booking.guestInfo.firstName} ${booking.guestInfo.lastName}`,
+                                                customerPhone: booking.guestInfo.phone,
+                                                roomType: booking.selectedRoom?.roomName || booking.selectedRoom?.roomCategory || 'Unknown',
+                                                roomCode: booking.selectedRoom?.code,
+                                                checkIn,
+                                                checkOut,
+                                                guests,
+                                                totalPrice: booking.totalPrice || 0,
+                                                stage: 'payment'
+                                            });
+                                        }
+                                    }
+                                } catch (error) {
+                                    console.error('❌ Booking error:', error);
+                                    __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$templates$2f$enhanced$2d$ui$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["showToast"]?.(error.message || 'שגיאה בהזמנה', 'error');
+                                }
                             },
-                            isLoading: booking.isLoading
+                            isProcessing: booking.isLoading
                         }, void 0, false, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 739,
+                            lineNumber: 1337,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                    lineNumber: 735,
+                    lineNumber: 1322,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                lineNumber: 734,
+                lineNumber: 1321,
                 columnNumber: 9
             }, this),
             booking.step === 'confirmation' && booking.bookingConfirmation && booking.selectedHotel && booking.selectedRoom && booking.searchParams && booking.guestInfo && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -8287,12 +9665,12 @@ function ScarletTemplateContent() {
                     }
                 }, void 0, false, {
                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                    lineNumber: 759,
+                    lineNumber: 1415,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                lineNumber: 758,
+                lineNumber: 1414,
                 columnNumber: 9
             }, this),
             __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hotels$2f$scarlet$2d$config$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["scarletHotelConfig"].activePromotions && __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hotels$2f$scarlet$2d$config$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["scarletHotelConfig"].activePromotions.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -8306,7 +9684,7 @@ function ScarletTemplateContent() {
                                 className: "h-8 w-8 text-white animate-spin-slow flex-shrink-0"
                             }, void 0, false, {
                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                lineNumber: 783,
+                                lineNumber: 1439,
                                 columnNumber: 15
                             }, this),
                             __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hotels$2f$scarlet$2d$config$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["scarletHotelConfig"].activePromotions.map((promo, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8323,7 +9701,7 @@ function ScarletTemplateContent() {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                    lineNumber: 787,
+                                                    lineNumber: 1443,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8331,49 +9709,49 @@ function ScarletTemplateContent() {
                                                     children: promo.title
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                    lineNumber: 788,
+                                                    lineNumber: 1444,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 786,
+                                            lineNumber: 1442,
                                             columnNumber: 19
                                         }, this),
                                         index < __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hotels$2f$scarlet$2d$config$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["scarletHotelConfig"].activePromotions.length - 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             className: "w-px h-12 bg-white/30"
                                         }, void 0, false, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 791,
+                                            lineNumber: 1447,
                                             columnNumber: 21
                                         }, this)
                                     ]
                                 }, promo.id, true, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 785,
+                                    lineNumber: 1441,
                                     columnNumber: 17
                                 }, this)),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sparkles$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Sparkles$3e$__["Sparkles"], {
                                 className: "h-8 w-8 text-white animate-spin-slow flex-shrink-0"
                             }, void 0, false, {
                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                lineNumber: 795,
+                                lineNumber: 1451,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                        lineNumber: 782,
+                        lineNumber: 1438,
                         columnNumber: 13
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                    lineNumber: 781,
+                    lineNumber: 1437,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                lineNumber: 780,
+                lineNumber: 1436,
                 columnNumber: 9
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -8387,7 +9765,7 @@ function ScarletTemplateContent() {
                                 children: t('ourRooms')
                             }, void 0, false, {
                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                lineNumber: 804,
+                                lineNumber: 1460,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -8395,13 +9773,13 @@ function ScarletTemplateContent() {
                                 children: t('findPerfectRoom')
                             }, void 0, false, {
                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                lineNumber: 807,
+                                lineNumber: 1463,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                        lineNumber: 803,
+                        lineNumber: 1459,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8417,7 +9795,7 @@ function ScarletTemplateContent() {
                                             children: "🏨 חדרי מלון סקרלט תל אביב"
                                         }, void 0, false, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 817,
+                                            lineNumber: 1473,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -8425,7 +9803,7 @@ function ScarletTemplateContent() {
                                             children: "להזמנת חדרים ובדיקת זמינות, אנא צרו קשר ישירות עם המלון"
                                         }, void 0, false, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 818,
+                                            lineNumber: 1474,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
@@ -8437,18 +9815,18 @@ function ScarletTemplateContent() {
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 819,
+                                            lineNumber: 1475,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 816,
+                                    lineNumber: 1472,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                lineNumber: 815,
+                                lineNumber: 1471,
                                 columnNumber: 13
                             }, this),
                             booking.isLoading && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8460,7 +9838,7 @@ function ScarletTemplateContent() {
                                             className: "w-12 h-12 text-pink-500 mx-auto mb-4 animate-spin"
                                         }, void 0, false, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 830,
+                                            lineNumber: 1486,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -8468,7 +9846,7 @@ function ScarletTemplateContent() {
                                             children: "🔍 מחפש חדרים זמינים..."
                                         }, void 0, false, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 831,
+                                            lineNumber: 1487,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -8476,18 +9854,18 @@ function ScarletTemplateContent() {
                                             children: "אנא המתן בזמן שאנו בודקים זמינות במלון סקרלט תל אביב"
                                         }, void 0, false, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 832,
+                                            lineNumber: 1488,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 829,
+                                    lineNumber: 1485,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                lineNumber: 828,
+                                lineNumber: 1484,
                                 columnNumber: 13
                             }, this),
                             !booking.isLoading && (()=>{
@@ -8520,14 +9898,14 @@ function ScarletTemplateContent() {
                                                         className: "w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 872,
+                                                        lineNumber: 1528,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                         className: "absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 877,
+                                                        lineNumber: 1533,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8535,7 +9913,7 @@ function ScarletTemplateContent() {
                                                         children: room.emoji
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 880,
+                                                        lineNumber: 1536,
                                                         columnNumber: 19
                                                     }, this),
                                                     __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hotels$2f$scarlet$2d$config$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["scarletHotelConfig"].activePromotions && __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hotels$2f$scarlet$2d$config$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["scarletHotelConfig"].activePromotions.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8545,12 +9923,12 @@ function ScarletTemplateContent() {
                                                                 children: promo.badge
                                                             }, promo.id, false, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 888,
+                                                                lineNumber: 1544,
                                                                 columnNumber: 25
                                                             }, this))
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 886,
+                                                        lineNumber: 1542,
                                                         columnNumber: 21
                                                     }, this),
                                                     room.isPremium && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Badge"], {
@@ -8560,14 +9938,14 @@ function ScarletTemplateContent() {
                                                                 className: "h-3 w-3 mr-1"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 901,
+                                                                lineNumber: 1557,
                                                                 columnNumber: 23
                                                             }, this),
                                                             "PREMIUM"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 900,
+                                                        lineNumber: 1556,
                                                         columnNumber: 21
                                                     }, this),
                                                     room.wowFactor && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Badge"], {
@@ -8577,14 +9955,14 @@ function ScarletTemplateContent() {
                                                                 className: "h-3 w-3 mr-1"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 907,
+                                                                lineNumber: 1563,
                                                                 columnNumber: 23
                                                             }, this),
                                                             "WOW"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 906,
+                                                        lineNumber: 1562,
                                                         columnNumber: 21
                                                     }, this),
                                                     room.images.length > 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8596,7 +9974,7 @@ function ScarletTemplateContent() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 914,
+                                                        lineNumber: 1570,
                                                         columnNumber: 21
                                                     }, this),
                                                     room.images.length > 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -8615,12 +9993,12 @@ function ScarletTemplateContent() {
                                                             className: "h-6 w-6"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                            lineNumber: 931,
+                                                            lineNumber: 1587,
                                                             columnNumber: 23
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 921,
+                                                        lineNumber: 1577,
                                                         columnNumber: 21
                                                     }, this),
                                                     room.images.length > 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -8639,12 +10017,12 @@ function ScarletTemplateContent() {
                                                             className: "h-6 w-6"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                            lineNumber: 947,
+                                                            lineNumber: 1603,
                                                             columnNumber: 23
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 937,
+                                                        lineNumber: 1593,
                                                         columnNumber: 21
                                                     }, this),
                                                     room.images.length > 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8658,12 +10036,12 @@ function ScarletTemplateContent() {
                                                                 "aria-label": `Go to image ${imgIndex + 1}`
                                                             }, imgIndex, false, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 955,
+                                                                lineNumber: 1611,
                                                                 columnNumber: 25
                                                             }, this))
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 953,
+                                                        lineNumber: 1609,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8677,7 +10055,7 @@ function ScarletTemplateContent() {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 971,
+                                                                lineNumber: 1627,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8685,19 +10063,19 @@ function ScarletTemplateContent() {
                                                                 children: t('perNight')
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 974,
+                                                                lineNumber: 1630,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 970,
+                                                        lineNumber: 1626,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 871,
+                                                lineNumber: 1527,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8711,7 +10089,7 @@ function ScarletTemplateContent() {
                                                                 children: room.hebrewName
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 981,
+                                                                lineNumber: 1637,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -8719,7 +10097,7 @@ function ScarletTemplateContent() {
                                                                 children: room.name
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 984,
+                                                                lineNumber: 1640,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -8727,13 +10105,13 @@ function ScarletTemplateContent() {
                                                                 children: room.tagline
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 985,
+                                                                lineNumber: 1641,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 980,
+                                                        lineNumber: 1636,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -8741,7 +10119,7 @@ function ScarletTemplateContent() {
                                                         children: room.description
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 990,
+                                                        lineNumber: 1646,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8754,7 +10132,7 @@ function ScarletTemplateContent() {
                                                                         className: "h-6 w-6 mx-auto mb-2 text-red-400"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                        lineNumber: 997,
+                                                                        lineNumber: 1653,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8762,7 +10140,7 @@ function ScarletTemplateContent() {
                                                                         children: t('size')
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                        lineNumber: 998,
+                                                                        lineNumber: 1654,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8774,13 +10152,13 @@ function ScarletTemplateContent() {
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                        lineNumber: 999,
+                                                                        lineNumber: 1655,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 996,
+                                                                lineNumber: 1652,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8790,7 +10168,7 @@ function ScarletTemplateContent() {
                                                                         className: "h-6 w-6 mx-auto mb-2 text-red-400"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                        lineNumber: 1002,
+                                                                        lineNumber: 1658,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8798,7 +10176,7 @@ function ScarletTemplateContent() {
                                                                         children: t('guests')
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                        lineNumber: 1003,
+                                                                        lineNumber: 1659,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8808,13 +10186,13 @@ function ScarletTemplateContent() {
                                                                         })
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                        lineNumber: 1004,
+                                                                        lineNumber: 1660,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 1001,
+                                                                lineNumber: 1657,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8824,7 +10202,7 @@ function ScarletTemplateContent() {
                                                                         className: "h-6 w-6 mx-auto mb-2 text-red-400"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                        lineNumber: 1007,
+                                                                        lineNumber: 1663,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8832,7 +10210,7 @@ function ScarletTemplateContent() {
                                                                         children: t('fullBathroom')
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                        lineNumber: 1008,
+                                                                        lineNumber: 1664,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8840,19 +10218,19 @@ function ScarletTemplateContent() {
                                                                         children: locale === 'he' ? 'מלאה' : 'Full'
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                        lineNumber: 1009,
+                                                                        lineNumber: 1665,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 1006,
+                                                                lineNumber: 1662,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 995,
+                                                        lineNumber: 1651,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8863,7 +10241,7 @@ function ScarletTemplateContent() {
                                                                 children: t('whatsIncluded')
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 1015,
+                                                                lineNumber: 1671,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8876,7 +10254,7 @@ function ScarletTemplateContent() {
                                                                                 children: "•"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                                lineNumber: 1019,
+                                                                                lineNumber: 1675,
                                                                                 columnNumber: 27
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -8884,24 +10262,24 @@ function ScarletTemplateContent() {
                                                                                 children: feature
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                                lineNumber: 1020,
+                                                                                lineNumber: 1676,
                                                                                 columnNumber: 27
                                                                             }, this)
                                                                         ]
                                                                     }, idx, true, {
                                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                        lineNumber: 1018,
+                                                                        lineNumber: 1674,
                                                                         columnNumber: 25
                                                                     }, this))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 1016,
+                                                                lineNumber: 1672,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 1014,
+                                                        lineNumber: 1670,
                                                         columnNumber: 19
                                                     }, this),
                                                     room.special && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -8914,7 +10292,7 @@ function ScarletTemplateContent() {
                                                                         className: "h-4 w-4"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                        lineNumber: 1029,
+                                                                        lineNumber: 1685,
                                                                         columnNumber: 25
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -8922,13 +10300,13 @@ function ScarletTemplateContent() {
                                                                         children: t('unique')
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                        lineNumber: 1030,
+                                                                        lineNumber: 1686,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 1028,
+                                                                lineNumber: 1684,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -8936,13 +10314,13 @@ function ScarletTemplateContent() {
                                                                 children: room.special
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                lineNumber: 1032,
+                                                                lineNumber: 1688,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 1027,
+                                                        lineNumber: 1683,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -8955,7 +10333,7 @@ function ScarletTemplateContent() {
                                                                     className: "h-4 w-4 animate-spin ml-2"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                                    lineNumber: 1043,
+                                                                    lineNumber: 1699,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 t('processing') || 'מעבד...'
@@ -8963,36 +10341,36 @@ function ScarletTemplateContent() {
                                                         }, void 0, true) : t('bookNow')
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 1036,
+                                                        lineNumber: 1692,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 979,
+                                                lineNumber: 1635,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                        lineNumber: 869,
+                                        lineNumber: 1525,
                                         columnNumber: 15
                                     }, this)
                                 }, room.id, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 859,
+                                    lineNumber: 1515,
                                     columnNumber: 13
                                 }, this))
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                        lineNumber: 812,
+                        lineNumber: 1468,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                lineNumber: 802,
+                lineNumber: 1458,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -9008,7 +10386,7 @@ function ScarletTemplateContent() {
                                     children: t('ourAmenities')
                                 }, void 0, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1061,
+                                    lineNumber: 1717,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -9016,13 +10394,13 @@ function ScarletTemplateContent() {
                                     children: t('everythingForPerfectVacation')
                                 }, void 0, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1064,
+                                    lineNumber: 1720,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 1060,
+                            lineNumber: 1716,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -9036,12 +10414,12 @@ function ScarletTemplateContent() {
                                                 className: "h-8 w-8 mx-auto"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1071,
+                                                lineNumber: 1727,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 1070,
+                                            lineNumber: 1726,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -9049,29 +10427,29 @@ function ScarletTemplateContent() {
                                             children: amenity
                                         }, void 0, false, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 1073,
+                                            lineNumber: 1729,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, idx, true, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1069,
+                                    lineNumber: 1725,
                                     columnNumber: 15
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 1067,
+                            lineNumber: 1723,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                    lineNumber: 1059,
+                    lineNumber: 1715,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                lineNumber: 1058,
+                lineNumber: 1714,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -9087,7 +10465,7 @@ function ScarletTemplateContent() {
                                     children: t('discountsAndDeals')
                                 }, void 0, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1084,
+                                    lineNumber: 1740,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -9095,13 +10473,13 @@ function ScarletTemplateContent() {
                                     children: t('saveMore')
                                 }, void 0, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1087,
+                                    lineNumber: 1743,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 1083,
+                            lineNumber: 1739,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -9117,14 +10495,14 @@ function ScarletTemplateContent() {
                                                     className: "h-5 w-5 text-red-400"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                    lineNumber: 1094,
+                                                    lineNumber: 1750,
                                                     columnNumber: 17
                                                 }, this),
                                                 t('promoCode')
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 1093,
+                                            lineNumber: 1749,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -9135,13 +10513,13 @@ function ScarletTemplateContent() {
                                             children: t('promoCodeAvailableInBooking')
                                         }, void 0, false, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 1097,
+                                            lineNumber: 1753,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1092,
+                                    lineNumber: 1748,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
@@ -9154,14 +10532,14 @@ function ScarletTemplateContent() {
                                                     className: "h-5 w-5 text-pink-400"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                    lineNumber: 1105,
+                                                    lineNumber: 1761,
                                                     columnNumber: 17
                                                 }, this),
                                                 t('loyaltyClub')
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 1104,
+                                            lineNumber: 1760,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$promotions$2f$loyalty$2d$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["LoyaltyBadge"], {
@@ -9169,7 +10547,7 @@ function ScarletTemplateContent() {
                                             variant: "dark"
                                         }, void 0, false, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 1108,
+                                            lineNumber: 1764,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -9179,24 +10557,24 @@ function ScarletTemplateContent() {
                                                 variant: "dark"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1110,
+                                                lineNumber: 1766,
                                                 columnNumber: 17
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 1109,
+                                            lineNumber: 1765,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1103,
+                                    lineNumber: 1759,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 1090,
+                            lineNumber: 1746,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
@@ -9209,7 +10587,7 @@ function ScarletTemplateContent() {
                                             className: "h-12 w-12 text-yellow-500 mx-auto mb-3"
                                         }, void 0, false, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 1118,
+                                            lineNumber: 1774,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -9217,13 +10595,13 @@ function ScarletTemplateContent() {
                                             children: t('vipBenefits')
                                         }, void 0, false, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 1119,
+                                            lineNumber: 1775,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1117,
+                                    lineNumber: 1773,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -9236,7 +10614,7 @@ function ScarletTemplateContent() {
                                                     className: "h-8 w-8 text-red-400 mx-auto mb-2"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                    lineNumber: 1125,
+                                                    lineNumber: 1781,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
@@ -9244,7 +10622,7 @@ function ScarletTemplateContent() {
                                                     children: t('discount10Percent')
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                    lineNumber: 1126,
+                                                    lineNumber: 1782,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -9252,13 +10630,13 @@ function ScarletTemplateContent() {
                                                     children: t('onAllBookings')
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                    lineNumber: 1127,
+                                                    lineNumber: 1783,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 1124,
+                                            lineNumber: 1780,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -9268,7 +10646,7 @@ function ScarletTemplateContent() {
                                                     className: "h-8 w-8 text-pink-400 mx-auto mb-2"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                    lineNumber: 1130,
+                                                    lineNumber: 1786,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
@@ -9276,7 +10654,7 @@ function ScarletTemplateContent() {
                                                     children: t('freeUpgrade')
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                    lineNumber: 1131,
+                                                    lineNumber: 1787,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -9284,13 +10662,13 @@ function ScarletTemplateContent() {
                                                     children: t('subjectToAvailability')
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                    lineNumber: 1132,
+                                                    lineNumber: 1788,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 1129,
+                                            lineNumber: 1785,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -9300,7 +10678,7 @@ function ScarletTemplateContent() {
                                                     className: "h-8 w-8 text-yellow-400 mx-auto mb-2"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                    lineNumber: 1135,
+                                                    lineNumber: 1791,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
@@ -9308,7 +10686,7 @@ function ScarletTemplateContent() {
                                                     children: t('fastCheckIn')
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                    lineNumber: 1136,
+                                                    lineNumber: 1792,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -9316,36 +10694,36 @@ function ScarletTemplateContent() {
                                                     children: t('noWaiting')
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                    lineNumber: 1137,
+                                                    lineNumber: 1793,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 1134,
+                                            lineNumber: 1790,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1123,
+                                    lineNumber: 1779,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 1116,
+                            lineNumber: 1772,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                    lineNumber: 1082,
+                    lineNumber: 1738,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                lineNumber: 1081,
+                lineNumber: 1737,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -9364,7 +10742,7 @@ function ScarletTemplateContent() {
                                     children: t('specialOffersMarketing')
                                 }, void 0, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1148,
+                                    lineNumber: 1804,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -9375,13 +10753,13 @@ function ScarletTemplateContent() {
                                     children: t('saveMoreWithPromos')
                                 }, void 0, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1151,
+                                    lineNumber: 1807,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 1147,
+                            lineNumber: 1803,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -9398,12 +10776,12 @@ function ScarletTemplateContent() {
                                                     className: "h-8 w-8 text-orange-400"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                    lineNumber: 1161,
+                                                    lineNumber: 1817,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1160,
+                                                lineNumber: 1816,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -9414,7 +10792,7 @@ function ScarletTemplateContent() {
                                                 children: t('promoCodes')
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1163,
+                                                lineNumber: 1819,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -9425,7 +10803,7 @@ function ScarletTemplateContent() {
                                                 children: t('usePromoCodeDescription')
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1166,
+                                                lineNumber: 1822,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -9436,7 +10814,7 @@ function ScarletTemplateContent() {
                                                 children: t('promoCodeAvailableInBooking')
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1169,
+                                                lineNumber: 1825,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
@@ -9449,38 +10827,38 @@ function ScarletTemplateContent() {
                                                         children: "✨ הנחות עד 30%"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 1173,
+                                                        lineNumber: 1829,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                         children: "🎁 מבצעים עונתיים"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 1174,
+                                                        lineNumber: 1830,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
                                                         children: "🔥 קופונים בלעדיים"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 1175,
+                                                        lineNumber: 1831,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1172,
+                                                lineNumber: 1828,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                        lineNumber: 1159,
+                                        lineNumber: 1815,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1158,
+                                    lineNumber: 1814,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
@@ -9494,12 +10872,12 @@ function ScarletTemplateContent() {
                                                     className: "h-8 w-8 text-purple-400"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                    lineNumber: 1184,
+                                                    lineNumber: 1840,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1183,
+                                                lineNumber: 1839,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -9510,7 +10888,7 @@ function ScarletTemplateContent() {
                                                 children: t('loyaltyProgram')
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1186,
+                                                lineNumber: 1842,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -9521,7 +10899,7 @@ function ScarletTemplateContent() {
                                                 children: t('loyaltyProgramDescription')
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1189,
+                                                lineNumber: 1845,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$promotions$2f$loyalty$2d$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["LoyaltyBadge"], {
@@ -9529,7 +10907,7 @@ function ScarletTemplateContent() {
                                                 variant: "luxury"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1192,
+                                                lineNumber: 1848,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -9538,12 +10916,12 @@ function ScarletTemplateContent() {
                                                     hotelId: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hotels$2f$scarlet$2d$config$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["scarletHotelConfig"].hotelId
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                    lineNumber: 1194,
+                                                    lineNumber: 1850,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1193,
+                                                lineNumber: 1849,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
@@ -9559,7 +10937,7 @@ function ScarletTemplateContent() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 1197,
+                                                        lineNumber: 1853,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -9569,7 +10947,7 @@ function ScarletTemplateContent() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 1198,
+                                                        lineNumber: 1854,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -9579,7 +10957,7 @@ function ScarletTemplateContent() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 1199,
+                                                        lineNumber: 1855,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -9589,24 +10967,24 @@ function ScarletTemplateContent() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 1200,
+                                                        lineNumber: 1856,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1196,
+                                                lineNumber: 1852,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                        lineNumber: 1182,
+                                        lineNumber: 1838,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1181,
+                                    lineNumber: 1837,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
@@ -9620,12 +10998,12 @@ function ScarletTemplateContent() {
                                                     className: "h-8 w-8 text-blue-400"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                    lineNumber: 1209,
+                                                    lineNumber: 1865,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1208,
+                                                lineNumber: 1864,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -9636,7 +11014,7 @@ function ScarletTemplateContent() {
                                                 children: t('affiliateProgram')
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1211,
+                                                lineNumber: 1867,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -9647,7 +11025,7 @@ function ScarletTemplateContent() {
                                                 children: t('affiliateProgramDescription')
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1214,
+                                                lineNumber: 1870,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -9660,7 +11038,7 @@ function ScarletTemplateContent() {
                                                 children: t('joinAsPartner')
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1217,
+                                                lineNumber: 1873,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
@@ -9676,7 +11054,7 @@ function ScarletTemplateContent() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 1226,
+                                                        lineNumber: 1882,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -9686,7 +11064,7 @@ function ScarletTemplateContent() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 1227,
+                                                        lineNumber: 1883,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -9696,7 +11074,7 @@ function ScarletTemplateContent() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 1228,
+                                                        lineNumber: 1884,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
@@ -9706,42 +11084,42 @@ function ScarletTemplateContent() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                        lineNumber: 1229,
+                                                        lineNumber: 1885,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1225,
+                                                lineNumber: 1881,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                        lineNumber: 1207,
+                                        lineNumber: 1863,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1206,
+                                    lineNumber: 1862,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 1156,
+                            lineNumber: 1812,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "mb-8",
                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$promotions$2f$promotion$2d$banner$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["PromotionBanner"], {}, void 0, false, {
                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                lineNumber: 1237,
+                                lineNumber: 1893,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 1236,
+                            lineNumber: 1892,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Card"], {
@@ -9757,7 +11135,7 @@ function ScarletTemplateContent() {
                                         children: t('moreOffersAvailable')
                                     }, void 0, false, {
                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                        lineNumber: 1243,
+                                        lineNumber: 1899,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -9768,7 +11146,7 @@ function ScarletTemplateContent() {
                                         children: t('clickBookNowToSee')
                                     }, void 0, false, {
                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                        lineNumber: 1246,
+                                        lineNumber: 1902,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -9784,49 +11162,49 @@ function ScarletTemplateContent() {
                                                 className: "h-6 w-6 animate-spin ml-2"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1257,
+                                                lineNumber: 1913,
                                                 columnNumber: 19
                                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$sparkles$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Sparkles$3e$__["Sparkles"], {
                                                 className: "ml-2 h-6 w-6"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1259,
+                                                lineNumber: 1915,
                                                 columnNumber: 19
                                             }, this),
                                             t('discoverOffers')
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                        lineNumber: 1249,
+                                        lineNumber: 1905,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                lineNumber: 1242,
+                                lineNumber: 1898,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 1241,
+                            lineNumber: 1897,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                    lineNumber: 1146,
+                    lineNumber: 1802,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                lineNumber: 1145,
+                lineNumber: 1801,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$analytics$2f$affiliate$2d$tracker$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AffiliateTracker"], {
                 hotelId: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hotels$2f$scarlet$2d$config$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["scarletHotelConfig"].hotelId
             }, void 0, false, {
                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                lineNumber: 1269,
+                lineNumber: 1925,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("footer", {
@@ -9841,7 +11219,7 @@ function ScarletTemplateContent() {
                                     className: "h-12 w-12 text-red-500 mx-auto mb-4"
                                 }, void 0, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1275,
+                                    lineNumber: 1931,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -9849,7 +11227,7 @@ function ScarletTemplateContent() {
                                     children: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hotels$2f$scarlet$2d$config$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["scarletHotelConfig"].hebrewName
                                 }, void 0, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1276,
+                                    lineNumber: 1932,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -9857,13 +11235,13 @@ function ScarletTemplateContent() {
                                     children: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$hotels$2f$scarlet$2d$config$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["scarletHotelConfig"].tagline
                                 }, void 0, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1277,
+                                    lineNumber: 1933,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 1274,
+                            lineNumber: 1930,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -9876,7 +11254,7 @@ function ScarletTemplateContent() {
                                             children: "טלפון:"
                                         }, void 0, false, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 1282,
+                                            lineNumber: 1938,
                                             columnNumber: 15
                                         }, this),
                                         " ",
@@ -9884,7 +11262,7 @@ function ScarletTemplateContent() {
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1281,
+                                    lineNumber: 1937,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -9894,7 +11272,7 @@ function ScarletTemplateContent() {
                                             children: "אימייל:"
                                         }, void 0, false, {
                                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                                            lineNumber: 1286,
+                                            lineNumber: 1942,
                                             columnNumber: 15
                                         }, this),
                                         " ",
@@ -9902,13 +11280,13 @@ function ScarletTemplateContent() {
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1285,
+                                    lineNumber: 1941,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 1280,
+                            lineNumber: 1936,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -9919,7 +11297,7 @@ function ScarletTemplateContent() {
                                     children: t('shareWithUs')
                                 }, void 0, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1292,
+                                    lineNumber: 1948,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$social$2d$share$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["SocialShare"], {
@@ -9934,13 +11312,13 @@ function ScarletTemplateContent() {
                                     className: "text-gray-400 hover:text-red-400"
                                 }, void 0, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1293,
+                                    lineNumber: 1949,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 1291,
+                            lineNumber: 1947,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -9948,18 +11326,18 @@ function ScarletTemplateContent() {
                             children: "© 2025 Scarlet Hotel Tel Aviv. All rights reserved."
                         }, void 0, false, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 1302,
+                            lineNumber: 1958,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                    lineNumber: 1273,
+                    lineNumber: 1929,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                lineNumber: 1272,
+                lineNumber: 1928,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -9973,12 +11351,12 @@ function ScarletTemplateContent() {
                             className: "h-6 w-6"
                         }, void 0, false, {
                             fileName: "[project]/app/templates/scarlet/page.tsx",
-                            lineNumber: 1315,
+                            lineNumber: 1971,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                        lineNumber: 1310,
+                        lineNumber: 1966,
                         columnNumber: 9
                     }, this),
                     showAiChat && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -9998,7 +11376,7 @@ function ScarletTemplateContent() {
                                                 children: t('chatWithAssistant')
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1321,
+                                                lineNumber: 1977,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -10010,18 +11388,18 @@ function ScarletTemplateContent() {
                                                     className: "h-5 w-5"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                    lineNumber: 1330,
+                                                    lineNumber: 1986,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                                lineNumber: 1324,
+                                                lineNumber: 1980,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                        lineNumber: 1320,
+                                        lineNumber: 1976,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -10034,13 +11412,13 @@ function ScarletTemplateContent() {
                                         })
                                     }, void 0, false, {
                                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                                        lineNumber: 1333,
+                                        lineNumber: 1989,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                lineNumber: 1319,
+                                lineNumber: 1975,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -10055,64 +11433,66 @@ function ScarletTemplateContent() {
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/app/templates/scarlet/page.tsx",
-                                    lineNumber: 1338,
+                                    lineNumber: 1994,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                                lineNumber: 1337,
+                                lineNumber: 1993,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/templates/scarlet/page.tsx",
-                        lineNumber: 1318,
+                        lineNumber: 1974,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                lineNumber: 1309,
+                lineNumber: 1965,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/templates/scarlet/page.tsx",
-        lineNumber: 537,
+        lineNumber: 1015,
         columnNumber: 5
     }, this);
 }
-_s(ScarletTemplateContent, "uc4NxLoWIjthAWzWuzg2BOhvy50=", false, function() {
+_s2(ScarletTemplateContent, "wtIJjOyi4GPLkVq4WCGM4plaoR0=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$i18n$2f$context$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useI18n"],
         __TURBOPACK__imported__module__$5b$project$5d2f$hooks$2f$use$2d$booking$2d$engine$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useBookingEngine"]
     ];
 });
-_c = ScarletTemplateContent;
+_c2 = ScarletTemplateContent;
 function ScarletTemplate() {
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$error$2d$boundary$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ErrorBoundary"], {
         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$i18n$2f$context$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["I18nProvider"], {
             defaultLocale: "he",
             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(ScarletTemplateContent, {}, void 0, false, {
                 fileName: "[project]/app/templates/scarlet/page.tsx",
-                lineNumber: 1352,
+                lineNumber: 2008,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/app/templates/scarlet/page.tsx",
-            lineNumber: 1351,
+            lineNumber: 2007,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/app/templates/scarlet/page.tsx",
-        lineNumber: 1350,
+        lineNumber: 2006,
         columnNumber: 5
     }, this);
 }
-_c1 = ScarletTemplate;
-var _c, _c1;
-__turbopack_context__.k.register(_c, "ScarletTemplateContent");
-__turbopack_context__.k.register(_c1, "ScarletTemplate");
+_c3 = ScarletTemplate;
+var _c, _c1, _c2, _c3;
+__turbopack_context__.k.register(_c, "ScarletPaymentForm");
+__turbopack_context__.k.register(_c1, "ScarletGuestForm");
+__turbopack_context__.k.register(_c2, "ScarletTemplateContent");
+__turbopack_context__.k.register(_c3, "ScarletTemplate");
 if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelpers !== null) {
     __turbopack_context__.k.registerExports(__turbopack_context__.m, globalThis.$RefreshHelpers$);
 }

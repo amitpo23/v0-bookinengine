@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
 
     // Old format - manual book
     if (opportunityId) {
-      const result = await mediciApi.manualBook(opportunityId, code)
+      const result = await mediciApi.manualBook({ opportunityId, code })
 
       if (!result.success) {
         return NextResponse.json({ error: result.error || "Failed to book room" }, { status: 400 })
@@ -26,10 +26,15 @@ export async function POST(request: NextRequest) {
 
     // New format - book with preBookId and token
     if (preBookId && token) {
-      const result = await mediciApi.book({
+      // Build the jsonRequest object for the Medici API
+      const jsonRequestObj = {
         preBookId,
         token,
-        guestInfo,
+        guestInfo
+      }
+      
+      const result = await mediciApi.book({
+        jsonRequest: JSON.stringify(jsonRequestObj)
       })
 
       if (!result.success) {

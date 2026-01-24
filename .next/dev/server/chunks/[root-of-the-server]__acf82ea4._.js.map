@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 40, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/97250/Desktop/booking%20engine/v0-bookinengine/app/api/admin/visits/route.ts"],"sourcesContent":["import { NextRequest, NextResponse } from \"next/server\"\r\n\r\n// Visits API - returns empty array until connected to analytics\r\nexport async function GET(request: NextRequest) {\r\n  const searchParams = request.nextUrl.searchParams\r\n  const template = searchParams.get(\"template\")\r\n\r\n  // TODO: Connect to analytics service (e.g., Google Analytics, Vercel Analytics)\r\n  // For now, return empty array\r\n  return NextResponse.json({\r\n    success: true,\r\n    visits: [],\r\n    message: \"Connect to analytics service for real data\"\r\n  })\r\n}\r\n"],"names":[],"mappings":";;;;AAAA;;AAGO,eAAe,IAAI,OAAoB;IAC5C,MAAM,eAAe,QAAQ,OAAO,CAAC,YAAY;IACjD,MAAM,WAAW,aAAa,GAAG,CAAC;IAElC,gFAAgF;IAChF,8BAA8B;IAC9B,OAAO,gJAAY,CAAC,IAAI,CAAC;QACvB,SAAS;QACT,QAAQ,EAAE;QACV,SAAS;IACX;AACF"}}]
+}

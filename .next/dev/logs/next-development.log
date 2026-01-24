@@ -1,2 +1,25 @@
-[00:00:01.140] Server  WARN     ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
-[00:00:01.356] Server  LOG      ✓ Ready in 1018ms
+[00:00:01.122] Server  WARN     ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[00:00:01.268] Server  LOG      ✓ Ready in 948ms
+[00:00:17.574] Server  LOG      ○ Compiling / ...
+[00:00:31.554] Server  LOG     === ROOM RENDER ===
+[00:00:31.557] Server  LOG     showApiResults: true
+[00:00:31.557] Server  LOG     scarletSearchResults.length: 0
+[00:00:31.557] Server  LOG     shouldShowApi: false
+[00:00:31.558] Server  LOG     roomsToRender.length: 7
+[00:00:31.560] Server  LOG     First room: {}
+[00:00:31.560] Server  LOG     First room price (basePrice): 450
+[00:00:31.561] Server  LOG     First room currency: undefined
+[00:00:31.561] Server  LOG     First room apiRoom: undefined
+[00:00:35.053] Server  ERROR   Error fetching chat conversations: {}
+[00:00:35.228] Server  LOG     🔥 REAL API - Body received: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-03\",\n  \"city\": \"Tel Aviv\",\n  \"adults\": 2\n}"
+[00:00:35.229] Server  LOG     🔍 Searching Medici API for: {}
+[00:00:35.230] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[00:00:35.230] Server  LOG     🌐 Making request to Medici API:
+[00:00:35.230] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[00:00:35.231] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-03\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": 20,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"city\": \"Tel Aviv\"\n}"
+[00:00:35.231] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[00:00:35.239] Server  LOG     [19:07:14] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:01:25.335] Server  LOG     [19:08:04] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (49.98s)
+[00:01:25.336] Server  LOG     ✅ Medici API response received, length: 116434
+[00:01:25.338] Server  LOG     🏨 Transformed to 6 "hotels"
+[00:01:25.341] Server  LOG     🎯 Medici API returned: 6 "results"

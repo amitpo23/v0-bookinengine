@@ -249,7 +249,8 @@ export const scarletHotelConfig = {
   contact: {
     phone: "+972-3-SCARLET",
     email: "reservations@scarlet-tlv.com",
-    website: "https://scarlet-tlv.com"
+    website: "https://scarlet-tlv.com",
+    whatsapp: "+972-50-SCARLET"
   },
   activePromotions: [
     {

@@ -80,8 +80,8 @@ const MAX_BUFFER_SIZE = 1000;
 // Supabase client for persistent logging
 let supabase = null;
 function getSupabase() {
-    if (!supabase && process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
-        supabase = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$supabase$2f$supabase$2d$js$2f$dist$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__["createClient"])(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+    if (!supabase && ("TURBOPACK compile-time value", "https://wsmchexmtiijufemzzwu.supabase.co") && process.env.SUPABASE_SERVICE_KEY) {
+        supabase = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$supabase$2f$supabase$2d$js$2f$dist$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__["createClient"])(("TURBOPACK compile-time value", "https://wsmchexmtiijufemzzwu.supabase.co"), process.env.SUPABASE_SERVICE_KEY);
     }
     return supabase;
 }
@@ -335,13 +335,15 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$logging$2f$api$2d$log
 ;
 const MEDICI_BASE_URL = process.env.MEDICI_BASE_URL || "https://medici-backend.azurewebsites.net";
 const MEDICI_IMAGES_BASE = "https://medici-images.azurewebsites.net/images/";
-// KNOWAA TOKEN (partnerships@knowaaglobal.com, UserId:24, expires 2067) 
-// PRIMARY TOKEN - B2B Medici has issues, use Knowaa
-const KNOWAA_TOKEN = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIyNCIsIm5iZiI6MTc1MjEzMjc3NywiZXhwIjoyMDY3NjY1NTc3LCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.1cKlbn5cAHTc6n2MALkaHtBCs-gmQ5HWssF4UPyZII0";
+// KNOWAA TOKEN (partnerships@knowaaglobal.com, UserId:24, AetherTokenStorageId:4, expires 2084) 
+// PRIMARY TOKEN - Knowaa provider - Fresh from OnlyNightUsersTokenAPI
+const KNOWAA_TOKEN = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIyNCIsIm5iZiI6MTc2OTEwODU0MiwiZXhwIjoyMDg0NjQxMzQyLCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.HlssMhdMpHq45f2u8ZdrXA7NWBDCwgO67CIG_lnjL0w";
 // B2B MEDICI TOKEN (UserId:11, expires 2083) - BACKUP ONLY (has issues)
 const MEDICI_TOKEN_LEGACY = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIxMSIsIm5iZiI6MTc2ODQ1NzU5NSwiZXhwIjoyMDgzOTkwMzk1LCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.g-CO7I75BlowE-F3J3GqlXsbIgNtG8_w2v1WMwG6djE";
-// Use KNOWAA token as primary
-const MEDICI_TOKEN = process.env.KNOWAA_BEARER_TOKEN || KNOWAA_TOKEN;
+// Use KNOWAA token as primary - already defined in code, no env var needed!
+const MEDICI_TOKEN = KNOWAA_TOKEN;
+// KNOWAA LIVE Aether Token - Required for Scarlet Hotel (863233) and full inventory
+const KNOWAA_LIVE_AETHER_TOKEN = "$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku";
 const BOARD_TYPES = {
     1: {
         code: "RO",
@@ -495,7 +497,8 @@ class MediciApiClient {
             pax,
             stars: params.stars || null,
             limit: params.limit || null,
-            ShowExtendedData: true
+            ShowExtendedData: true,
+            aetherAccessToken: KNOWAA_LIVE_AETHER_TOKEN
         };
         if (params.hotelName) {
             searchBody.hotelName = params.hotelName;

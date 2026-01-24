@@ -26,6 +26,185 @@ import Link from "next/link"
 import { ErrorBoundary } from "@/components/error-boundary"
 import { AnimatedCard, showToast } from "@/components/templates/enhanced-ui"
 import { motion, AnimatePresence } from "framer-motion"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+
+// Custom Payment Form for Scarlet (works with useBookingEngine)
+function ScarletPaymentForm({ 
+  totalPrice, 
+  currency, 
+  onSubmit, 
+  isProcessing 
+}: { 
+  totalPrice: number
+  currency: string
+  onSubmit: () => void
+  isProcessing: boolean
+}) {
+  const [cardNumber, setCardNumber] = useState("")
+  const [expiry, setExpiry] = useState("")
+  const [cvv, setCvv] = useState("")
+  const [cardName, setCardName] = useState("")
+  const [agreed, setAgreed] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const formatCardNumber = (value: string) => {
+    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "")
+    const matches = v.match(/\d{4,16}/g)
+    const match = (matches && matches[0]) || ""
+    const parts = []
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4))
+    }
+    return parts.length ? parts.join(" ") : value
+  }
+
+  const formatExpiry = (value: string) => {
+    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "")
+    if (v.length >= 2) return v.slice(0, 2) + "/" + v.slice(2, 4)
+    return v
+  }
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {}
+    if (!cardNumber.replace(/\s/g, "").match(/^\d{16}$/)) newErrors.cardNumber = "מספר כרטיס לא תקין"
+    if (!expiry.match(/^\d{2}\/\d{2}$/)) newErrors.expiry = "תוקף לא תקין"
+    if (!cvv.match(/^\d{3,4}$/)) newErrors.cvv = "CVV לא תקין"
+    if (!cardName.trim()) newErrors.cardName = "שדה חובה"
+    if (!agreed) newErrors.agreed = "יש לאשר את תנאי ההזמנה"
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (validate()) onSubmit()
+  }
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("he-IL", {
+      style: "currency",
+      currency: currency || "USD",
+      minimumFractionDigits: 2,
+    }).format(price)
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-semibold text-white flex items-center gap-2">
+            💳 פרטי כרטיס אשראי
+          </h3>
+          <span className="text-sm text-green-400 flex items-center gap-1">
+            🔒 מאובטח SSL
+          </span>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <Label className="text-gray-300">מספר כרטיס</Label>
+            <Input
+              value={cardNumber}
+              onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+              placeholder="1234 5678 9012 3456"
+              maxLength={19}
+              dir="ltr"
+              className={`bg-white text-black ${errors.cardNumber ? "border-red-500" : ""}`}
+            />
+            {errors.cardNumber && <p className="text-xs text-red-400 mt-1">{errors.cardNumber}</p>}
+          </div>
+
+          <div>
+            <Label className="text-gray-300">שם בעל הכרטיס</Label>
+            <Input
+              value={cardName}
+              onChange={(e) => setCardName(e.target.value)}
+              placeholder="ישראל ישראלי"
+              dir="rtl"
+              className={`bg-white text-black ${errors.cardName ? "border-red-500" : ""}`}
+            />
+            {errors.cardName && <p className="text-xs text-red-400 mt-1">{errors.cardName}</p>}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label className="text-gray-300">תוקף</Label>
+              <Input
+                value={expiry}
+                onChange={(e) => setExpiry(formatExpiry(e.target.value))}
+                placeholder="MM/YY"
+                maxLength={5}
+                dir="ltr"
+                className={`bg-white text-black ${errors.expiry ? "border-red-500" : ""}`}
+              />
+              {errors.expiry && <p className="text-xs text-red-400 mt-1">{errors.expiry}</p>}
+            </div>
+            <div>
+              <Label className="text-gray-300">CVV</Label>
+              <Input
+                value={cvv}
+                onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                placeholder="123"
+                maxLength={4}
+                type="password"
+                dir="ltr"
+                className={`bg-white text-black ${errors.cvv ? "border-red-500" : ""}`}
+              />
+              {errors.cvv && <p className="text-xs text-red-400 mt-1">{errors.cvv}</p>}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-start gap-2">
+        <Checkbox 
+          id="terms" 
+          checked={agreed} 
+          onCheckedChange={(checked) => setAgreed(checked === true)}
+          className="mt-1"
+        />
+        <div className="space-y-1">
+          <Label htmlFor="terms" className="text-sm text-gray-300 cursor-pointer">
+            קראתי ואני מסכים/ה ל
+            <a href="#" className="text-pink-400 hover:underline mx-1">תנאי השימוש</a>
+            ול
+            <a href="#" className="text-pink-400 hover:underline mx-1">מדיניות הביטולים</a>
+          </Label>
+          {errors.agreed && <p className="text-xs text-red-400">{errors.agreed}</p>}
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-r from-green-900/30 to-emerald-900/30 rounded-xl p-4 border border-green-500/30">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
+              🛡️
+            </div>
+            <span className="text-lg text-white">סה״כ לתשלום</span>
+          </div>
+          <span className="text-3xl font-bold text-white">{formatPrice(totalPrice)}</span>
+        </div>
+      </div>
+
+      <Button 
+        type="submit" 
+        className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white"
+        disabled={isProcessing}
+      >
+        {isProcessing ? (
+          <span className="flex items-center gap-2">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            מעבד הזמנה...
+          </span>
+        ) : (
+          "אשר הזמנה ושלם"
+        )}
+      </Button>
+    </form>
+  )
+}
 
 // Helper function to normalize API rooms to display format
 // Maps Knowaa API results to Scarlet Hotel template room types
@@ -752,18 +931,37 @@ function ScarletTemplateContent() {
             <h2 className="text-3xl font-bold mb-6 text-center bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">
               תשלום
             </h2>
-            <PaymentForm
+            
+            {/* Error Display */}
+            {booking.error && (
+              <Alert className="mb-6 border-red-500 bg-red-900/30">
+                <AlertCircle className="h-4 w-4 text-red-400" />
+                <AlertDescription className="text-red-300">
+                  {booking.error}
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            <ScarletPaymentForm
               totalPrice={booking.totalPrice}
-              currency={booking.selectedRoom?.currency || "ILS"}
-              onSubmit={() => {
-                console.log('🔄 Starting demo payment flow...')
-                // Demo payment flow - simulate successful payment
-                setTimeout(() => {
-                  console.log('✅ Demo payment completed successfully!')
-                  booking.completeBooking()
-                }, 2000) // 2 seconds delay to simulate processing
+              currency={booking.selectedRoom?.currency || "USD"}
+              onSubmit={async () => {
+                console.log('🔄 Starting booking completion...')
+                try {
+                  const success = await booking.completeBooking()
+                  if (success) {
+                    console.log('✅ Booking completed successfully!')
+                    showToast?.('ההזמנה אושרה בהצלחה! 🎉', 'success')
+                  } else {
+                    console.error('❌ Booking failed')
+                    showToast?.('ההזמנה נכשלה. אנא נסה שוב.', 'error')
+                  }
+                } catch (error: any) {
+                  console.error('❌ Booking error:', error)
+                  showToast?.(error.message || 'שגיאה בהזמנה', 'error')
+                }
               }}
-              isLoading={booking.isLoading}
+              isProcessing={booking.isLoading}
             />
           </Card>
         </section>

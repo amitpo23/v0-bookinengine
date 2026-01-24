@@ -970,6 +970,7 @@ function ScarletTemplateContent() {
         console.log('=== PREBOOK RESULT ===')
         console.log('success:', success)
         console.log('booking.prebookData:', booking.prebookData)
+        console.log('booking.step after selectRoom:', booking.step)
         
         if (success) {
           // Set prebook expiry (30 minutes)
@@ -993,6 +994,14 @@ function ScarletTemplateContent() {
             priceShown: roomResult.buyPrice,
             completed: false,
           })
+          
+          // Scroll to details section
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+          
+          console.log('✅ PreBook successful - should show details form now')
+        } else {
+          console.error('❌ PreBook failed')
+          showToast?.('שגיאה בהכנת ההזמנה. אנא נסו שוב.', 'error')
         }
         return
       }
@@ -1452,7 +1461,8 @@ function ScarletTemplateContent() {
         </section>
       )}
 
-      {/* Rooms Section */}
+      {/* Rooms Section - hide when in booking flow */}
+      {(!booking.step || booking.step === 'search' || booking.step === 'results') && (
       <section className="py-20 px-4 max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-5xl font-bold mb-4 bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">
@@ -1696,8 +1706,10 @@ function ScarletTemplateContent() {
           ))}
         </div>
       </section>
+      )}
 
-      {/* Amenities Section */}
+      {/* Amenities Section - hide when in booking flow */}
+      {(!booking.step || booking.step === 'search' || booking.step === 'results') && (
       <section className="py-20 px-4 bg-gradient-to-b from-black to-gray-900">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
@@ -1719,8 +1731,10 @@ function ScarletTemplateContent() {
           </div>
         </div>
       </section>
+      )}
 
-      {/* Promo Code & Loyalty Section */}
+      {/* Promo Code & Loyalty Section - hide when in booking flow */}
+      {(!booking.step || booking.step === 'search' || booking.step === 'results') && (
       <section className="py-20 px-4 bg-gradient-to-b from-gray-900 to-black">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
@@ -1783,8 +1797,10 @@ function ScarletTemplateContent() {
           </Card>
         </div>
       </section>
+      )}
 
-      {/* Marketing Features Section */}
+      {/* Marketing Features Section - hide when in booking flow */}
+      {(!booking.step || booking.step === 'search' || booking.step === 'results') && (
       <section className="py-16 px-4 bg-gradient-to-b from-gray-900 to-black">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
@@ -1907,6 +1923,7 @@ function ScarletTemplateContent() {
           </Card>
         </div>
       </section>
+      )}
 
       {/* Affiliate Tracker */}
       <AffiliateTracker hotelId={scarletHotelConfig.hotelId} />

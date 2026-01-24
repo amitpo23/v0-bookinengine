@@ -4718,11 +4718,6 @@
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
   }
 
-  .from-pink-600 {
-    --tw-gradient-from: var(--color-pink-600);
-    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
-  }
-
   .from-pink-900\/20 {
     --tw-gradient-from: #86104333;
   }
@@ -4734,20 +4729,6 @@
   }
 
   .from-pink-900\/20 {
-    --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
-  }
-
-  .from-pink-900\/30 {
-    --tw-gradient-from: #8610434d;
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .from-pink-900\/30 {
-      --tw-gradient-from: color-mix(in oklab, var(--color-pink-900) 30%, transparent);
-    }
-  }
-
-  .from-pink-900\/30 {
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
   }
 
@@ -8175,13 +8156,6 @@
   }
 
   @media (hover: hover) {
-    .hover\:from-pink-500:hover {
-      --tw-gradient-from: var(--color-pink-500);
-      --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
-    }
-  }
-
-  @media (hover: hover) {
     .hover\:from-primary:hover {
       --tw-gradient-from: var(--primary);
       --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
@@ -8299,13 +8273,6 @@
   @media (hover: hover) {
     .hover\:to-red-400:hover {
       --tw-gradient-to: var(--color-red-400);
-      --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
-    }
-  }
-
-  @media (hover: hover) {
-    .hover\:to-red-500:hover {
-      --tw-gradient-to: var(--color-red-500);
       --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
     }
   }

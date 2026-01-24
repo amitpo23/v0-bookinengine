@@ -98,6 +98,7 @@
   "/api/stripe/webhook/route": "app/api/stripe/webhook/route.js",
   "/api/system-logs/route": "app/api/system-logs/route.js",
   "/api/tavily/hotel-search/route": "app/api/tavily/hotel-search/route.js",
+  "/api/test-knowaa/route": "app/api/test-knowaa/route.js",
   "/api/test-medici-direct/route": "app/api/test-medici-direct/route.js",
   "/api/test-medici/route": "app/api/test-medici/route.js",
   "/api/test-simple/route": "app/api/test-simple/route.js",

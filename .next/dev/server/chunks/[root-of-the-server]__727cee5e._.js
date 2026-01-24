@@ -80,8 +80,8 @@ const MAX_BUFFER_SIZE = 1000;
 // Supabase client for persistent logging
 let supabase = null;
 function getSupabase() {
-    if (!supabase && process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
-        supabase = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$supabase$2f$supabase$2d$js$2f$dist$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__["createClient"])(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+    if (!supabase && ("TURBOPACK compile-time value", "https://wsmchexmtiijufemzzwu.supabase.co") && process.env.SUPABASE_SERVICE_KEY) {
+        supabase = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$supabase$2f$supabase$2d$js$2f$dist$2f$index$2e$mjs__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__["createClient"])(("TURBOPACK compile-time value", "https://wsmchexmtiijufemzzwu.supabase.co"), process.env.SUPABASE_SERVICE_KEY);
     }
     return supabase;
 }
@@ -335,8 +335,15 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$logging$2f$api$2d$log
 ;
 const MEDICI_BASE_URL = process.env.MEDICI_BASE_URL || "https://medici-backend.azurewebsites.net";
 const MEDICI_IMAGES_BASE = "https://medici-images.azurewebsites.net/images/";
-// IMPORTANT: Use hardcoded token (UserId:11, expires 2066) - DO NOT use env variable as it may have old token
-const MEDICI_TOKEN = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIxMSIsIm5iZiI6MTc2ODQ1NzU5NSwiZXhwIjoyMDgzOTkwMzk1LCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.g-CO7I75BlowE-F3J3GqlXsbIgNtG8_w2v1WMwG6djE";
+// KNOWAA TOKEN (partnerships@knowaaglobal.com, UserId:24, AetherTokenStorageId:4, expires 2084) 
+// PRIMARY TOKEN - Knowaa provider - Fresh from OnlyNightUsersTokenAPI
+const KNOWAA_TOKEN = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIyNCIsIm5iZiI6MTc2OTEwODU0MiwiZXhwIjoyMDg0NjQxMzQyLCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.HlssMhdMpHq45f2u8ZdrXA7NWBDCwgO67CIG_lnjL0w";
+// B2B MEDICI TOKEN (UserId:11, expires 2083) - BACKUP ONLY (has issues)
+const MEDICI_TOKEN_LEGACY = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIxMSIsIm5iZiI6MTc2ODQ1NzU5NSwiZXhwIjoyMDgzOTkwMzk1LCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.g-CO7I75BlowE-F3J3GqlXsbIgNtG8_w2v1WMwG6djE";
+// Use KNOWAA token as primary - already defined in code, no env var needed!
+const MEDICI_TOKEN = KNOWAA_TOKEN;
+// KNOWAA LIVE Aether Token - Required for Scarlet Hotel (863233) and full inventory
+const KNOWAA_LIVE_AETHER_TOKEN = "$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku";
 const BOARD_TYPES = {
     1: {
         code: "RO",
@@ -425,7 +432,9 @@ class MediciApiClient {
                     endpoint,
                     duration
                 });
-                return {};
+                return {
+                    _status: 204
+                };
             }
             if (!response.ok) {
                 const errorBody = await response.text();
@@ -475,6 +484,7 @@ class MediciApiClient {
     // STEP 1: SEARCH HOTELS
     // =====================
     async searchHotels(params) {
+        console.log("🔍 MediciApi.searchHotels called with params:", params);
         const pax = params.rooms || [
             {
                 adults: params.adults || 2,
@@ -487,23 +497,36 @@ class MediciApiClient {
             pax,
             stars: params.stars || null,
             limit: params.limit || null,
-            ShowExtendedData: true
+            ShowExtendedData: true,
+            aetherAccessToken: KNOWAA_LIVE_AETHER_TOKEN
         };
         if (params.hotelName) {
             searchBody.hotelName = params.hotelName;
         } else if (params.city) {
             searchBody.city = params.city;
         }
-        const response = await this.request("/api/hotels/GetInnstantSearchPrice", {
-            method: "POST",
-            body: JSON.stringify(searchBody)
-        });
-        const hotels = this.transformSearchResults(response);
-        return hotels.map((hotel)=>({
-                ...hotel,
-                requestJson: params,
-                responseJson: response
-            }));
+        console.log("🌐 Making request to Medici API:");
+        console.log("URL:", `${this.baseUrl}/api/hotels/GetInnstantSearchPrice`);
+        console.log("Body:", JSON.stringify(searchBody, null, 2));
+        console.log("Token (first 20 chars):", this.token.substring(0, 20) + "...");
+        try {
+            const response = await this.request("/api/hotels/GetInnstantSearchPrice", {
+                method: "POST",
+                body: JSON.stringify(searchBody)
+            });
+            console.log("✅ Medici API response received, length:", JSON.stringify(response).length);
+            const hotels = this.transformSearchResults(response);
+            console.log("🏨 Transformed to", hotels.length, "hotels");
+            return hotels.map((hotel)=>({
+                    ...hotel,
+                    requestJson: JSON.stringify(params),
+                    responseJson: JSON.stringify(response)
+                }));
+        } catch (error) {
+            console.error("❌ Medici API search failed:", error);
+            // Return empty array instead of throwing - let the caller handle it
+            return [];
+        }
     }
     // =====================
     // STEP 2: PRE-BOOK
@@ -556,9 +579,15 @@ class MediciApiClient {
                 method: "POST",
                 body: JSON.stringify(bookBody)
             });
+            console.log('[DEBUG] Book API Response:', JSON.stringify(response, null, 2));
             const bookingID = response?.bookRes?.content?.bookingID || response?.content?.bookingID || response?.bookingId || response?.bookingID || "";
             const supplierReference = response?.bookRes?.content?.services?.[0]?.supplier?.reference || response?.content?.services?.[0]?.supplier?.reference || response?.supplierReference || "";
             const status = response?.bookRes?.content?.status || response?.content?.status || response?.status || "";
+            console.log('[DEBUG] Parsed:', {
+                bookingID,
+                supplierReference,
+                status
+            });
             const isSuccess = status === "confirmed";
             return {
                 success: isSuccess,
@@ -1197,7 +1226,7 @@ async function getKnowaaBearerToken() {
         return tokenCache.token;
     }
     try {
-        console.log("🔐 [Knowaa] Requesting bearer token...");
+        console.log("≡ƒפנ [Knowaa] Requesting bearer token...");
         const tokenUrl = `${MEDICI_BASE_URL}${TOKEN_ENDPOINT}`;
         // Build form data using URLSearchParams and convert to string
         const formData = new URLSearchParams();
@@ -1210,11 +1239,11 @@ async function getKnowaaBearerToken() {
             },
             timeout: 15000
         });
-        console.log("🔐 [Knowaa] Token response status:", response.status);
+        console.log("≡ƒפנ [Knowaa] Token response status:", response.status);
         // Response format: { "email1": "token1", "email2": "token2", ... }
         const token = response.data[KNOWAA_EMAIL] || response.data.token || response.data.access_token;
         if (!token) {
-            console.error("🔐 [Knowaa] Response data:", JSON.stringify(response.data).substring(0, 200));
+            console.error("≡ƒפנ [Knowaa] Response data:", JSON.stringify(response.data).substring(0, 200));
             throw new Error("No token received from Knowaa auth endpoint");
         }
         // Cache token for 55 minutes (typical JWT expiry is 1 hour)
@@ -1222,10 +1251,10 @@ async function getKnowaaBearerToken() {
             token,
             expiresAt: Date.now() + 55 * 60 * 1000
         };
-        console.log("✅ Knowaa Bearer Token acquired successfully");
+        console.log("Γ£ו Knowaa Bearer Token acquired successfully");
         return tokenCache.token;
     } catch (error) {
-        console.error("❌ Failed to get Knowaa Bearer Token:");
+        console.error("Γ¥ל Failed to get Knowaa Bearer Token:");
         console.error("Error message:", error.message);
         if (error.response) {
             console.error("Response status:", error.response.status);
@@ -1279,7 +1308,7 @@ class KnowaaMediciClient {
             } else if (params.city) {
                 body.city = params.city;
             }
-            console.log("🔍 [Knowaa] Searching hotels:", {
+            console.log("≡ƒפם [Knowaa] Searching hotels:", {
                 dateFrom: params.dateFrom,
                 dateTo: params.dateTo,
                 ...body
@@ -1294,14 +1323,14 @@ class KnowaaMediciClient {
             }
             const data = await response.json();
             const hotels = this.transformSearchResults(data);
-            console.log(`✅ [Knowaa] Found ${hotels.length} hotels`);
+            console.log(`Γ£ו [Knowaa] Found ${hotels.length} hotels`);
             return hotels.map((hotel)=>({
                     ...hotel,
                     requestJson: JSON.stringify(body),
                     responseJson: data
                 }));
         } catch (error) {
-            console.error("❌ [Knowaa] Search Hotels Error:", error);
+            console.error("Γ¥ל [Knowaa] Search Hotels Error:", error);
             throw error;
         }
     }
@@ -1314,7 +1343,7 @@ class KnowaaMediciClient {
             const body = {
                 jsonRequest: params.jsonRequest
             };
-            console.log("📋 [Knowaa] Pre-booking room...");
+            console.log("≡ƒףכ [Knowaa] Pre-booking room...");
             const response = await this.client.post("/api/hotels/PreBook", body, {
                 headers
             });
@@ -1334,7 +1363,7 @@ class KnowaaMediciClient {
             const preBookId = response.data?.opportunityId || response.data?.preBookId || response.data?.id || 0;
             const priceConfirmed = response.data?.content?.services?.hotels?.[0]?.price?.amount || 0;
             const currency = response.data?.content?.services?.hotels?.[0]?.price?.currency || "USD";
-            console.log(`✅ [Knowaa] Pre-book successful: ID ${preBookId}`);
+            console.log(`Γ£ו [Knowaa] Pre-book successful: ID ${preBookId}`);
             return {
                 success: true,
                 preBookId,
@@ -1346,7 +1375,7 @@ class KnowaaMediciClient {
                 responseJson: response.data
             };
         } catch (error) {
-            console.error("❌ [Knowaa] Pre-Book Error:", error);
+            console.error("Γ¥ל [Knowaa] Pre-Book Error:", error);
             throw error;
         }
     }
@@ -1359,14 +1388,14 @@ class KnowaaMediciClient {
             const body = {
                 jsonRequest: params.jsonRequest
             };
-            console.log("🎫 [Knowaa] Booking room...");
+            console.log("≡ƒמ½ [Knowaa] Booking room...");
             const response = await this.client.post("/api/hotels/Book", body, {
                 headers
             });
             const bookingId = response.data?.content?.bookingID || response.data?.bookingId || "";
             const supplierReference = response.data?.content?.services?.[0]?.supplier?.reference || "";
             const status = response.data?.status || "confirmed";
-            console.log(`✅ [Knowaa] Booking confirmed: ${bookingId}`);
+            console.log(`Γ£ו [Knowaa] Booking confirmed: ${bookingId}`);
             return {
                 success: true,
                 bookingId,
@@ -1374,7 +1403,7 @@ class KnowaaMediciClient {
                 status
             };
         } catch (error) {
-            console.error("❌ [Knowaa] Book Error:", error);
+            console.error("Γ¥ל [Knowaa] Book Error:", error);
             throw error;
         }
     }
@@ -1443,7 +1472,7 @@ class KnowaaMediciClient {
 const knowaaClient = new KnowaaMediciClient();
 function clearTokenCache() {
     tokenCache = null;
-    console.log("🔄 Token cache cleared");
+    console.log("≡ƒפה Token cache cleared");
 }
 function getTokenCacheStatus() {
     if (!tokenCache) {
@@ -1484,7 +1513,7 @@ async function GET(request) {
         const dateFrom = searchParams.get("dateFrom") || "2025-02-01";
         const dateTo = searchParams.get("dateTo") || "2025-02-05";
         const hotelName = searchParams.get("hotelName");
-        console.log(`\n🚀 [Knowaa Test] Action: ${action}`);
+        console.log(`\n≡ƒתא [Knowaa Test] Action: ${action}`);
         if (action === "status") {
             const cacheStatus = (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$api$2f$knowaa$2d$client$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getTokenCacheStatus"])();
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
@@ -1498,7 +1527,7 @@ async function GET(request) {
             });
         }
         if (action === "search") {
-            console.log(`\n🔍 Searching: ${hotelName ? `Hotel: ${hotelName}` : `City: ${city}`}`);
+            console.log(`\n≡ƒפם Searching: ${hotelName ? `Hotel: ${hotelName}` : `City: ${city}`}`);
             // Use existing mediciApi client which works
             const results = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$api$2f$medici$2d$client$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__["mediciApi"].searchHotels({
                 dateFrom,
@@ -1535,7 +1564,7 @@ async function GET(request) {
             status: 400
         });
     } catch (error) {
-        console.error("❌ [Knowaa Test] Error:", error.message);
+        console.error("Γ¥ל [Knowaa Test] Error:", error.message);
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             error: error.message || "Test failed",
             details: error.response?.data || error.toString()
@@ -1548,7 +1577,7 @@ async function POST(request) {
     try {
         const body = await request.json();
         const { action = "search", ...params } = body;
-        console.log(`\n🚀 [Knowaa API POST] Action: ${action}`);
+        console.log(`\n≡ƒתא [Knowaa API POST] Action: ${action}`);
         if (action === "search") {
             const results = await knowaaClient.searchHotels({
                 dateFrom: params.dateFrom || "2025-02-01",
@@ -1593,7 +1622,7 @@ async function POST(request) {
             status: 400
         });
     } catch (error) {
-        console.error("❌ [Knowaa API POST] Error:", error.message);
+        console.error("Γ¥ל [Knowaa API POST] Error:", error.message);
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
             error: error.message || "Request failed"
         }, {

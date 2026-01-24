@@ -645,6 +645,12 @@
       "namedRegex": "^/api/tavily/hotel\\-search(?:/)?$"
     },
     {
+      "page": "/api/test-knowaa",
+      "regex": "^/api/test\\-knowaa(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/test\\-knowaa(?:/)?$"
+    },
+    {
       "page": "/api/test-medici",
       "regex": "^/api/test\\-medici(?:/)?$",
       "routeKeys": {},

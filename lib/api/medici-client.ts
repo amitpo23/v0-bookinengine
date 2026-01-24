@@ -22,7 +22,7 @@ const MEDICI_TOKEN_LEGACY = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGR
 // Use KNOWAA token as primary - already defined in code, no env var needed!
 const MEDICI_TOKEN = KNOWAA_TOKEN
 
-// KNOWAA LIVE Aether Tokens - Required for Scarlet Hotel (863233) and full inventory
+// KNOWAA LIVE Aether Tokens - Required for Scarlet Hotel (850086 - Dave Gordon TLV) and full inventory
 const KNOWAA_LIVE_AETHER_TOKEN = "$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku"
 const KNOWAA_LIVE_AETHER_APP_KEY = "$2y$10$GjHNpEhnS/dzZxkkPT7jROXic.Q6.fdg9bkuFTZQs5Gk3OZJG10Cm"
 

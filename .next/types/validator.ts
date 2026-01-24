@@ -1136,6 +1136,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../app/api/test-knowaa/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/test-knowaa">> = Specific
+  const handler = {} as typeof import("../../app/api/test-knowaa/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../app/api/test-medici-direct/route.ts
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/test-medici-direct">> = Specific

@@ -342,8 +342,9 @@ const KNOWAA_TOKEN = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW
 const MEDICI_TOKEN_LEGACY = "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIxMSIsIm5iZiI6MTc2ODQ1NzU5NSwiZXhwIjoyMDgzOTkwMzk1LCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.g-CO7I75BlowE-F3J3GqlXsbIgNtG8_w2v1WMwG6djE";
 // Use KNOWAA token as primary - already defined in code, no env var needed!
 const MEDICI_TOKEN = KNOWAA_TOKEN;
-// KNOWAA LIVE Aether Token - Required for Scarlet Hotel (863233) and full inventory
+// KNOWAA LIVE Aether Tokens - Required for Scarlet Hotel (863233) and full inventory
 const KNOWAA_LIVE_AETHER_TOKEN = "$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku";
+const KNOWAA_LIVE_AETHER_APP_KEY = "$2y$10$GjHNpEhnS/dzZxkkPT7jROXic.Q6.fdg9bkuFTZQs5Gk3OZJG10Cm";
 const BOARD_TYPES = {
     1: {
         code: "RO",
@@ -498,7 +499,8 @@ class MediciApiClient {
             stars: params.stars || null,
             limit: params.limit || null,
             ShowExtendedData: true,
-            aetherAccessToken: KNOWAA_LIVE_AETHER_TOKEN
+            aetherAccessToken: KNOWAA_LIVE_AETHER_TOKEN,
+            aetherApplicationKey: KNOWAA_LIVE_AETHER_APP_KEY
         };
         if (params.hotelName) {
             searchBody.hotelName = params.hotelName;

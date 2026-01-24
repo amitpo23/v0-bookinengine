@@ -4,8 +4,8 @@ export const MOCK_HOTELS: HotelSearchResult[] = [
   {
   },
   {
-    hotelId: 863233,
-    hotelName: "Scarlet Hotel Tel Aviv",
+    hotelId: 850086,
+    hotelName: "Dave Gordon TLV",
     hotelImage: "/scarlet-hotel-main.jpg",
     images: ["/scarlet-hotel-lobby.jpg", "/scarlet-hotel-room.jpg", "/scarlet-hotel-bathroom.jpg"],
     location: "Dizengoff Street, Tel Aviv",

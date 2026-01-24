@@ -1,9 +1,12 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
   "/admin/scarlet/page": "app/admin/scarlet/page.js",
   "/api/admin/chat-conversations/route": "app/api/admin/chat-conversations/route.js",
   "/api/admin/promotions/route": "app/api/admin/promotions/route.js",
   "/api/admin/visits/route": "app/api/admin/visits/route.js",
+  "/api/booking/search/route": "app/api/booking/search/route.js",
   "/api/hotels/search/route": "app/api/hotels/search/route.js",
+  "/api/test-knowaa/route": "app/api/test-knowaa/route.js",
   "/page": "app/page.js",
   "/templates/scarlet/ai-chat/page": "app/templates/scarlet/ai-chat/page.js",
   "/templates/scarlet/booking/page": "app/templates/scarlet/booking/page.js",

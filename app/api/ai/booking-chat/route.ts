@@ -435,7 +435,7 @@ export async function POST(req: Request) {
           dateTo: searchParams.dateTo,
           adults: searchParams.adults || 2,
           children: searchParams.children || [],
-          filterHotelId: hotelConfig?.id === "scarlet-hotel" ? "863233" : undefined, // Filter Scarlet only
+          filterHotelId: hotelConfig?.id === "scarlet-hotel" ? "850086" : undefined, // Filter Scarlet (Dave Gordon TLV)
         })
 
         let rooms: any[] = []

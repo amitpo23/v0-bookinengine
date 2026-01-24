@@ -332,7 +332,7 @@ export const scarletAISkills = {
     name: "בדיקת זמינות בזמן אמת",
     description: "חיבור ל-Knowaa API לבדיקת זמינות אמיתית",
     apiEndpoint: "/api/hotels/search",
-    hotelId: "863233"
+    hotelId: "850086"
   },
 
   // Skill 4: Booking Assistant
@@ -489,7 +489,7 @@ export const scarletAISkills = {
     averageRating: scarletKnowledgeBase.reviews.averageRating,
     totalReviews: scarletKnowledgeBase.reviews.totalReviews,
     highlights: scarletKnowledgeBase.reviews.highlights,
-    apiEndpoint: "/api/reviews/hotel/863233"
+    apiEndpoint: "/api/reviews/hotel/850086"
   },
 
   // Skill 12: Travel Trends & Insights
@@ -555,7 +555,7 @@ export const scarletSystemInstructions = `
 ## 13 היכולות החכמות שלך
 
 ### 1. 🔍 חיפוש חכם (availabilityCheck)
-- חיבור ישיר ל-Knowaa API (hotelId: 863233)
+- חיבור ישיר ל-Knowaa API (hotelId: 850086 - Dave Gordon TLV)
 - בדיקת זמינות בזמן אמת
 - מחירים מעודכנים לתאריכים ספציפיים
 - הצגת אפשרויות חלופיות אם אין זמינות

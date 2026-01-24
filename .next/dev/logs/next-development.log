@@ -81,3 +81,337 @@
 [00:28:41.768] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
 [00:28:41.769] Server  ERROR   ❌ Medici API search failed: Error: API Error 400: ["Cannot find hotel in database: Scarlet Hotel Tel Aviv"]
 [00:28:41.770] Server  LOG     🎯 Medici API returned: 0 "results"
+[00:36:59.798] Server  ERROR    ⨯ ./lib/api/knowaa-client.ts:4:1
+Module not found: Can't resolve 'axios'
+  2 | // Handles bearer token retrieval and all hotel API calls via Knowaa credentials
+  3 |
+> 4 | import axios, { AxiosInstance } from "axios"
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import type { HotelSearchResult, PreBookResponse, BookResponse } from "./medici-types"
+  6 | import "server-only"
+  7 |
+
+
+
+Import trace:
+  App Route:
+    ./lib/api/knowaa-client.ts
+    ./app/api/test-knowaa/route.ts
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[00:37:18.414] Server  LOG     
+≡ƒתא [Knowaa Test] Action: search
+[00:37:18.415] Server  LOG     
+≡ƒפם Searching: Hotel: Scarlet
+[00:37:18.415] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[00:37:18.416] Server  LOG     🌐 Making request to Medici API:
+[00:37:18.416] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[00:37:18.416] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-05\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": null,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"hotelName\": \"Scarlet\"\n}"
+[00:37:18.416] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[00:37:18.417] Server  LOG     [19:43:57] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:37:26.832] Server  LOG     [19:44:06] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (8.41s)
+[00:37:26.833] Server  LOG     ✅ Medici API response received, length: 5613
+[00:37:26.835] Server  LOG     🏨 Transformed to 1 "hotels"
+[00:38:31.299] Server  LOG     
+≡ƒתא [Knowaa Test] Action: search
+[00:38:31.299] Server  LOG     
+≡ƒפם Searching: City: Tel Aviv
+[00:38:31.299] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[00:38:31.300] Server  LOG     🌐 Making request to Medici API:
+[00:38:31.300] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[00:38:31.300] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-05\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": null,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"city\": \"Tel Aviv\"\n}"
+[00:38:31.300] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[00:38:31.301] Server  LOG     [19:45:10] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:39:01.730] Server  LOG     [19:45:41] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (30.16s)
+[00:39:01.733] Server  LOG     ✅ Medici API response received, length: 337326
+[00:39:01.735] Server  LOG     🏨 Transformed to 14 "hotels"
+[00:39:24.793] Server  LOG     
+≡ƒתא [Knowaa Test] Action: search
+[00:39:24.794] Server  LOG     
+≡ƒפם Searching: City: Tel Aviv
+[00:39:24.794] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[00:39:24.795] Server  LOG     🌐 Making request to Medici API:
+[00:39:24.795] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[00:39:24.795] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-05\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": null,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"city\": \"Tel Aviv\"\n}"
+[00:39:24.796] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[00:39:24.796] Server  LOG     [19:46:04] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:39:33.272] Server  LOG     [19:46:12] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (8.18s)
+[00:39:33.273] Server  LOG     ✅ Medici API response received, length: 350001
+[00:39:33.275] Server  LOG     🏨 Transformed to 26 "hotels"
+[00:39:50.378] Server  LOG     
+≡ƒתא [Knowaa Test] Action: search
+[00:39:50.378] Server  LOG     
+≡ƒפם Searching: Hotel: The Scarlet
+[00:39:50.379] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[00:39:50.379] Server  LOG     🌐 Making request to Medici API:
+[00:39:50.380] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[00:39:50.380] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-05\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": null,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"hotelName\": \"The Scarlet\"\n}"
+[00:39:50.380] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[00:39:50.381] Server  LOG     [19:46:29] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:39:58.293] Server  LOG     [19:46:37] 🏨 [WARN] Medici API Error POST /api/hotels/GetInnstantSearchPrice [404] (7.91s)
+[00:39:58.294] Server  LOG     [19:46:37] 🏨 [ERROR] Medici API Exception: /api/hotels/GetInnstantSearchPrice
+[00:39:58.295] Server  ERROR     Error: API Error 404: No hotels found.
+[00:39:58.300] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\.next\dev\server\chunks\[root-of-the-server]__727cee5e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:39:58.303] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:39:58.316] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\.next\dev\server\chunks\node_modules_next_d3c43432._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:39:58.318] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:39:58.319] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:39:58.319] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:39:58.320] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:39:58.320] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:39:58.321] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:39:58.322] Server  ERROR   ❌ Medici API search failed: Error: API Error 404: No hotels found.
+[00:39:58.337] Server  LOG     
+≡ƒתא [Knowaa Test] Action: search
+[00:39:58.338] Server  LOG     
+≡ƒפם Searching: Hotel: Scarlet Tel
+[00:39:58.338] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[00:39:58.339] Server  LOG     🌐 Making request to Medici API:
+[00:39:58.339] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[00:39:58.339] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-05\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": null,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"hotelName\": \"Scarlet Tel\"\n}"
+[00:39:58.340] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[00:39:58.340] Server  LOG     [19:46:37] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:39:59.625] Server  LOG     [19:46:38] 🏨 [WARN] Medici API Error POST /api/hotels/GetInnstantSearchPrice [400] (1.28s)
+[00:39:59.626] Server  LOG     [19:46:38] 🏨 [ERROR] Medici API Exception: /api/hotels/GetInnstantSearchPrice
+[00:39:59.627] Server  ERROR     Error: API Error 400: ["Cannot find hotel in database: Scarlet Tel"]
+[00:39:59.629] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\.next\dev\server\chunks\[root-of-the-server]__727cee5e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:39:59.631] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:39:59.632] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\.next\dev\server\chunks\node_modules_next_d3c43432._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:39:59.634] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:39:59.635] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:39:59.636] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:39:59.637] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:39:59.637] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:39:59.638] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:39:59.639] Server  ERROR   ❌ Medici API search failed: Error: API Error 400: ["Cannot find hotel in database: Scarlet Tel"]
+[00:39:59.653] Server  LOG     
+≡ƒתא [Knowaa Test] Action: search
+[00:39:59.654] Server  LOG     
+≡ƒפם Searching: Hotel: Scarlet Hotel Tel Aviv
+[00:39:59.654] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[00:39:59.654] Server  LOG     🌐 Making request to Medici API:
+[00:39:59.655] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[00:39:59.655] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-05\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": null,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"hotelName\": \"Scarlet Hotel Tel Aviv\"\n}"
+[00:39:59.655] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[00:39:59.656] Server  LOG     [19:46:38] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:40:00.941] Server  LOG     [19:46:40] 🏨 [WARN] Medici API Error POST /api/hotels/GetInnstantSearchPrice [400] (1.28s)
+[00:40:00.942] Server  LOG     [19:46:40] 🏨 [ERROR] Medici API Exception: /api/hotels/GetInnstantSearchPrice
+[00:40:00.942] Server  ERROR     Error: API Error 400: ["Cannot find hotel in database: Scarlet Hotel Tel Aviv"]
+[00:40:00.943] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\.next\dev\server\chunks\[root-of-the-server]__727cee5e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:40:00.944] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:40:00.944] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\.next\dev\server\chunks\node_modules_next_d3c43432._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:40:00.945] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:40:00.945] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:40:00.946] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:40:00.946] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:40:00.947] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:40:00.947] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:40:00.948] Server  ERROR   ❌ Medici API search failed: Error: API Error 400: ["Cannot find hotel in database: Scarlet Hotel Tel Aviv"]
+[00:40:00.965] Server  LOG     
+≡ƒתא [Knowaa Test] Action: search
+[00:40:00.965] Server  LOG     
+≡ƒפם Searching: Hotel: מלון סקרלט
+[00:40:00.966] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[00:40:00.966] Server  LOG     🌐 Making request to Medici API:
+[00:40:00.967] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[00:40:00.967] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-05\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": null,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"hotelName\": \"מלון סקרלט\"\n}"
+[00:40:00.967] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[00:40:00.968] Server  LOG     [19:46:40] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[00:40:02.218] Server  LOG     [19:46:41] 🏨 [WARN] Medici API Error POST /api/hotels/GetInnstantSearchPrice [400] (1.25s)
+[00:40:02.219] Server  LOG     [19:46:41] 🏨 [ERROR] Medici API Exception: /api/hotels/GetInnstantSearchPrice
+[00:40:02.220] Server  ERROR     Error: API Error 400: ["Cannot find hotel in database: מלון סקרלט"]
+[00:40:02.222] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\.next\dev\server\chunks\[root-of-the-server]__727cee5e._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:40:02.223] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:40:02.224] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\.next\dev\server\chunks\node_modules_next_d3c43432._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:40:02.225] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:40:02.226] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:40:02.226] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:40:02.227] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:40:02.227] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:40:02.228] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[00:40:02.228] Server  ERROR   ❌ Medici API search failed: Error: API Error 400: ["Cannot find hotel in database: מלון סקרלט"]
+[01:02:52.674] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[01:02:52.676] Server  LOG     🌐 Making request to Medici API:
+[01:02:52.676] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[01:02:52.677] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-05\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": 50,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"city\": \"Tel Aviv\"\n}"
+[01:02:52.678] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[01:02:52.679] Server  LOG     [20:09:31] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[01:03:01.495] Server  LOG     [20:09:40] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (8.54s)
+[01:03:01.497] Server  LOG     ✅ Medici API response received, length: 350001
+[01:03:01.498] Server  LOG     🏨 Transformed to 26 "hotels"
+[01:03:10.104] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[01:03:10.105] Server  LOG     🌐 Making request to Medici API:
+[01:03:10.106] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[01:03:10.107] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-05\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": 50,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"hotelName\": \"Scarlet\"\n}"
+[01:03:10.108] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[01:03:10.109] Server  LOG     [20:09:49] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[01:03:17.617] Server  LOG     [20:09:56] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (7.51s)
+[01:03:17.617] Server  LOG     ✅ Medici API response received, length: 5613
+[01:03:17.618] Server  LOG     🏨 Transformed to 1 "hotels"
+[01:03:26.560] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[01:03:26.561] Server  LOG     🌐 Making request to Medici API:
+[01:03:26.561] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[01:03:26.561] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-05\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": 50,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"hotelName\": \"Scarlet\"\n}"
+[01:03:26.562] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[01:03:26.562] Server  LOG     [20:10:05] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[01:03:36.251] Server  LOG     [20:10:15] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (9.69s)
+[01:03:36.252] Server  LOG     ✅ Medici API response received, length: 5613
+[01:03:36.253] Server  LOG     🏨 Transformed to 1 "hotels"
+[01:12:59.903] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[01:12:59.903] Server  LOG     🌐 Making request to Medici API:
+[01:12:59.904] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[01:12:59.904] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-05\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": 50,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"aetherApplicationKey\": \"$2y$10$GjHNpEhnS/dzZxkkPT7jROXic.Q6.fdg9bkuFTZQs5Gk3OZJG10Cm\",\n  \"hotelName\": \"Scarlet\"\n}"
+[01:12:59.905] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[01:12:59.905] Server  LOG     [20:19:39] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[01:13:13.879] Server  LOG     [20:19:53] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (13.97s)
+[01:13:13.880] Server  LOG     ✅ Medici API response received, length: 10789
+[01:13:13.881] Server  LOG     🏨 Transformed to 1 "hotels"
+[01:13:25.206] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[01:13:25.207] Server  LOG     🌐 Making request to Medici API:
+[01:13:25.207] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[01:13:25.208] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-05\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": 100,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"aetherApplicationKey\": \"$2y$10$GjHNpEhnS/dzZxkkPT7jROXic.Q6.fdg9bkuFTZQs5Gk3OZJG10Cm\",\n  \"city\": \"Tel Aviv\"\n}"
+[01:13:25.208] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[01:13:25.208] Server  LOG     [20:20:04] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[01:14:12.341] Server  LOG     [20:20:51] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (46.55s)
+[01:14:12.343] Server  LOG     ✅ Medici API response received, length: 353627
+[01:14:12.344] Server  LOG     🏨 Transformed to 15 "hotels"
+[01:19:54.946] Server  LOG     🔥 REAL API - Body received: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"hotelId\": \"863233\",\n  \"adults\": 2,\n  \"city\": \"Tel Aviv\",\n  \"dateTo\": \"2026-02-03\"\n}"
+[01:19:54.948] Server  LOG     🔍 Searching Medici API for: {}
+[01:19:54.950] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[01:19:54.950] Server  LOG     🌐 Making request to Medici API:
+[01:19:54.950] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[01:19:54.951] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-03\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": 20,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"aetherApplicationKey\": \"$2y$10$GjHNpEhnS/dzZxkkPT7jROXic.Q6.fdg9bkuFTZQs5Gk3OZJG10Cm\",\n  \"city\": \"Tel Aviv\"\n}"
+[01:19:54.951] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[01:19:54.952] Server  LOG     [20:26:34] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[01:20:22.560] Server  LOG     [20:27:01] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (27.34s)
+[01:20:22.562] Server  LOG     ✅ Medici API response received, length: 132936
+[01:20:22.564] Server  LOG     🏨 Transformed to 5 "hotels"
+[01:20:22.567] Server  LOG     🎯 Medici API returned: 5 "results"
+[01:20:36.337] Server  LOG     🔥 REAL API - Body received: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"adults\": 2,\n  \"hotelName\": \"Scarlet\",\n  \"city\": \"Tel Aviv\",\n  \"dateTo\": \"2026-02-03\"\n}"
+[01:20:36.337] Server  LOG     🔍 Searching Medici API for: {}
+[01:20:36.337] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[01:20:36.338] Server  LOG     🌐 Making request to Medici API:
+[01:20:36.338] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[01:20:36.338] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-03\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": 20,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"aetherApplicationKey\": \"$2y$10$GjHNpEhnS/dzZxkkPT7jROXic.Q6.fdg9bkuFTZQs5Gk3OZJG10Cm\",\n  \"hotelName\": \"Scarlet\"\n}"
+[01:20:36.339] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[01:20:36.339] Server  LOG     [20:27:15] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[01:20:52.206] Server  LOG     [20:27:31] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (15.86s)
+[01:20:52.208] Server  LOG     ✅ Medici API response received, length: 41821
+[01:20:52.208] Server  LOG     🏨 Transformed to 1 "hotels"
+[01:20:52.209] Server  LOG     🎯 Medici API returned: 1 "results"
+[01:22:00.419] Server  LOG     🔥 REAL API - Body received: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"limit\": 50,\n  \"adults\": 2,\n  \"hotelName\": \"Scarlet\",\n  \"dateTo\": \"2026-02-03\"\n}"
+[01:22:00.419] Server  LOG     🔍 Searching Medici API for: {}
+[01:22:00.419] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[01:22:00.420] Server  LOG     🌐 Making request to Medici API:
+[01:22:00.420] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[01:22:00.420] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-03\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": 50,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"aetherApplicationKey\": \"$2y$10$GjHNpEhnS/dzZxkkPT7jROXic.Q6.fdg9bkuFTZQs5Gk3OZJG10Cm\",\n  \"hotelName\": \"Scarlet\"\n}"
+[01:22:00.420] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[01:22:00.421] Server  LOG     [20:28:39] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[01:22:08.790] Server  LOG     [20:28:48] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (8.36s)
+[01:22:08.791] Server  LOG     ✅ Medici API response received, length: 21129
+[01:22:08.792] Server  LOG     🏨 Transformed to 1 "hotels"
+[01:22:08.792] Server  LOG     🎯 Medici API returned: 1 "results"
+[01:24:05.534] Server  LOG     🔥 REAL API - Body received: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"adults\": 2,\n  \"hotelName\": \"Dave Gordon\",\n  \"dateTo\": \"2026-02-03\"\n}"
+[01:24:05.535] Server  LOG     🔍 Searching Medici API for: {}
+[01:24:05.535] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[01:24:05.536] Server  LOG     🌐 Making request to Medici API:
+[01:24:05.536] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[01:24:05.536] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-03\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": 20,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"aetherApplicationKey\": \"$2y$10$GjHNpEhnS/dzZxkkPT7jROXic.Q6.fdg9bkuFTZQs5Gk3OZJG10Cm\",\n  \"hotelName\": \"Dave Gordon\"\n}"
+[01:24:05.537] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[01:24:05.537] Server  LOG     [20:30:44] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[01:25:38.420] Server  LOG     [20:32:17] 🏨 [WARN] Medici API Error POST /api/hotels/GetInnstantSearchPrice [404] (92.88s)
+[01:25:38.421] Server  LOG     [20:32:17] 🏨 [ERROR] Medici API Exception: /api/hotels/GetInnstantSearchPrice
+[01:25:38.422] Server  ERROR     Error: API Error 404: No hotels found.
+[01:25:38.430] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\.next\dev\server\chunks\[root-of-the-server]__46ffd8db._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:25:38.432] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:25:38.443] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\.next\dev\server\chunks\node_modules_next_649af07c._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:25:38.444] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:25:38.445] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:25:38.446] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:25:38.446] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:25:38.447] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:25:38.447] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:25:38.448] Server  ERROR   ❌ Medici API search failed: Error: API Error 404: No hotels found.
+[01:25:38.449] Server  LOG     🎯 Medici API returned: 0 "results"
+[01:25:45.053] Server  LOG     🔥 REAL API - Body received: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"adults\": 2,\n  \"hotelName\": \"Gordon\",\n  \"city\": \"Tel Aviv\",\n  \"dateTo\": \"2026-02-03\"\n}"
+[01:25:45.054] Server  LOG     🔍 Searching Medici API for: {}
+[01:25:45.055] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[01:25:45.055] Server  LOG     🌐 Making request to Medici API:
+[01:25:45.055] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[01:25:45.055] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-03\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": 20,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"aetherApplicationKey\": \"$2y$10$GjHNpEhnS/dzZxkkPT7jROXic.Q6.fdg9bkuFTZQs5Gk3OZJG10Cm\",\n  \"hotelName\": \"Gordon\"\n}"
+[01:25:45.056] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[01:25:45.056] Server  LOG     [20:32:24] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[01:25:55.534] Server  LOG     [20:32:34] 🏨 [WARN] Medici API Error POST /api/hotels/GetInnstantSearchPrice [404] (10.48s)
+[01:25:55.535] Server  LOG     [20:32:34] 🏨 [ERROR] Medici API Exception: /api/hotels/GetInnstantSearchPrice
+[01:25:55.536] Server  ERROR     Error: API Error 404: No hotels found.
+[01:25:55.537] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\.next\dev\server\chunks\[root-of-the-server]__46ffd8db._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:25:55.539] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:25:55.540] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\.next\dev\server\chunks\node_modules_next_649af07c._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:25:55.541] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:25:55.542] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:25:55.543] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:25:55.544] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:25:55.544] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:25:55.546] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:25:55.546] Server  ERROR   ❌ Medici API search failed: Error: API Error 404: No hotels found.
+[01:25:55.547] Server  LOG     🎯 Medici API returned: 0 "results"
+[01:30:38.888] Server  LOG     🔥 REAL API - Body received: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"limit\": 50,\n  \"adults\": 2,\n  \"city\": \"Tel Aviv\",\n  \"dateTo\": \"2026-02-03\"\n}"
+[01:30:38.888] Server  LOG     🔍 Searching Medici API for: {}
+[01:30:38.889] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[01:30:38.889] Server  LOG     🌐 Making request to Medici API:
+[01:30:38.890] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[01:30:38.890] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-03\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": 50,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"aetherApplicationKey\": \"$2y$10$GjHNpEhnS/dzZxkkPT7jROXic.Q6.fdg9bkuFTZQs5Gk3OZJG10Cm\",\n  \"city\": \"Tel Aviv\"\n}"
+[01:30:38.890] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[01:30:38.891] Server  LOG     [20:37:18] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[01:30:48.789] Server  LOG     [20:37:28] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (9.27s)
+[01:30:48.792] Server  LOG     ✅ Medici API response received, length: 321134
+[01:30:48.793] Server  LOG     🏨 Transformed to 23 "hotels"
+[01:30:48.819] Server  LOG     🎯 Medici API returned: 23 "results"
+[01:31:08.077] Server  LOG     🔥 REAL API - Body received: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"adults\": 2,\n  \"hotelName\": \"Dave Gordon TLV\",\n  \"dateTo\": \"2026-02-03\"\n}"
+[01:31:08.078] Server  LOG     🔍 Searching Medici API for: {}
+[01:31:08.079] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[01:31:08.079] Server  LOG     🌐 Making request to Medici API:
+[01:31:08.080] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[01:31:08.080] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-03\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": 20,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"aetherApplicationKey\": \"$2y$10$GjHNpEhnS/dzZxkkPT7jROXic.Q6.fdg9bkuFTZQs5Gk3OZJG10Cm\",\n  \"hotelName\": \"Dave Gordon TLV\"\n}"
+[01:31:08.080] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[01:31:08.081] Server  LOG     [20:37:47] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[01:31:10.681] Server  LOG     [20:37:49] 🏨 [WARN] Medici API Error POST /api/hotels/GetInnstantSearchPrice [400] (2.60s)
+[01:31:10.682] Server  LOG     [20:37:49] 🏨 [ERROR] Medici API Exception: /api/hotels/GetInnstantSearchPrice
+[01:31:10.682] Server  ERROR     Error: API Error 400: ["Cannot find hotel in database: Dave Gordon TLV"]
+[01:31:10.683] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\.next\dev\server\chunks\[root-of-the-server]__46ffd8db._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:31:10.685] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:31:10.686] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\.next\dev\server\chunks\node_modules_next_649af07c._.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:31:10.687] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\base-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:31:10.687] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\next-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:31:10.688] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\dev\next-dev-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:31:10.688] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\trace\trace.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:31:10.689] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\lib\router-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:31:10.689] Server  ERROR   C:\Users\97250\Desktop\booking engine\v0-bookinengine\node_modules\next\dist\server\lib\start-server.js: Invalid source map. Only conformant source maps can be used to find the original code. Cause: Error: sourceMapURL could not be parsed
+[01:31:10.690] Server  ERROR   ❌ Medici API search failed: Error: API Error 400: ["Cannot find hotel in database: Dave Gordon TLV"]
+[01:31:10.690] Server  LOG     🎯 Medici API returned: 0 "results"
+[01:32:13.592] Server  LOG     🔥 REAL API - Body received: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"limit\": 100,\n  \"adults\": 2,\n  \"city\": \"Tel Aviv\",\n  \"dateTo\": \"2026-02-03\"\n}"
+[01:32:13.593] Server  LOG     🔍 Searching Medici API for: {}
+[01:32:13.593] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[01:32:13.594] Server  LOG     🌐 Making request to Medici API:
+[01:32:13.595] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[01:32:13.595] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-03\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": 100,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"aetherApplicationKey\": \"$2y$10$GjHNpEhnS/dzZxkkPT7jROXic.Q6.fdg9bkuFTZQs5Gk3OZJG10Cm\",\n  \"city\": \"Tel Aviv\"\n}"
+[01:32:13.596] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[01:32:13.596] Server  LOG     [20:38:52] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[01:32:23.098] Server  LOG     [20:39:02] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (8.95s)
+[01:32:23.099] Server  LOG     ✅ Medici API response received, length: 321134
+[01:32:23.102] Server  LOG     🏨 Transformed to 23 "hotels"
+[01:32:23.129] Server  LOG     🎯 Medici API returned: 23 "results"
+[01:34:06.395] Server  LOG     🔥 REAL API - Body received: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"limit\": 50,\n  \"adults\": 2,\n  \"city\": \"Tel Aviv\",\n  \"dateTo\": \"2026-02-03\"\n}"
+[01:34:06.396] Server  LOG     🔍 Searching Medici API for: {}
+[01:34:06.397] Server  LOG     🔍 MediciApi.searchHotels called with params: {}
+[01:34:06.397] Server  LOG     🌐 Making request to Medici API:
+[01:34:06.397] Server  LOG     URL: "https://medici-backend.azurewebsites.net/api/hotels/GetInnstantSearchPrice"
+[01:34:06.398] Server  LOG     Body: "{\n  \"dateFrom\": \"2026-02-01\",\n  \"dateTo\": \"2026-02-03\",\n  \"pax\": [\n    {\n      \"adults\": 2,\n      \"children\": []\n    }\n  ],\n  \"stars\": null,\n  \"limit\": 50,\n  \"ShowExtendedData\": true,\n  \"aetherAccessToken\": \"$2y$10$WrOg1sVjhWS32f3FA7/JTep2JvIialrDDNJD4uNNWhAm8DLBifGku\",\n  \"aetherApplicationKey\": \"$2y$10$GjHNpEhnS/dzZxkkPT7jROXic.Q6.fdg9bkuFTZQs5Gk3OZJG10Cm\",\n  \"city\": \"Tel Aviv\"\n}"
+[01:34:06.398] Server  LOG     Token (first 20 chars): "eyJhbGciOiJodHRwOi8v..."
+[01:34:06.398] Server  LOG     [20:40:45] 🏨 [DEBUG] Medici API Request: /api/hotels/GetInnstantSearchPrice
+[01:34:16.022] Server  LOG     [20:40:55] 🏨 [INFO] Medici API Success POST /api/hotels/GetInnstantSearchPrice [200] (8.98s)
+[01:34:16.025] Server  LOG     ✅ Medici API response received, length: 321134
+[01:34:16.027] Server  LOG     🏨 Transformed to 23 "hotels"
+[01:34:16.049] Server  LOG     🎯 Medici API returned: 23 "results"

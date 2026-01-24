@@ -55,8 +55,8 @@ const defaultHotel: HotelConfig = {
 const scarletHotelConfigData: HotelConfig = {
   id: "scarlet-hotel",
   name: "מלון סקרלט תל אביב",
-  hotelId: "863233",
-  hotelName: "Scarlet Hotel Tel Aviv",
+  hotelId: "850086",
+  hotelName: "Dave Gordon TLV",
   city: "Tel Aviv",
   stars: 5,
   currency: "₪",
@@ -65,8 +65,8 @@ const scarletHotelConfigData: HotelConfig = {
   plan: "enterprise",
   apiSettings: {
     provider: "medici" as const,
-    mediciHotelId: "863233",
-    mediciHotelName: "Scarlet Hotel Tel Aviv",
+    mediciHotelId: "850086",
+    mediciHotelName: "Dave Gordon TLV",
     mediciCity: "Tel Aviv",
   },
   widgetSettings: {
@@ -95,7 +95,7 @@ const scarletHotelConfigData: HotelConfig = {
 - טלפון: 052-473-4940
 - סגנון: מלון בוטיק רומנטי עם עיצוב נועז וצבעוני
 - מחירים: 450-2500 ₪ ללילה
-- ID במערכת: 863233
+- ID במערכת: 850086 (Dave Gordon TLV)
 
 סוגי חדרים:
 1. הקלאסי הזוגי (Classic Double) - 450₪ - חדר נעים ומעוצב, 15 מ"ר

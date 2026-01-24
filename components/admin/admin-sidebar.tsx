@@ -223,6 +223,7 @@ const menuItems = [
   { id: "marketing", label: "שיווק ומכירות", icon: SparklesIcon, isNew: true },
   { id: "features", label: "ניהול תכונות", icon: ZapIcon, isNew: true },
   { id: "templates", label: "ניהול טמפלטים", icon: LayersIcon, isNew: true, isPro: true },
+  { id: "scarlet", label: "🔴 Scarlet Admin", icon: SparklesIcon, isNew: true, isPro: true, isLink: true, href: "/admin/scarlet" },
   { id: "activitylogs", label: "יומן פעילות", icon: ActivityIcon, isNew: true },
   { id: "searchlogs", label: "יומן חיפושים", icon: ActivityIcon, isNew: true },
   { id: "sessions", label: "כניסות משתמשים", icon: UsersIcon, isNew: true },
@@ -313,6 +314,49 @@ export function AdminSidebar({
           {menuItems.map((item) => {
             const Icon = item.icon
             const isActive = activeTab === item.id
+
+            // For link items, render as anchor tag
+            if ((item as any).isLink && (item as any).href) {
+              const linkButton = (
+                <a
+                  key={item.id}
+                  href={(item as any).href}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                    "text-red-400 hover:text-red-300 hover:bg-red-500/10 border border-red-500/30",
+                  )}
+                >
+                  <Icon className="h-5 w-5 flex-shrink-0" />
+                  {!collapsed && (
+                    <>
+                      <span className="flex-1 text-right">{item.label}</span>
+                      {item.isPro && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs bg-red-500/10 text-red-400 border-red-500/30"
+                        >
+                          Pro
+                        </Badge>
+                      )}
+                    </>
+                  )}
+                </a>
+              )
+
+              if (collapsed) {
+                return (
+                  <Tooltip key={item.id}>
+                    <TooltipTrigger asChild>{linkButton}</TooltipTrigger>
+                    <TooltipContent side="left" className="flex items-center gap-2">
+                      {item.label}
+                      {item.isPro && <Badge variant="outline">Pro</Badge>}
+                    </TooltipContent>
+                  </Tooltip>
+                )
+              }
+
+              return linkButton
+            }
 
             const button = (
               <button

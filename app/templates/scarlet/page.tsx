@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { format } from "date-fns"
 import { he } from "date-fns/locale"
 import { Calendar, Users, Heart, Sparkles, Bath, Home, Crown, User, ChevronLeft, ChevronRight, MessageCircle, X, Loader2, AlertCircle } from "lucide-react"
@@ -29,6 +29,83 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
+
+// ============= ADMIN TRACKING =============
+// Helper function to log search/booking activity to admin
+const logToAdmin = async (data: {
+  stage: string
+  sessionId: string
+  dateFrom?: string
+  dateTo?: string
+  guests?: number
+  selectedRoom?: string
+  selectedRoomCode?: string
+  priceShown?: number
+  completed?: boolean
+  customerEmail?: string
+  customerName?: string
+  customerPhone?: string
+}) => {
+  try {
+    await fetch('/api/admin/template-logs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        templateId: 'scarlet',
+        ...data,
+        source: document.referrer ? new URL(document.referrer).hostname : 'direct',
+        referrer: document.referrer,
+        userAgent: navigator.userAgent,
+      }),
+    })
+  } catch (error) {
+    console.warn('Failed to log to admin:', error)
+  }
+}
+
+// Helper to track abandoned bookings
+const trackAbandoned = async (data: {
+  sessionId: string
+  customerEmail?: string
+  customerName?: string
+  customerPhone?: string
+  roomType: string
+  roomCode?: string
+  checkIn: string
+  checkOut: string
+  guests: number
+  totalPrice: number
+  stage: string
+}) => {
+  try {
+    await fetch('/api/admin/abandoned-bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        templateId: 'scarlet',
+        hotelId: scarletHotelConfig.hotelId,
+        hotelName: scarletHotelConfig.hebrewName,
+        currency: 'ILS',
+        source: document.referrer ? new URL(document.referrer).hostname : 'direct',
+        ...data,
+      }),
+    })
+  } catch (error) {
+    console.warn('Failed to track abandoned booking:', error)
+  }
+}
+
+// Generate unique session ID for tracking
+const getSessionId = (): string => {
+  if (typeof window === 'undefined') return `sess_${Date.now()}`
+  
+  let sessionId = sessionStorage.getItem('scarlet_session_id')
+  if (!sessionId) {
+    sessionId = `sess_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
+    sessionStorage.setItem('scarlet_session_id', sessionId)
+  }
+  return sessionId
+}
 
 // Custom Payment Form for Scarlet (works with useBookingEngine)
 function ScarletPaymentForm({ 
@@ -770,6 +847,18 @@ function ScarletTemplateContent() {
       setScarletSearchResults(scarletHotels)
       setShowApiResults(true)
 
+      // ===== LOG SEARCH TO ADMIN =====
+      const roomCount = scarletHotels[0]?.rooms?.length || 0
+      logToAdmin({
+        stage: 'search',
+        sessionId: getSessionId(),
+        dateFrom: checkIn,
+        dateTo: checkOut,
+        guests,
+        resultsCount: roomCount,
+        completed: false,
+      })
+
       if (!silent) {
         if (scarletHotels.length > 0) {
           showToast?.(`נמצאו ${scarletHotels.length} חדרים זמינים במלון סקרלט תל אביב`, 'success')
@@ -892,6 +981,19 @@ function ScarletTemplateContent() {
             room_name: room.hebrewName,
             price: roomResult.buyPrice,
             hotel_id: scarletHotelConfig.hotelId
+          })
+
+          // ===== LOG ROOM SELECTION TO ADMIN =====
+          logToAdmin({
+            stage: 'room_selected',
+            sessionId: getSessionId(),
+            dateFrom: checkIn,
+            dateTo: checkOut,
+            guests,
+            selectedRoom: room.hebrewName || room.name,
+            selectedRoomCode: roomResult.code,
+            priceShown: roomResult.buyPrice,
+            completed: false,
           })
         }
         return
@@ -1102,6 +1204,39 @@ function ScarletTemplateContent() {
                 <ScarletGuestForm 
                   onSubmit={(details) => {
                     booking.setGuestInfo(details)
+                    
+                    // ===== LOG GUEST DETAILS TO ADMIN =====
+                    logToAdmin({
+                      stage: 'guest_details',
+                      sessionId: getSessionId(),
+                      dateFrom: checkIn,
+                      dateTo: checkOut,
+                      guests,
+                      selectedRoom: booking.selectedRoom?.roomName || booking.selectedRoom?.roomCategory,
+                      selectedRoomCode: booking.selectedRoom?.code,
+                      priceShown: booking.selectedRoom?.buyPrice,
+                      customerEmail: details.email,
+                      customerName: `${details.firstName} ${details.lastName}`,
+                      customerPhone: details.phone,
+                      completed: false,
+                    })
+                    
+                    // Track potential abandoned booking
+                    if (booking.selectedRoom) {
+                      trackAbandoned({
+                        sessionId: getSessionId(),
+                        customerEmail: details.email,
+                        customerName: `${details.firstName} ${details.lastName}`,
+                        customerPhone: details.phone,
+                        roomType: booking.selectedRoom?.roomName || booking.selectedRoom?.roomCategory || 'Unknown',
+                        roomCode: booking.selectedRoom?.code,
+                        checkIn,
+                        checkOut,
+                        guests,
+                        totalPrice: booking.selectedRoom?.buyPrice || 0,
+                        stage: 'guest_details',
+                      })
+                    }
                   }}
                   isLoading={booking.isLoading}
                 />
@@ -1204,14 +1339,64 @@ function ScarletTemplateContent() {
               currency={booking.selectedRoom?.currency || "USD"}
               onSubmit={async () => {
                 console.log('🔄 Starting booking completion...')
+                
+                // ===== LOG PAYMENT STAGE TO ADMIN =====
+                logToAdmin({
+                  stage: 'payment',
+                  sessionId: getSessionId(),
+                  dateFrom: checkIn,
+                  dateTo: checkOut,
+                  guests,
+                  selectedRoom: booking.selectedRoom?.roomName || booking.selectedRoom?.roomCategory,
+                  selectedRoomCode: booking.selectedRoom?.code,
+                  priceShown: booking.totalPrice,
+                  customerEmail: booking.guestInfo?.email,
+                  customerName: booking.guestInfo ? `${booking.guestInfo.firstName} ${booking.guestInfo.lastName}` : undefined,
+                  customerPhone: booking.guestInfo?.phone,
+                  completed: false,
+                })
+                
                 try {
                   const success = await booking.completeBooking()
                   if (success) {
                     console.log('✅ Booking completed successfully!')
                     showToast?.('ההזמנה אושרה בהצלחה! 🎉', 'success')
+                    
+                    // ===== LOG COMPLETED BOOKING TO ADMIN =====
+                    logToAdmin({
+                      stage: 'confirmed',
+                      sessionId: getSessionId(),
+                      dateFrom: checkIn,
+                      dateTo: checkOut,
+                      guests,
+                      selectedRoom: booking.selectedRoom?.roomName || booking.selectedRoom?.roomCategory,
+                      selectedRoomCode: booking.selectedRoom?.code,
+                      priceShown: booking.totalPrice,
+                      customerEmail: booking.guestInfo?.email,
+                      customerName: booking.guestInfo ? `${booking.guestInfo.firstName} ${booking.guestInfo.lastName}` : undefined,
+                      customerPhone: booking.guestInfo?.phone,
+                      completed: true,
+                    })
                   } else {
                     console.error('❌ Booking failed')
                     showToast?.('ההזמנה נכשלה. אנא נסה שוב.', 'error')
+                    
+                    // Track abandoned at payment stage
+                    if (booking.selectedRoom && booking.guestInfo) {
+                      trackAbandoned({
+                        sessionId: getSessionId(),
+                        customerEmail: booking.guestInfo.email,
+                        customerName: `${booking.guestInfo.firstName} ${booking.guestInfo.lastName}`,
+                        customerPhone: booking.guestInfo.phone,
+                        roomType: booking.selectedRoom?.roomName || booking.selectedRoom?.roomCategory || 'Unknown',
+                        roomCode: booking.selectedRoom?.code,
+                        checkIn,
+                        checkOut,
+                        guests,
+                        totalPrice: booking.totalPrice || 0,
+                        stage: 'payment',
+                      })
+                    }
                   }
                 } catch (error: any) {
                   console.error('❌ Booking error:', error)

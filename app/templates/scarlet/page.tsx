@@ -206,6 +206,188 @@ function ScarletPaymentForm({
   )
 }
 
+// Custom Guest Form for Scarlet (light background, good contrast)
+function ScarletGuestForm({ 
+  onSubmit, 
+  isLoading 
+}: { 
+  onSubmit: (details: any) => void
+  isLoading: boolean
+}) {
+  const [formData, setFormData] = useState({
+    title: 'mr',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    country: 'IL',
+    city: '',
+    address: '',
+    specialRequests: ''
+  })
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {}
+    if (!formData.firstName.trim()) newErrors.firstName = "שדה חובה"
+    if (!formData.lastName.trim()) newErrors.lastName = "שדה חובה"
+    if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) newErrors.email = "אימייל לא תקין"
+    if (!formData.phone.match(/^[\d\-\+\s]{9,15}$/)) newErrors.phone = "טלפון לא תקין"
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (validate()) {
+      onSubmit(formData)
+    }
+  }
+
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }))
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Title & First Name */}
+      <div className="grid grid-cols-4 gap-4">
+        <div>
+          <Label className="text-gray-700 font-medium">תואר *</Label>
+          <select
+            value={formData.title}
+            onChange={(e) => handleChange('title', e.target.value)}
+            className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+          >
+            <option value="mr">מר</option>
+            <option value="mrs">גברת</option>
+            <option value="ms">גב׳</option>
+          </select>
+        </div>
+        <div className="col-span-3">
+          <Label className="text-gray-700 font-medium">שם פרטי *</Label>
+          <Input
+            value={formData.firstName}
+            onChange={(e) => handleChange('firstName', e.target.value)}
+            placeholder="הכנס שם פרטי"
+            className={`mt-1 bg-white text-gray-900 border-gray-300 placeholder-gray-400 ${errors.firstName ? "border-red-500" : ""}`}
+          />
+          {errors.firstName && <p className="text-xs text-red-500 mt-1">{errors.firstName}</p>}
+        </div>
+      </div>
+
+      {/* Last Name & Email */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label className="text-gray-700 font-medium">שם משפחה *</Label>
+          <Input
+            value={formData.lastName}
+            onChange={(e) => handleChange('lastName', e.target.value)}
+            placeholder="הכנס שם משפחה"
+            className={`mt-1 bg-white text-gray-900 border-gray-300 placeholder-gray-400 ${errors.lastName ? "border-red-500" : ""}`}
+          />
+          {errors.lastName && <p className="text-xs text-red-500 mt-1">{errors.lastName}</p>}
+        </div>
+        <div>
+          <Label className="text-gray-700 font-medium">דוא״ל *</Label>
+          <Input
+            type="email"
+            value={formData.email}
+            onChange={(e) => handleChange('email', e.target.value)}
+            placeholder="your@email.com"
+            dir="ltr"
+            className={`mt-1 bg-white text-gray-900 border-gray-300 placeholder-gray-400 ${errors.email ? "border-red-500" : ""}`}
+          />
+          {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
+        </div>
+      </div>
+
+      {/* Phone & Country */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label className="text-gray-700 font-medium">טלפון *</Label>
+          <Input
+            type="tel"
+            value={formData.phone}
+            onChange={(e) => handleChange('phone', e.target.value)}
+            placeholder="050-0000000"
+            dir="ltr"
+            className={`mt-1 bg-white text-gray-900 border-gray-300 placeholder-gray-400 ${errors.phone ? "border-red-500" : ""}`}
+          />
+          {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone}</p>}
+        </div>
+        <div>
+          <Label className="text-gray-700 font-medium">מדינה</Label>
+          <select
+            value={formData.country}
+            onChange={(e) => handleChange('country', e.target.value)}
+            className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+          >
+            <option value="IL">ישראל</option>
+            <option value="US">ארה״ב</option>
+            <option value="GB">בריטניה</option>
+            <option value="FR">צרפת</option>
+            <option value="DE">גרמניה</option>
+          </select>
+        </div>
+      </div>
+
+      {/* City & Address */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label className="text-gray-700 font-medium">עיר</Label>
+          <Input
+            value={formData.city}
+            onChange={(e) => handleChange('city', e.target.value)}
+            placeholder="שם העיר"
+            className="mt-1 bg-white text-gray-900 border-gray-300 placeholder-gray-400"
+          />
+        </div>
+        <div>
+          <Label className="text-gray-700 font-medium">כתובת</Label>
+          <Input
+            value={formData.address}
+            onChange={(e) => handleChange('address', e.target.value)}
+            placeholder="רחוב ומספר"
+            className="mt-1 bg-white text-gray-900 border-gray-300 placeholder-gray-400"
+          />
+        </div>
+      </div>
+
+      {/* Special Requests */}
+      <div>
+        <Label className="text-gray-700 font-medium">בקשות מיוחדות</Label>
+        <textarea
+          value={formData.specialRequests}
+          onChange={(e) => handleChange('specialRequests', e.target.value)}
+          placeholder="אלרגיות, העדפות חדר, וכו׳"
+          rows={3}
+          className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+        />
+      </div>
+
+      {/* Submit Button */}
+      <Button 
+        type="submit" 
+        className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-400 hover:to-red-400 text-white"
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <span className="flex items-center gap-2">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            שומר פרטים...
+          </span>
+        ) : (
+          "המשך לתשלום"
+        )}
+      </Button>
+    </form>
+  )
+}
+
 // Helper function to normalize API rooms to display format
 // Maps Knowaa API results to Scarlet Hotel template room types
 // API Room Mapping (based on actual Knowaa Live results):
@@ -909,18 +1091,93 @@ function ScarletTemplateContent() {
 
       {/* Guest Details Step */}
       {booking.step === 'details' && (
-        <section className="py-12 px-4 max-w-4xl mx-auto">
-          <Card className="bg-gray-900/80 border-red-500/30 p-8">
-            <h2 className="text-3xl font-bold mb-6 text-center bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">
-              פרטי האורח
-            </h2>
-            <GuestDetailsForm 
-              onSubmit={(details) => {
-                booking.setGuestInfo(details)
-              }}
-              isLoading={booking.isLoading}
-            />
-          </Card>
+        <section className="py-12 px-4 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Guest Form - 2 columns */}
+            <div className="md:col-span-2">
+              <Card className="bg-white border-gray-200 p-8 shadow-lg">
+                <h2 className="text-3xl font-bold mb-6 text-center bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
+                  פרטי האורח
+                </h2>
+                <ScarletGuestForm 
+                  onSubmit={(details) => {
+                    booking.setGuestInfo(details)
+                  }}
+                  isLoading={booking.isLoading}
+                />
+              </Card>
+            </div>
+            
+            {/* Booking Summary Sidebar */}
+            <div className="md:col-span-1">
+              <Card className="bg-gray-900 border-pink-500/30 p-6 sticky top-24">
+                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                  📋 סיכום הזמנה
+                </h3>
+                
+                {/* Hotel Info */}
+                <div className="space-y-3 mb-4 pb-4 border-b border-gray-700">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🏨</span>
+                    <div>
+                      <p className="text-white font-semibold">{booking.selectedHotel?.hotelName || 'מלון סקרלט'}</p>
+                      <p className="text-gray-400 text-sm">תל אביב</p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Room Info */}
+                <div className="space-y-2 mb-4 pb-4 border-b border-gray-700">
+                  <div className="flex justify-between text-gray-300">
+                    <span>🛏️ חדר:</span>
+                    <span className="text-white">{booking.selectedRoom?.roomName || booking.selectedRoom?.roomCategory || 'חדר נבחר'}</span>
+                  </div>
+                </div>
+                
+                {/* Dates */}
+                <div className="space-y-2 mb-4 pb-4 border-b border-gray-700">
+                  <div className="flex justify-between text-gray-300">
+                    <span>📅 כניסה:</span>
+                    <span className="text-white">{booking.searchParams?.checkIn ? format(booking.searchParams.checkIn, 'dd/MM/yyyy') : '-'}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-300">
+                    <span>📅 יציאה:</span>
+                    <span className="text-white">{booking.searchParams?.checkOut ? format(booking.searchParams.checkOut, 'dd/MM/yyyy') : '-'}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-300">
+                    <span>🌙 לילות:</span>
+                    <span className="text-white">{booking.nights || 1}</span>
+                  </div>
+                </div>
+                
+                {/* Guests */}
+                <div className="space-y-2 mb-4 pb-4 border-b border-gray-700">
+                  <div className="flex justify-between text-gray-300">
+                    <span>👥 אורחים:</span>
+                    <span className="text-white">{booking.searchParams?.adults || 2} מבוגרים</span>
+                  </div>
+                </div>
+                
+                {/* Price */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-gray-300">
+                    <span>מחיר ללילה:</span>
+                    <span className="text-white">${Math.round((booking.totalPrice || 0) / (booking.nights || 1))}</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-3 border-t border-gray-700">
+                    <span className="text-lg font-semibold text-white">סה״כ לתשלום:</span>
+                    <span className="text-2xl font-bold text-green-400">${booking.totalPrice?.toFixed(2) || '0.00'}</span>
+                  </div>
+                </div>
+                
+                {/* Security Badge */}
+                <div className="mt-4 pt-4 border-t border-gray-700 flex items-center gap-2 text-gray-400 text-sm">
+                  <span>🔒</span>
+                  <span>תשלום מאובטח SSL</span>
+                </div>
+              </Card>
+            </div>
+          </div>
         </section>
       )}
 

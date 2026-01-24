@@ -1,2 +1,9 @@
-[00:00:01.054] Server  WARN     ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
-[00:00:01.217] Server  LOG      ✓ Ready in 895ms
+[00:00:01.866] Server  WARN     ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[00:00:02.080] Server  LOG      ✓ Ready in 1548ms
+[00:00:25.289] Server  LOG      ○ Compiling /templates/scarlet ...
+[00:00:28.008] Server  LOG     === ROOM RENDER ===
+[00:00:28.010] Server  LOG     showApiResults: true
+[00:00:28.011] Server  LOG     scarletSearchResults.length: 0
+[00:00:28.011] Server  LOG     shouldShowApi: false
+[00:00:28.011] Server  LOG     roomsToRender.length: 0
+[00:00:28.012] Server  LOG     First room: undefined

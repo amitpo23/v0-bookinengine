@@ -11,6 +11,7 @@ export interface SearchParams {
   children: number[]
   hotelName?: string
   city?: string
+  hotelId?: string
   limit?: number
 }
 
@@ -111,6 +112,7 @@ export function useBookingEngine() {
           dateFrom: format(params.checkIn, "yyyy-MM-dd"),
           dateTo: format(params.checkOut, "yyyy-MM-dd"),
           hotelName: params.hotelName,
+          hotelId: params.hotelId,
           city: params.city,
           adults: params.adults,
           children: params.children,

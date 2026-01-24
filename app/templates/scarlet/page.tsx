@@ -832,7 +832,9 @@ function ScarletTemplateContent() {
       }
 
       // Filter ONLY Scarlet Hotel Tel Aviv by ID 863233
-      const scarletHotels = searchResult?.filter((hotel: any) => {
+      console.log(`📊 Total API results before filter: ${searchResult?.length || 0}`)
+      
+      let scarletHotels = searchResult?.filter((hotel: any) => {
         const match = isScarletHotel(hotel)
         if (!match && hotel.hotelId) {
           console.log('❌ Filtered out hotel:', hotel.hotelId, hotel.hotelName)
@@ -840,8 +842,45 @@ function ScarletTemplateContent() {
         return match
       }) || []
 
-      console.log(`🎯 Found ${scarletHotels.length} Scarlet Hotel (ID: 863233) results`)
-      console.log('Scarlet hotels:', scarletHotels.map((h: any) => ({ id: h.hotelId, name: h.hotelName })))
+      console.log(`🎯 Found ${scarletHotels.length} Scarlet Hotel (ID: 863233) results after filter`)
+      
+      // Strategy 3: If city search didn't return Scarlet, try direct hotel ID search
+      if (scarletHotels.length === 0 && searchResult && searchResult.length > 0) {
+        console.log('🔍 Strategy 3: Trying direct search by hotel ID 863233...')
+        try {
+          const directSearch = await booking.searchHotels({
+            checkIn: new Date(checkIn),
+            checkOut: new Date(checkOut),
+            adults: guests,
+            children: [],
+            hotelId: "863233"
+          })
+          
+          if (directSearch && directSearch.length > 0) {
+            console.log('✅ Found Scarlet via direct ID search!')
+            const filteredDirect = directSearch.filter(isScarletHotel)
+            if (filteredDirect.length > 0) {
+              scarletHotels = filteredDirect
+            }
+          }
+        } catch (directError) {
+          console.warn('Direct hotel ID search failed:', directError)
+        }
+      }
+      
+      if (scarletHotels.length > 0) {
+        console.log('Scarlet hotels:', scarletHotels.map((h: any) => ({ 
+          id: h.hotelId, 
+          name: h.hotelName, 
+          rooms: h.rooms?.length || 0 
+        })))
+      } else if (searchResult && searchResult.length > 0) {
+        console.warn('⚠️ API returned results but Scarlet (863233) was not found!')
+        console.log('Sample hotels from API:', searchResult.slice(0, 5).map((h: any) => ({ 
+          id: h.hotelId, 
+          name: h.hotelName 
+        })))
+      }
 
       setScarletSearchResults(scarletHotels)
       setShowApiResults(true)
@@ -862,8 +901,14 @@ function ScarletTemplateContent() {
         if (scarletHotels.length > 0 && scarletHotels[0]?.rooms?.length > 0) {
           showToast?.(`נמצאו ${scarletHotels[0].rooms.length} חדרים זמינים במלון סקרלט תל אביב`, 'success')
         } else if (scarletHotels.length === 0) {
+          // No Scarlet Hotel found at all in API results
           console.warn('⚠️ No Scarlet Hotel (863233) found in search results!')
-          showToast?.('מלון סקרלט לא נמצא בתוצאות. נסו תאריכים אחרים.', 'warning')
+          console.log('Total API results:', searchResult?.length || 0)
+          showToast?.('מלון סקרלט לא זמין לתאריכים אלו. נסו תאריכים אחרים.', 'warning')
+        } else if (scarletHotels[0]?.rooms?.length === 0) {
+          // Scarlet found but no rooms available
+          console.warn('⚠️ Scarlet Hotel found but no rooms available')
+          showToast?.('אין חדרים פנויים במלון סקרלט לתאריכים אלו. נסו תאריכים אחרים.', 'warning')
         }
       }
     } catch (err: any) {

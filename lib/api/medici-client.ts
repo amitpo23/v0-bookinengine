@@ -156,6 +156,7 @@ export class MediciApiClient {
   async searchHotels(params: {
     dateFrom: string
     dateTo: string
+    hotelId?: string
     hotelName?: string
     city?: string
     rooms?: Array<{ adults: number; children: number[] }> // Array of rooms
@@ -184,7 +185,10 @@ export class MediciApiClient {
       aetherApplicationKey: KNOWAA_LIVE_AETHER_APP_KEY, // Application key for Knowaa Live
     }
 
-    if (params.hotelName) {
+    if (params.hotelId) {
+      searchBody.hotelId = Number(params.hotelId)
+      console.log("🎯 Direct hotel ID search:", params.hotelId)
+    } else if (params.hotelName) {
       searchBody.hotelName = params.hotelName
     } else if (params.city) {
       searchBody.city = params.city

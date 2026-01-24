@@ -7,25 +7,26 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log("🔥 REAL API - Body received:", JSON.stringify(body, null, 2))
 
-    const { hotelName, city, adults, children, stars, limit } = body
+    const { hotelName, hotelId, city, adults, children, stars, limit } = body
     
     const dateFrom = body.dateFrom || body.checkIn
     const dateTo = body.dateTo || body.checkOut
     const cityParam = body.city || body.destination
 
-    console.log("🔍 Searching Medici API for:", { hotelName, city: cityParam, dateFrom, dateTo })
+    console.log("🔍 Searching Medici API for:", { hotelId, hotelName, city: cityParam, dateFrom, dateTo })
 
     if (!dateFrom || !dateTo) {
       return NextResponse.json({ error: "dateFrom and dateTo are required" }, { status: 400 })
     }
 
-    if (!hotelName && !cityParam) {
-      return NextResponse.json({ error: "Either hotelName or city is required" }, { status: 400 })
+    if (!hotelId && !hotelName && !cityParam) {
+      return NextResponse.json({ error: "Either hotelId, hotelName or city is required" }, { status: 400 })
     }
 
     const results = await mediciApi.searchHotels({
       dateFrom,
       dateTo,
+      hotelId: hotelId || undefined,
       hotelName: hotelName || undefined,
       city: cityParam || undefined,
       adults: adults || 2,

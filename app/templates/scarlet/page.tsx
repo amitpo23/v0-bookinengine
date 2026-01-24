@@ -291,6 +291,7 @@ function ScarletGuestForm({
   onSubmit: (details: any) => void
   isLoading: boolean
 }) {
+  const { t, locale } = useI18n()
   const [formData, setFormData] = useState({
     title: 'mr',
     firstName: '',
@@ -306,10 +307,14 @@ function ScarletGuestForm({
 
   const validate = () => {
     const newErrors: Record<string, string> = {}
-    if (!formData.firstName.trim()) newErrors.firstName = "שדה חובה"
-    if (!formData.lastName.trim()) newErrors.lastName = "שדה חובה"
-    if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) newErrors.email = "אימייל לא תקין"
-    if (!formData.phone.match(/^[\d\-\+\s]{9,15}$/)) newErrors.phone = "טלפון לא תקין"
+    const requiredMsg = locale === 'he' ? 'שדה חובה' : 'Required field'
+    const invalidEmailMsg = locale === 'he' ? 'אימייל לא תקין' : 'Invalid email'
+    const invalidPhoneMsg = locale === 'he' ? 'טלפון לא תקין' : 'Invalid phone'
+    
+    if (!formData.firstName.trim()) newErrors.firstName = requiredMsg
+    if (!formData.lastName.trim()) newErrors.lastName = requiredMsg
+    if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) newErrors.email = invalidEmailMsg
+    if (!formData.phone.match(/^[\d\-\+\s]{9,15}$/)) newErrors.phone = invalidPhoneMsg
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -333,23 +338,23 @@ function ScarletGuestForm({
       {/* Title & First Name */}
       <div className="grid grid-cols-4 gap-4">
         <div>
-          <Label className="text-gray-700 font-medium">תואר *</Label>
+          <Label className="text-gray-700 font-medium">{locale === 'he' ? 'תואר' : 'Title'} *</Label>
           <select
             value={formData.title}
             onChange={(e) => handleChange('title', e.target.value)}
             className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
           >
-            <option value="mr">מר</option>
-            <option value="mrs">גברת</option>
-            <option value="ms">גב׳</option>
+            <option value="mr">{locale === 'he' ? 'מר' : 'Mr'}</option>
+            <option value="mrs">{locale === 'he' ? 'גברת' : 'Mrs'}</option>
+            <option value="ms">{locale === 'he' ? 'גב׳' : 'Ms'}</option>
           </select>
         </div>
         <div className="col-span-3">
-          <Label className="text-gray-700 font-medium">שם פרטי *</Label>
+          <Label className="text-gray-700 font-medium">{locale === 'he' ? 'שם פרטי' : 'First Name'} *</Label>
           <Input
             value={formData.firstName}
             onChange={(e) => handleChange('firstName', e.target.value)}
-            placeholder="הכנס שם פרטי"
+            placeholder={locale === 'he' ? 'הכנס שם פרטי' : 'Enter first name'}
             className={`mt-1 bg-white text-gray-900 border-gray-300 placeholder-gray-400 ${errors.firstName ? "border-red-500" : ""}`}
           />
           {errors.firstName && <p className="text-xs text-red-500 mt-1">{errors.firstName}</p>}
@@ -359,17 +364,17 @@ function ScarletGuestForm({
       {/* Last Name & Email */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label className="text-gray-700 font-medium">שם משפחה *</Label>
+          <Label className="text-gray-700 font-medium">{locale === 'he' ? 'שם משפחה' : 'Last Name'} *</Label>
           <Input
             value={formData.lastName}
             onChange={(e) => handleChange('lastName', e.target.value)}
-            placeholder="הכנס שם משפחה"
+            placeholder={locale === 'he' ? 'הכנס שם משפחה' : 'Enter last name'}
             className={`mt-1 bg-white text-gray-900 border-gray-300 placeholder-gray-400 ${errors.lastName ? "border-red-500" : ""}`}
           />
           {errors.lastName && <p className="text-xs text-red-500 mt-1">{errors.lastName}</p>}
         </div>
         <div>
-          <Label className="text-gray-700 font-medium">דוא״ל *</Label>
+          <Label className="text-gray-700 font-medium">{locale === 'he' ? 'דוא״ל' : 'Email'} *</Label>
           <Input
             type="email"
             value={formData.email}
@@ -385,7 +390,7 @@ function ScarletGuestForm({
       {/* Phone & Country */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label className="text-gray-700 font-medium">טלפון *</Label>
+          <Label className="text-gray-700 font-medium">{locale === 'he' ? 'טלפון' : 'Phone'} *</Label>
           <Input
             type="tel"
             value={formData.phone}
@@ -397,17 +402,17 @@ function ScarletGuestForm({
           {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone}</p>}
         </div>
         <div>
-          <Label className="text-gray-700 font-medium">מדינה</Label>
+          <Label className="text-gray-700 font-medium">{locale === 'he' ? 'מדינה' : 'Country'}</Label>
           <select
             value={formData.country}
             onChange={(e) => handleChange('country', e.target.value)}
             className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
           >
-            <option value="IL">ישראל</option>
-            <option value="US">ארה״ב</option>
-            <option value="GB">בריטניה</option>
-            <option value="FR">צרפת</option>
-            <option value="DE">גרמניה</option>
+            <option value="IL">{locale === 'he' ? 'ישראל' : 'Israel'}</option>
+            <option value="US">{locale === 'he' ? 'ארה״ב' : 'United States'}</option>
+            <option value="GB">{locale === 'he' ? 'בריטניה' : 'United Kingdom'}</option>
+            <option value="FR">{locale === 'he' ? 'צרפת' : 'France'}</option>
+            <option value="DE">{locale === 'he' ? 'גרמניה' : 'Germany'}</option>
           </select>
         </div>
       </div>
@@ -415,20 +420,20 @@ function ScarletGuestForm({
       {/* City & Address */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label className="text-gray-700 font-medium">עיר</Label>
+          <Label className="text-gray-700 font-medium">{locale === 'he' ? 'עיר' : 'City'}</Label>
           <Input
             value={formData.city}
             onChange={(e) => handleChange('city', e.target.value)}
-            placeholder="שם העיר"
+            placeholder={locale === 'he' ? 'שם העיר' : 'City name'}
             className="mt-1 bg-white text-gray-900 border-gray-300 placeholder-gray-400"
           />
         </div>
         <div>
-          <Label className="text-gray-700 font-medium">כתובת</Label>
+          <Label className="text-gray-700 font-medium">{locale === 'he' ? 'כתובת' : 'Address'}</Label>
           <Input
             value={formData.address}
             onChange={(e) => handleChange('address', e.target.value)}
-            placeholder="רחוב ומספר"
+            placeholder={locale === 'he' ? 'רחוב ומספר' : 'Street and number'}
             className="mt-1 bg-white text-gray-900 border-gray-300 placeholder-gray-400"
           />
         </div>
@@ -436,11 +441,11 @@ function ScarletGuestForm({
 
       {/* Special Requests */}
       <div>
-        <Label className="text-gray-700 font-medium">בקשות מיוחדות</Label>
+        <Label className="text-gray-700 font-medium">{locale === 'he' ? 'בקשות מיוחדות' : 'Special Requests'}</Label>
         <textarea
           value={formData.specialRequests}
           onChange={(e) => handleChange('specialRequests', e.target.value)}
-          placeholder="אלרגיות, העדפות חדר, וכו׳"
+          placeholder={locale === 'he' ? 'אלרגיות, העדפות חדר, וכו׳' : 'Allergies, room preferences, etc.'}
           rows={3}
           className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
         />
@@ -455,10 +460,10 @@ function ScarletGuestForm({
         {isLoading ? (
           <span className="flex items-center gap-2">
             <Loader2 className="w-5 h-5 animate-spin" />
-            שומר פרטים...
+            {locale === 'he' ? 'שומר פרטים...' : 'Saving details...'}
           </span>
         ) : (
-          "המשך לתשלום"
+          locale === 'he' ? 'המשך לתשלום' : 'Continue to Payment'
         )}
       </Button>
     </form>
@@ -1206,7 +1211,7 @@ function ScarletTemplateContent() {
             <div className="md:col-span-2">
               <Card className="bg-white border-gray-200 p-8 shadow-lg">
                 <h2 className="text-3xl font-bold mb-6 text-center bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
-                  פרטי האורח
+                  {locale === 'he' ? 'פרטי האורח' : 'Guest Details'}
                 </h2>
                 <ScarletGuestForm 
                   onSubmit={(details) => {
@@ -1254,7 +1259,7 @@ function ScarletTemplateContent() {
             <div className="md:col-span-1">
               <Card className="bg-gray-900 border-pink-500/30 p-6 sticky top-24">
                 <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                  📋 סיכום הזמנה
+                  📋 {locale === 'he' ? 'סיכום הזמנה' : 'Booking Summary'}
                 </h3>
                 
                 {/* Hotel Info */}
@@ -1262,8 +1267,8 @@ function ScarletTemplateContent() {
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">🏨</span>
                     <div>
-                      <p className="text-white font-semibold">{booking.selectedHotel?.hotelName || 'מלון סקרלט'}</p>
-                      <p className="text-gray-400 text-sm">תל אביב</p>
+                      <p className="text-white font-semibold">{locale === 'he' ? 'מלון סקרלט' : 'Scarlet Hotel'}</p>
+                      <p className="text-gray-400 text-sm">{locale === 'he' ? 'תל אביב' : 'Tel Aviv'}</p>
                     </div>
                   </div>
                 </div>

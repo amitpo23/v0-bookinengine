@@ -533,8 +533,8 @@ ${scarletKnowledgeBase.faq.map((faq: any) => `ש: ${faq.q}\nת: ${faq.a}`).join(
 [SEARCH]{"dateFrom": "${new Date().getFullYear()}-02-03", "dateTo": "${new Date().getFullYear()}-02-04", "adults": 2, "children": [], "city": "Tel Aviv"}[/SEARCH]
 
 התאריך היום: ${today}
-מזהה מלון ב-API: 850086
-שם מלון ב-API: Dave Gordon TLV
+מזהה מלון ב-API: 863233
+שם מלון ב-API: Scarlet Hotel Tel Aviv
 
 **זכור: אתה מייצג אך ורק את מלון סקרלט תל אביב. אל תציע אלטרנטיבות ואל תדבר על מלונות אחרים בשום מצב!**
 `

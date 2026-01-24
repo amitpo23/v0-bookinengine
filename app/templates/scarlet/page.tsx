@@ -541,48 +541,47 @@ function ScarletTemplateContent() {
   const { t, locale, dir } = useI18n()
   
   // Helper function to check if a hotel is Scarlet Hotel Tel Aviv
-  // Based on API test results: 
-  // - "Scarlet Hotel" at "J. L. Gordon St 17" (lat:32.08, lon:34.77)
-  // - "Dave Gordon TLV" at "17 J.L Gordon St." (lat:32.08, lon:34.77) - SAME LOCATION!
+  // CRITICAL: Only accept hotel ID 863233 from Static Data API
   const isScarletHotel = (hotel: any) => {
     if (!hotel) return false
+    
+    // PRIMARY CHECK: Hotel ID must be exactly 863233
+    const hotelId = String(hotel.hotelId || hotel.id || '')
+    if (hotelId === '863233') {
+      console.log('✅ Scarlet Hotel found by ID:', hotelId, hotel.hotelName)
+      return true
+    }
+    
+    // FALLBACK: Check name only if ID check fails (but log warning)
     const hotelName = (hotel.hotelName || hotel.name || '').toLowerCase()
     const address = (hotel.address || '').toLowerCase()
     
-    // Check for Scarlet name
     const hasScarletName = hotelName.includes('scarlet')
-    
-    // Check for Dave Gordon (same hotel, different API name)
     const isDaveGordon = hotelName.includes('dave gordon') || hotelName.includes('gordon tlv')
-    
-    // Check if it's at Gordon Street address (both hotels are at Gordon St 17)
     const isGordonStreetAddress = (
       address.includes('j. l. gordon') ||
       address.includes('gordon st 17') ||
       address.includes('j.l gordon')
     )
-    
-    // Check for Tel Aviv location
     const isTelAvivLocation = (
       hotelName.includes('tel aviv') ||
       hotelName.includes('tlv') ||
       address.includes('tel aviv')
     )
-    
-    // Exclude Singapore Scarlet (33 ERSKINE ROAD)
     const isSingaporeScarlet = address.includes('erskine road')
 
-    // Accept either:
-    // 1. "Scarlet Hotel" at Gordon Street / Tel Aviv
-    // 2. "Dave Gordon TLV" (same location as Scarlet)
-    return (
+    const isMatch = (
       !isSingaporeScarlet && (
-        // Scarlet at Gordon St or Tel Aviv
-        (hasScarletName && (isGordonStreetAddress || isTelAvivLocation || hotelName === 'scarlet hotel')) ||
-        // Dave Gordon (same physical hotel)
+        (hasScarletName && (isGordonStreetAddress || isTelAvivLocation)) ||
         isDaveGordon
       )
     )
+    
+    if (isMatch) {
+      console.warn('⚠️ Scarlet matched by name/address (no ID match):', hotelId, hotel.hotelName)
+    }
+    
+    return isMatch
   }
   
   // Get filtered Scarlet results
@@ -764,16 +763,6 @@ function ScarletTemplateContent() {
     }
   }, [checkIn])
 
-  // Keep scarlet results in sync with booking search results (so UI always shows live API data)
-  useEffect(() => {
-    if (!booking.searchResults || booking.searchResults.length === 0) return
-    const scarletHotels = booking.searchResults.filter(isScarletHotel)
-    if (scarletHotels.length > 0) {
-      setScarletSearchResults(scarletHotels)
-      setShowApiResults(true)
-    }
-  }, [booking.searchResults])
-
   // Auto-run search once dates exist (so Scarlet page renders live data on load)
   useEffect(() => {
     console.log('Auto search effect - checkIn:', checkIn, 'checkOut:', checkOut, 'hasAutoSearched:', hasAutoSearched)
@@ -842,12 +831,17 @@ function ScarletTemplateContent() {
         }
       }
 
-      // Filter ONLY Scarlet Hotel Tel Aviv (not Singapore)
+      // Filter ONLY Scarlet Hotel Tel Aviv by ID 863233
       const scarletHotels = searchResult?.filter((hotel: any) => {
-        return isScarletHotel(hotel)
+        const match = isScarletHotel(hotel)
+        if (!match && hotel.hotelId) {
+          console.log('❌ Filtered out hotel:', hotel.hotelId, hotel.hotelName)
+        }
+        return match
       }) || []
 
-      console.log(`🎯 Found ${scarletHotels.length} Scarlet Hotel Tel Aviv results`)
+      console.log(`🎯 Found ${scarletHotels.length} Scarlet Hotel (ID: 863233) results`)
+      console.log('Scarlet hotels:', scarletHotels.map((h: any) => ({ id: h.hotelId, name: h.hotelName })))
 
       setScarletSearchResults(scarletHotels)
       setShowApiResults(true)
@@ -867,6 +861,9 @@ function ScarletTemplateContent() {
       if (!silent) {
         if (scarletHotels.length > 0 && scarletHotels[0]?.rooms?.length > 0) {
           showToast?.(`נמצאו ${scarletHotels[0].rooms.length} חדרים זמינים במלון סקרלט תל אביב`, 'success')
+        } else if (scarletHotels.length === 0) {
+          console.warn('⚠️ No Scarlet Hotel (863233) found in search results!')
+          showToast?.('מלון סקרלט לא נמצא בתוצאות. נסו תאריכים אחרים.', 'warning')
         }
       }
     } catch (err: any) {

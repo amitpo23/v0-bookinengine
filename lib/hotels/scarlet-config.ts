@@ -229,7 +229,7 @@ export const scarletRoomTypes = [
 ]
 
 export const scarletHotelConfig = {
-  hotelId: "scarlet-tlv",
+  hotelId: "850086",
   name: "Scarlet Hotel Tel Aviv",
   hebrewName: "מלון סקרלט תל אביב",
   tagline: "Where Urban Meets Romance",

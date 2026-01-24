@@ -117,6 +117,12 @@
       "namedRegex": "^/admin/rbac(?:/)?$"
     },
     {
+      "page": "/admin/scarlet",
+      "regex": "^/admin/scarlet(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/scarlet(?:/)?$"
+    },
+    {
       "page": "/admin/upload-images",
       "regex": "^/admin/upload\\-images(?:/)?$",
       "routeKeys": {},
@@ -145,6 +151,12 @@
       "regex": "^/ai\\-engines/chat(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/ai\\-engines/chat(?:/)?$"
+    },
+    {
+      "page": "/api/admin/abandoned-bookings",
+      "regex": "^/api/admin/abandoned\\-bookings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/abandoned\\-bookings(?:/)?$"
     },
     {
       "page": "/api/admin/activity",
@@ -199,6 +211,18 @@
       "regex": "^/api/admin/stats(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/admin/stats(?:/)?$"
+    },
+    {
+      "page": "/api/admin/template-logs",
+      "regex": "^/api/admin/template\\-logs(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/template\\-logs(?:/)?$"
+    },
+    {
+      "page": "/api/admin/template-settings",
+      "regex": "^/api/admin/template\\-settings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/template\\-settings(?:/)?$"
     },
     {
       "page": "/api/affiliate/convert",

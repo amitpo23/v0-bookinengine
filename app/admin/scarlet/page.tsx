@@ -81,6 +81,15 @@ import {
   Laptop,
   Globe2,
   Activity,
+  Bot,
+  User,
+  MessageCircle,
+  ThumbsUp,
+  ThumbsDown,
+  ArrowDownToLine,
+  Star,
+  Tablet,
+  MessageSquare,
 } from "lucide-react"
 import { format, differenceInDays, subDays } from "date-fns"
 import { he } from "date-fns/locale"
@@ -189,6 +198,35 @@ interface ScarletVisit {
   duration: number // seconds
   converted: boolean
   bookingValue?: number
+}
+
+interface ChatMessage {
+  id: string
+  role: "user" | "assistant"
+  content: string
+  timestamp: string
+  skill?: string
+}
+
+interface AIChatConversation {
+  id: string
+  sessionId: string
+  guestName?: string
+  guestEmail?: string
+  guestPhone?: string
+  startedAt: string
+  endedAt?: string
+  messageCount: number
+  messages: ChatMessage[]
+  topics: string[]
+  sentiment: "positive" | "neutral" | "negative"
+  leadToBooking: boolean
+  bookingId?: string
+  bookingValue?: number
+  device: "desktop" | "mobile" | "tablet"
+  source: string
+  rating?: number
+  feedback?: string
 }
 
 // ============= MOCK DATA =============
@@ -461,6 +499,118 @@ const mockVisits: ScarletVisit[] = [
     pageViews: 6,
     duration: 290,
     converted: false,
+  },
+]
+
+const mockAIChatConversations: AIChatConversation[] = [
+  {
+    id: "chat_1",
+    sessionId: "sess_abc123",
+    guestName: "יעל כהן",
+    guestEmail: "yael@example.com",
+    guestPhone: "050-1234567",
+    startedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+    endedAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+    messageCount: 12,
+    messages: [
+      { id: "m1", role: "assistant", content: "שלום! 👋 אני סקרלט, העוזרת הדיגיטלית של המלון. איך אוכל לעזור לך?", timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString() },
+      { id: "m2", role: "user", content: "היי, אני מחפשת חדר לסופ\"ש הקרוב ל-2 אנשים", timestamp: new Date(Date.now() - 29 * 60 * 1000).toISOString() },
+      { id: "m3", role: "assistant", content: "בשמחה! מצאתי 5 חדרים זמינים לסוף השבוע. החדר המומלץ שלי הוא סוויטת דלוקס עם נוף לים במחיר מיוחד של ₪2,500 ללילה. האם תרצי לשמוע פרטים נוספים?", timestamp: new Date(Date.now() - 28 * 60 * 1000).toISOString(), skill: "availabilityCheck" },
+      { id: "m4", role: "user", content: "כן, ומה כלול בחבילה?", timestamp: new Date(Date.now() - 27 * 60 * 1000).toISOString() },
+      { id: "m5", role: "assistant", content: "סוויטת הדלוקס כוללת: ארוחת בוקר בופה עשיר, גישה חופשית לספא ובריכה, חנייה חינם, ו-WiFi מהיר. יש לנו גם חבילה רומנטית שכוללת שמפניה ופירות בחדר 🍾", timestamp: new Date(Date.now() - 26 * 60 * 1000).toISOString(), skill: "roomRecommendation" },
+      { id: "m6", role: "user", content: "נשמע מעולה! אני רוצה להזמין עם החבילה הרומנטית", timestamp: new Date(Date.now() - 20 * 60 * 1000).toISOString() },
+    ],
+    topics: ["זמינות", "מחירים", "חבילות רומנטיות", "הזמנה"],
+    sentiment: "positive",
+    leadToBooking: true,
+    bookingId: "BK-2026-001",
+    bookingValue: 5200,
+    device: "mobile",
+    source: "direct",
+    rating: 5,
+    feedback: "שירות מעולה ומהיר!"
+  },
+  {
+    id: "chat_2",
+    sessionId: "sess_def456",
+    guestName: "דוד לוי",
+    startedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    endedAt: new Date(Date.now() - 1.5 * 60 * 60 * 1000).toISOString(),
+    messageCount: 8,
+    messages: [
+      { id: "m1", role: "assistant", content: "שלום! 👋 אני סקרלט, העוזרת הדיגיטלית של המלון. איך אוכל לעזור לך?", timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
+      { id: "m2", role: "user", content: "מה המדיניות לגבי ביטול הזמנה?", timestamp: new Date(Date.now() - 119 * 60 * 1000).toISOString() },
+      { id: "m3", role: "assistant", content: "מדיניות הביטול שלנו מאפשרת ביטול חינם עד 48 שעות לפני הצ'ק-אין. לאחר מכן, יחויב לילה ראשון. האם יש לך הזמנה קיימת שתרצה לבטל?", timestamp: new Date(Date.now() - 118 * 60 * 1000).toISOString() },
+      { id: "m4", role: "user", content: "לא, רק רציתי לדעת לפני שאזמין. תודה!", timestamp: new Date(Date.now() - 115 * 60 * 1000).toISOString() },
+    ],
+    topics: ["מדיניות ביטולים", "שאלות כלליות"],
+    sentiment: "neutral",
+    leadToBooking: false,
+    device: "desktop",
+    source: "google",
+  },
+  {
+    id: "chat_3",
+    sessionId: "sess_ghi789",
+    guestName: "מיכל אברהם",
+    guestEmail: "michal@example.com",
+    startedAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+    endedAt: new Date(Date.now() - 3.5 * 60 * 60 * 1000).toISOString(),
+    messageCount: 15,
+    messages: [
+      { id: "m1", role: "assistant", content: "שלום! 👋 אני סקרלט, העוזרת הדיגיטלית של המלון. איך אוכל לעזור לך?", timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString() },
+      { id: "m2", role: "user", content: "האם יש לכם חדרים מתאימים למשפחה עם 2 ילדים?", timestamp: new Date(Date.now() - 239 * 60 * 1000).toISOString() },
+      { id: "m3", role: "assistant", content: "בהחלט! יש לנו חדר משפחתי מרווח עם 2 מיטות זוגיות, מתאים עד 4 אורחים. החדר כולל מקלחת גדולה, טלויזיה עם ערוצי ילדים, ומיני בר. יש גם אפשרות לעריסה בחינם. המחיר ₪1,800 ללילה.", timestamp: new Date(Date.now() - 238 * 60 * 1000).toISOString(), skill: "roomRecommendation" },
+      { id: "m4", role: "user", content: "מעולה! יש הנחה למשפחות?", timestamp: new Date(Date.now() - 235 * 60 * 1000).toISOString() },
+      { id: "m5", role: "assistant", content: "יש לנו מבצע משפחתי! 🎉 הזמנה של 3 לילות ומעלה מקבלת 15% הנחה + ארוחת ערב חינם לילדים עד גיל 12. הקוד: FAMILY15", timestamp: new Date(Date.now() - 234 * 60 * 1000).toISOString(), skill: "promotionsManager" },
+    ],
+    topics: ["חדרי משפחה", "הנחות", "מבצעים", "ילדים"],
+    sentiment: "positive",
+    leadToBooking: true,
+    bookingId: "BK-2026-002",
+    bookingValue: 4590,
+    device: "tablet",
+    source: "facebook",
+    rating: 4,
+  },
+  {
+    id: "chat_4",
+    sessionId: "sess_jkl012",
+    startedAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+    messageCount: 3,
+    messages: [
+      { id: "m1", role: "assistant", content: "שלום! 👋 אני סקרלט, העוזרת הדיגיטלית של המלון. איך אוכל לעזור לך?", timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString() },
+      { id: "m2", role: "user", content: "מה השעות של הספא?", timestamp: new Date(Date.now() - 359 * 60 * 1000).toISOString() },
+      { id: "m3", role: "assistant", content: "הספא שלנו פתוח בימים א'-ה' בין 08:00-22:00, ובסופי שבוע 07:00-23:00. יש לנו מגוון טיפולים - עיסוי שוודי, טיפולי פנים, וחבילות זוגיות. רוצה שאשלח לך את תפריט הטיפולים? 💆", timestamp: new Date(Date.now() - 358 * 60 * 1000).toISOString(), skill: "localExpert" },
+    ],
+    topics: ["ספא", "שעות פעילות"],
+    sentiment: "neutral",
+    leadToBooking: false,
+    device: "mobile",
+    source: "instagram",
+  },
+  {
+    id: "chat_5",
+    sessionId: "sess_mno345",
+    guestName: "אורי שמש",
+    guestEmail: "ori@business.com",
+    guestPhone: "054-9876543",
+    startedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+    messageCount: 18,
+    messages: [
+      { id: "m1", role: "assistant", content: "שלום! 👋 אני סקרלט, העוזרת הדיגיטלית של המלון. איך אוכל לעזור לך?", timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString() },
+      { id: "m2", role: "user", content: "אני צריך לארגן כנס עסקי ל-50 משתתפים", timestamp: new Date(Date.now() - 59 * 60 * 1000).toISOString() },
+      { id: "m3", role: "assistant", content: "מעולה! יש לנו אולם כנסים מרווח שמתאים עד 80 אנשים, כולל ציוד AV מלא, WiFi מהיר, וקפה מתמשך. אנחנו גם מציעים חבילות לינה לקבוצות עם הנחה של 20%. באיזה תאריך אתם מתכננים?", timestamp: new Date(Date.now() - 58 * 60 * 1000).toISOString(), skill: "specialRequests" },
+    ],
+    topics: ["כנסים", "אירועים עסקיים", "הזמנות קבוצתיות"],
+    sentiment: "positive",
+    leadToBooking: true,
+    bookingId: "BK-2026-003",
+    bookingValue: 28500,
+    device: "desktop",
+    source: "linkedin",
+    rating: 5,
+    feedback: "הבוט עזר מאוד בתכנון הכנס!"
   },
 ]
 
@@ -1340,6 +1490,349 @@ function VisitsTab({ visits }: { visits: ScarletVisit[] }) {
   )
 }
 
+// ============= AI CHAT CONVERSATIONS TAB =============
+function ChatConversationsTab({ conversations }: { conversations: AIChatConversation[] }) {
+  const [selectedConversation, setSelectedConversation] = useState<AIChatConversation | null>(null)
+  const [topicFilter, setTopicFilter] = useState<string>("all")
+  const [outcomeFilter, setOutcomeFilter] = useState<string>("all")
+  const [dialogOpen, setDialogOpen] = useState(false)
+
+  // Get all unique topics
+  const allTopics = [...new Set(conversations.flatMap(c => c.topics))]
+
+  const filteredConversations = conversations.filter(c => {
+    const matchesTopic = topicFilter === "all" || c.topics.includes(topicFilter)
+    const matchesOutcome = outcomeFilter === "all" || 
+      (outcomeFilter === "booking" && c.leadToBooking) ||
+      (outcomeFilter === "no-booking" && !c.leadToBooking)
+    return matchesTopic && matchesOutcome
+  })
+
+  // Calculate stats
+  const stats = {
+    totalConversations: conversations.length,
+    avgMessages: Math.round(conversations.reduce((sum, c) => sum + c.messageCount, 0) / conversations.length) || 0,
+    conversionRate: Math.round((conversations.filter(c => c.leadToBooking).length / conversations.length) * 100) || 0,
+    avgRating: (conversations.filter(c => c.rating).reduce((sum, c) => sum + (c.rating || 0), 0) / conversations.filter(c => c.rating).length).toFixed(1) || "N/A",
+    totalRevenue: conversations.filter(c => c.bookingValue).reduce((sum, c) => sum + (c.bookingValue || 0), 0),
+  }
+
+  const getSentimentBadge = (sentiment: string) => {
+    switch (sentiment) {
+      case "positive":
+        return <Badge className="bg-green-100 text-green-700">חיובי</Badge>
+      case "negative":
+        return <Badge className="bg-red-100 text-red-700">שלילי</Badge>
+      default:
+        return <Badge className="bg-gray-100 text-gray-700">ניטרלי</Badge>
+    }
+  }
+
+  const getDeviceIcon = (device: string) => {
+    switch (device) {
+      case "mobile": return Smartphone
+      case "tablet": return Tablet
+      default: return Monitor
+    }
+  }
+
+  const openConversation = (conversation: AIChatConversation) => {
+    setSelectedConversation(conversation)
+    setDialogOpen(true)
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <MessageCircle className="h-5 w-5 text-purple-500" />
+              <div>
+                <p className="text-sm text-muted-foreground">שיחות</p>
+                <p className="text-2xl font-bold">{stats.totalConversations}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-blue-500" />
+              <div>
+                <p className="text-sm text-muted-foreground">ממוצע הודעות</p>
+                <p className="text-2xl font-bold">{stats.avgMessages}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-green-500" />
+              <div>
+                <p className="text-sm text-muted-foreground">שיעור המרה</p>
+                <p className="text-2xl font-bold">{stats.conversionRate}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Star className="h-5 w-5 text-yellow-500" />
+              <div>
+                <p className="text-sm text-muted-foreground">דירוג ממוצע</p>
+                <p className="text-2xl font-bold">{stats.avgRating}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-emerald-500" />
+              <div>
+                <p className="text-sm text-muted-foreground">הכנסות משיחות</p>
+                <p className="text-2xl font-bold">₪{stats.totalRevenue.toLocaleString()}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Conversations List */}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col md:flex-row justify-between gap-4">
+            <CardTitle className="flex items-center gap-2">
+              <Bot className="h-5 w-5" />
+              שיחות AI
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Select value={topicFilter} onValueChange={setTopicFilter}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="כל הנושאים" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כל הנושאים</SelectItem>
+                  {allTopics.map(topic => (
+                    <SelectItem key={topic} value={topic}>{topic}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={outcomeFilter} onValueChange={setOutcomeFilter}>
+                <SelectTrigger className="w-[130px]">
+                  <SelectValue placeholder="כל התוצאות" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">הכל</SelectItem>
+                  <SelectItem value="booking">הזמנה</SelectItem>
+                  <SelectItem value="no-booking">ללא הזמנה</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="icon">
+                <ArrowDownToLine className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>זמן</TableHead>
+                <TableHead>אורח</TableHead>
+                <TableHead>הודעות</TableHead>
+                <TableHead>נושאים</TableHead>
+                <TableHead>סנטימנט</TableHead>
+                <TableHead>מכשיר</TableHead>
+                <TableHead>תוצאה</TableHead>
+                <TableHead>דירוג</TableHead>
+                <TableHead></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredConversations.map(conversation => {
+                const DeviceIcon = getDeviceIcon(conversation.device)
+                return (
+                  <TableRow key={conversation.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openConversation(conversation)}>
+                    <TableCell>
+                      {format(new Date(conversation.startedAt), "HH:mm dd/MM", { locale: he })}
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{conversation.guestName || "אנונימי"}</div>
+                        {conversation.guestEmail && (
+                          <div className="text-xs text-muted-foreground">{conversation.guestEmail}</div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{conversation.messageCount}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {conversation.topics.slice(0, 2).map(topic => (
+                          <Badge key={topic} variant="outline" className="text-xs">{topic}</Badge>
+                        ))}
+                        {conversation.topics.length > 2 && (
+                          <Badge variant="outline" className="text-xs">+{conversation.topics.length - 2}</Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>{getSentimentBadge(conversation.sentiment)}</TableCell>
+                    <TableCell>
+                      <DeviceIcon className="h-4 w-4" />
+                    </TableCell>
+                    <TableCell>
+                      {conversation.leadToBooking ? (
+                        <div className="flex items-center gap-1">
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <span className="text-green-600 font-medium text-sm">
+                            ₪{conversation.bookingValue?.toLocaleString()}
+                          </span>
+                        </div>
+                      ) : (
+                        <XCircle className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {conversation.rating ? (
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                          <span>{conversation.rating}</span>
+                        </div>
+                      ) : "-"}
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); openConversation(conversation); }}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Conversation Detail Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto" dir="rtl">
+          {selectedConversation && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <MessageCircle className="h-5 w-5" />
+                  שיחה עם {selectedConversation.guestName || "אורח אנונימי"}
+                </DialogTitle>
+              </DialogHeader>
+              
+              {/* Conversation Meta */}
+              <div className="grid grid-cols-2 gap-4 py-4 border-b">
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">התחלה</p>
+                  <p>{format(new Date(selectedConversation.startedAt), "HH:mm dd/MM/yyyy", { locale: he })}</p>
+                </div>
+                {selectedConversation.guestEmail && (
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">אימייל</p>
+                    <p>{selectedConversation.guestEmail}</p>
+                  </div>
+                )}
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">מקור</p>
+                  <Badge variant="outline">{selectedConversation.source}</Badge>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">תוצאה</p>
+                  {selectedConversation.leadToBooking ? (
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <span className="text-green-600 font-medium">
+                        הזמנה #{selectedConversation.bookingId} - ₪{selectedConversation.bookingValue?.toLocaleString()}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">ללא הזמנה</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Messages */}
+              <div className="space-y-4 py-4">
+                <h4 className="font-medium">הודעות ({selectedConversation.messages.length})</h4>
+                <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                  {selectedConversation.messages.map(message => (
+                    <div 
+                      key={message.id}
+                      className={`flex gap-3 ${message.role === "user" ? "flex-row-reverse" : ""}`}
+                    >
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        message.role === "assistant" ? "bg-purple-100" : "bg-blue-100"
+                      }`}>
+                        {message.role === "assistant" ? (
+                          <Bot className="h-4 w-4 text-purple-600" />
+                        ) : (
+                          <User className="h-4 w-4 text-blue-600" />
+                        )}
+                      </div>
+                      <div className={`flex-1 max-w-[80%] ${message.role === "user" ? "text-right" : ""}`}>
+                        <div className={`p-3 rounded-lg ${
+                          message.role === "assistant" 
+                            ? "bg-muted" 
+                            : "bg-blue-500 text-white"
+                        }`}>
+                          <p className="whitespace-pre-wrap">{message.content}</p>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                          <span>{format(new Date(message.timestamp), "HH:mm", { locale: he })}</span>
+                          {message.skill && (
+                            <Badge variant="outline" className="text-xs">{message.skill}</Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Feedback */}
+              {(selectedConversation.rating || selectedConversation.feedback) && (
+                <div className="border-t pt-4">
+                  <h4 className="font-medium mb-2">משוב</h4>
+                  <div className="flex items-center gap-4">
+                    {selectedConversation.rating && (
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <Star
+                            key={star}
+                            className={`h-5 w-5 ${
+                              star <= selectedConversation.rating! 
+                                ? "text-yellow-500 fill-yellow-500" 
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    {selectedConversation.feedback && (
+                      <p className="text-muted-foreground">"{selectedConversation.feedback}"</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
+
 function SettingsTab({ 
   settings, 
   onSave 
@@ -1746,7 +2239,7 @@ export default function ScarletAdminPage() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-6 mb-6">
+          <TabsList className="grid w-full grid-cols-7 mb-6">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               סקירה
@@ -1762,6 +2255,10 @@ export default function ScarletAdminPage() {
             <TabsTrigger value="abandoned" className="flex items-center gap-2">
               <ShoppingCart className="h-4 w-4" />
               נטושות
+            </TabsTrigger>
+            <TabsTrigger value="ai-chat" className="flex items-center gap-2">
+              <Bot className="h-4 w-4" />
+              שיחות AI
             </TabsTrigger>
             <TabsTrigger value="promotions" className="flex items-center gap-2">
               <Tag className="h-4 w-4" />
@@ -1928,6 +2425,11 @@ export default function ScarletAdminPage() {
           {/* Abandoned Tab */}
           <TabsContent value="abandoned">
             <AbandonedBookingsTab bookings={mockAbandonedBookings} />
+          </TabsContent>
+
+          {/* AI Chat Conversations Tab */}
+          <TabsContent value="ai-chat">
+            <ChatConversationsTab conversations={mockAIChatConversations} />
           </TabsContent>
 
           {/* Promotions Tab */}

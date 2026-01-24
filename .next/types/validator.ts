@@ -434,6 +434,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../app/api/admin/chat-conversations/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/chat-conversations">> = Specific
+  const handler = {} as typeof import("../../app/api/admin/chat-conversations/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../app/api/admin/email/route.ts
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/email">> = Specific
@@ -483,6 +492,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/template-settings">> = Specific
   const handler = {} as typeof import("../../app/api/admin/template-settings/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/api/admin/visits/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/visits">> = Specific
+  const handler = {} as typeof import("../../app/api/admin/visits/route.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check

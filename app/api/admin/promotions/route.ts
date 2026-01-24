@@ -1,10 +1,31 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { addPromotion, updatePromotion, deletePromotion, getAllPromotions } from "@/lib/promotions/promotions-db"
 import type { Promotion } from "@/lib/promotions/types"
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams
+  const template = searchParams.get("template")
+  
   const promotions = getAllPromotions()
-  return NextResponse.json({ success: true, data: promotions })
+  
+  // Transform to expected format for admin
+  const formattedPromotions = promotions.map(p => ({
+    id: p.id,
+    code: p.id,
+    title: p.title,
+    description: p.description,
+    discountType: p.discountType,
+    discountValue: p.discountValue,
+    minNights: p.minNights,
+    validFrom: p.validFrom,
+    validTo: p.validTo,
+    usageCount: 0, // Not tracked yet
+    maxUsage: undefined,
+    active: p.active,
+    mobileOnly: p.mobileOnly,
+  }))
+  
+  return NextResponse.json({ success: true, promotions: formattedPromotions })
 }
 
 export async function POST(request: Request) {

@@ -229,99 +229,7 @@ interface AIChatConversation {
   feedback?: string
 }
 
-// ============= MOCK DATA =============
-const mockSearchLogs: ScarletSearchLog[] = [
-  {
-    id: "1",
-    sessionId: "sess_abc123",
-    dateFrom: "2026-02-01",
-    dateTo: "2026-02-03",
-    guests: 2,
-    resultsCount: 5,
-    selectedRoom: "Deluxe Suite",
-    priceShown: 2500,
-    stage: "payment",
-    completed: false,
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    source: "direct",
-  },
-  {
-    id: "2",
-    sessionId: "sess_def456",
-    dateFrom: "2026-02-05",
-    dateTo: "2026-02-07",
-    guests: 4,
-    resultsCount: 3,
-    selectedRoom: "Family Room",
-    priceShown: 3200,
-    stage: "confirmed",
-    completed: true,
-    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-    source: "google",
-  },
-  {
-    id: "3",
-    sessionId: "sess_ghi789",
-    dateFrom: "2026-02-10",
-    dateTo: "2026-02-12",
-    guests: 2,
-    resultsCount: 5,
-    stage: "search",
-    completed: false,
-    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    source: "facebook",
-  },
-  {
-    id: "4",
-    sessionId: "sess_jkl012",
-    dateFrom: "2026-02-15",
-    dateTo: "2026-02-18",
-    guests: 2,
-    resultsCount: 5,
-    selectedRoom: "Standard Room",
-    priceShown: 1800,
-    stage: "guest_details",
-    completed: false,
-    createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-    source: "instagram",
-  },
-]
-
-const mockAbandonedBookings: AbandonedBooking[] = [
-  {
-    id: "ab_1",
-    sessionId: "sess_abc123",
-    customerEmail: "david@example.com",
-    customerName: "דוד כהן",
-    phone: "050-1234567",
-    roomType: "Deluxe Suite",
-    checkIn: "2026-02-01",
-    checkOut: "2026-02-03",
-    guests: 2,
-    totalPrice: 2500,
-    stage: "payment",
-    abandonedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    recoveryAttempts: 0,
-    recovered: false,
-    source: "direct",
-  },
-  {
-    id: "ab_2",
-    sessionId: "sess_jkl012",
-    customerName: "שרה לוי",
-    roomType: "Standard Room",
-    checkIn: "2026-02-15",
-    checkOut: "2026-02-18",
-    guests: 2,
-    totalPrice: 1800,
-    stage: "guest_details",
-    abandonedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-    recoveryAttempts: 1,
-    recovered: false,
-    source: "instagram",
-  },
-]
-
+// ============= DEFAULT SETTINGS =============
 const defaultSettings: ScarletSettings = {
   hotelId: "scarlet_hotel",
   hotelName: "מלון סקרלט תל אביב",
@@ -365,254 +273,6 @@ const defaultSettings: ScarletSettings = {
   logoUrl: "/scarlet-logo.png",
   backgroundImageUrl: "/scarlet-hero.jpg",
 }
-
-const mockPromotions: ScarletPromotion[] = [
-  {
-    id: "promo_1",
-    code: "WINTER25",
-    title: "הנחת חורף 25%",
-    description: "25% הנחה על כל ההזמנות בחודשי החורף",
-    discountType: "percentage",
-    discountValue: 25,
-    minNights: 2,
-    validFrom: "2026-01-01",
-    validTo: "2026-02-28",
-    usageCount: 45,
-    maxUsage: 100,
-    active: true,
-    mobileOnly: false,
-  },
-  {
-    id: "promo_2",
-    code: "MOBILE100",
-    title: "₪100 הנחה למובייל",
-    description: "הנחה מיוחדת להזמנות דרך הנייד",
-    discountType: "fixed",
-    discountValue: 100,
-    validFrom: "2026-01-01",
-    validTo: "2026-12-31",
-    usageCount: 128,
-    active: true,
-    mobileOnly: true,
-  },
-  {
-    id: "promo_3",
-    code: "WEEKEND15",
-    title: "סופ״ש רומנטי",
-    description: "15% הנחה על הזמנות סופ״ש",
-    discountType: "percentage",
-    discountValue: 15,
-    minNights: 2,
-    validFrom: "2026-01-01",
-    validTo: "2026-06-30",
-    usageCount: 67,
-    active: false,
-    mobileOnly: false,
-  },
-]
-
-const mockVisits: ScarletVisit[] = [
-  {
-    id: "v1",
-    sessionId: "sess_abc123",
-    timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-    source: "google",
-    medium: "organic",
-    device: "mobile",
-    browser: "Chrome",
-    country: "Israel",
-    city: "Tel Aviv",
-    pageViews: 5,
-    duration: 245,
-    converted: true,
-    bookingValue: 2800,
-  },
-  {
-    id: "v2",
-    sessionId: "sess_def456",
-    timestamp: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
-    source: "facebook",
-    medium: "cpc",
-    campaign: "winter_sale",
-    device: "desktop",
-    browser: "Safari",
-    country: "Israel",
-    city: "Haifa",
-    pageViews: 3,
-    duration: 120,
-    converted: false,
-  },
-  {
-    id: "v3",
-    sessionId: "sess_ghi789",
-    timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-    source: "direct",
-    device: "tablet",
-    browser: "Safari",
-    country: "Israel",
-    city: "Jerusalem",
-    pageViews: 8,
-    duration: 380,
-    converted: true,
-    bookingValue: 3500,
-  },
-  {
-    id: "v4",
-    sessionId: "sess_jkl012",
-    timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-    source: "google",
-    medium: "cpc",
-    campaign: "brand",
-    device: "mobile",
-    browser: "Chrome",
-    country: "Israel",
-    city: "Netanya",
-    pageViews: 2,
-    duration: 45,
-    converted: false,
-  },
-  {
-    id: "v5",
-    sessionId: "sess_mno345",
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    source: "instagram",
-    medium: "social",
-    device: "mobile",
-    browser: "Instagram",
-    country: "Israel",
-    city: "Eilat",
-    pageViews: 4,
-    duration: 180,
-    converted: true,
-    bookingValue: 4200,
-  },
-  {
-    id: "v6",
-    sessionId: "sess_pqr678",
-    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-    source: "tripadvisor",
-    medium: "referral",
-    device: "desktop",
-    browser: "Firefox",
-    country: "USA",
-    city: "New York",
-    pageViews: 6,
-    duration: 290,
-    converted: false,
-  },
-]
-
-const mockAIChatConversations: AIChatConversation[] = [
-  {
-    id: "chat_1",
-    sessionId: "sess_abc123",
-    guestName: "יעל כהן",
-    guestEmail: "yael@example.com",
-    guestPhone: "050-1234567",
-    startedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-    endedAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-    messageCount: 12,
-    messages: [
-      { id: "m1", role: "assistant", content: "שלום! 👋 אני סקרלט, העוזרת הדיגיטלית של המלון. איך אוכל לעזור לך?", timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString() },
-      { id: "m2", role: "user", content: "היי, אני מחפשת חדר לסופ\"ש הקרוב ל-2 אנשים", timestamp: new Date(Date.now() - 29 * 60 * 1000).toISOString() },
-      { id: "m3", role: "assistant", content: "בשמחה! מצאתי 5 חדרים זמינים לסוף השבוע. החדר המומלץ שלי הוא סוויטת דלוקס עם נוף לים במחיר מיוחד של ₪2,500 ללילה. האם תרצי לשמוע פרטים נוספים?", timestamp: new Date(Date.now() - 28 * 60 * 1000).toISOString(), skill: "availabilityCheck" },
-      { id: "m4", role: "user", content: "כן, ומה כלול בחבילה?", timestamp: new Date(Date.now() - 27 * 60 * 1000).toISOString() },
-      { id: "m5", role: "assistant", content: "סוויטת הדלוקס כוללת: ארוחת בוקר בופה עשיר, גישה חופשית לספא ובריכה, חנייה חינם, ו-WiFi מהיר. יש לנו גם חבילה רומנטית שכוללת שמפניה ופירות בחדר 🍾", timestamp: new Date(Date.now() - 26 * 60 * 1000).toISOString(), skill: "roomRecommendation" },
-      { id: "m6", role: "user", content: "נשמע מעולה! אני רוצה להזמין עם החבילה הרומנטית", timestamp: new Date(Date.now() - 20 * 60 * 1000).toISOString() },
-    ],
-    topics: ["זמינות", "מחירים", "חבילות רומנטיות", "הזמנה"],
-    sentiment: "positive",
-    leadToBooking: true,
-    bookingId: "BK-2026-001",
-    bookingValue: 5200,
-    device: "mobile",
-    source: "direct",
-    rating: 5,
-    feedback: "שירות מעולה ומהיר!"
-  },
-  {
-    id: "chat_2",
-    sessionId: "sess_def456",
-    guestName: "דוד לוי",
-    startedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    endedAt: new Date(Date.now() - 1.5 * 60 * 60 * 1000).toISOString(),
-    messageCount: 8,
-    messages: [
-      { id: "m1", role: "assistant", content: "שלום! 👋 אני סקרלט, העוזרת הדיגיטלית של המלון. איך אוכל לעזור לך?", timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
-      { id: "m2", role: "user", content: "מה המדיניות לגבי ביטול הזמנה?", timestamp: new Date(Date.now() - 119 * 60 * 1000).toISOString() },
-      { id: "m3", role: "assistant", content: "מדיניות הביטול שלנו מאפשרת ביטול חינם עד 48 שעות לפני הצ'ק-אין. לאחר מכן, יחויב לילה ראשון. האם יש לך הזמנה קיימת שתרצה לבטל?", timestamp: new Date(Date.now() - 118 * 60 * 1000).toISOString() },
-      { id: "m4", role: "user", content: "לא, רק רציתי לדעת לפני שאזמין. תודה!", timestamp: new Date(Date.now() - 115 * 60 * 1000).toISOString() },
-    ],
-    topics: ["מדיניות ביטולים", "שאלות כלליות"],
-    sentiment: "neutral",
-    leadToBooking: false,
-    device: "desktop",
-    source: "google",
-  },
-  {
-    id: "chat_3",
-    sessionId: "sess_ghi789",
-    guestName: "מיכל אברהם",
-    guestEmail: "michal@example.com",
-    startedAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-    endedAt: new Date(Date.now() - 3.5 * 60 * 60 * 1000).toISOString(),
-    messageCount: 15,
-    messages: [
-      { id: "m1", role: "assistant", content: "שלום! 👋 אני סקרלט, העוזרת הדיגיטלית של המלון. איך אוכל לעזור לך?", timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString() },
-      { id: "m2", role: "user", content: "האם יש לכם חדרים מתאימים למשפחה עם 2 ילדים?", timestamp: new Date(Date.now() - 239 * 60 * 1000).toISOString() },
-      { id: "m3", role: "assistant", content: "בהחלט! יש לנו חדר משפחתי מרווח עם 2 מיטות זוגיות, מתאים עד 4 אורחים. החדר כולל מקלחת גדולה, טלויזיה עם ערוצי ילדים, ומיני בר. יש גם אפשרות לעריסה בחינם. המחיר ₪1,800 ללילה.", timestamp: new Date(Date.now() - 238 * 60 * 1000).toISOString(), skill: "roomRecommendation" },
-      { id: "m4", role: "user", content: "מעולה! יש הנחה למשפחות?", timestamp: new Date(Date.now() - 235 * 60 * 1000).toISOString() },
-      { id: "m5", role: "assistant", content: "יש לנו מבצע משפחתי! 🎉 הזמנה של 3 לילות ומעלה מקבלת 15% הנחה + ארוחת ערב חינם לילדים עד גיל 12. הקוד: FAMILY15", timestamp: new Date(Date.now() - 234 * 60 * 1000).toISOString(), skill: "promotionsManager" },
-    ],
-    topics: ["חדרי משפחה", "הנחות", "מבצעים", "ילדים"],
-    sentiment: "positive",
-    leadToBooking: true,
-    bookingId: "BK-2026-002",
-    bookingValue: 4590,
-    device: "tablet",
-    source: "facebook",
-    rating: 4,
-  },
-  {
-    id: "chat_4",
-    sessionId: "sess_jkl012",
-    startedAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-    messageCount: 3,
-    messages: [
-      { id: "m1", role: "assistant", content: "שלום! 👋 אני סקרלט, העוזרת הדיגיטלית של המלון. איך אוכל לעזור לך?", timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString() },
-      { id: "m2", role: "user", content: "מה השעות של הספא?", timestamp: new Date(Date.now() - 359 * 60 * 1000).toISOString() },
-      { id: "m3", role: "assistant", content: "הספא שלנו פתוח בימים א'-ה' בין 08:00-22:00, ובסופי שבוע 07:00-23:00. יש לנו מגוון טיפולים - עיסוי שוודי, טיפולי פנים, וחבילות זוגיות. רוצה שאשלח לך את תפריט הטיפולים? 💆", timestamp: new Date(Date.now() - 358 * 60 * 1000).toISOString(), skill: "localExpert" },
-    ],
-    topics: ["ספא", "שעות פעילות"],
-    sentiment: "neutral",
-    leadToBooking: false,
-    device: "mobile",
-    source: "instagram",
-  },
-  {
-    id: "chat_5",
-    sessionId: "sess_mno345",
-    guestName: "אורי שמש",
-    guestEmail: "ori@business.com",
-    guestPhone: "054-9876543",
-    startedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-    messageCount: 18,
-    messages: [
-      { id: "m1", role: "assistant", content: "שלום! 👋 אני סקרלט, העוזרת הדיגיטלית של המלון. איך אוכל לעזור לך?", timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString() },
-      { id: "m2", role: "user", content: "אני צריך לארגן כנס עסקי ל-50 משתתפים", timestamp: new Date(Date.now() - 59 * 60 * 1000).toISOString() },
-      { id: "m3", role: "assistant", content: "מעולה! יש לנו אולם כנסים מרווח שמתאים עד 80 אנשים, כולל ציוד AV מלא, WiFi מהיר, וקפה מתמשך. אנחנו גם מציעים חבילות לינה לקבוצות עם הנחה של 20%. באיזה תאריך אתם מתכננים?", timestamp: new Date(Date.now() - 58 * 60 * 1000).toISOString(), skill: "specialRequests" },
-    ],
-    topics: ["כנסים", "אירועים עסקיים", "הזמנות קבוצתיות"],
-    sentiment: "positive",
-    leadToBooking: true,
-    bookingId: "BK-2026-003",
-    bookingValue: 28500,
-    device: "desktop",
-    source: "linkedin",
-    rating: 5,
-    feedback: "הבוט עזר מאוד בתכנון הכנס!"
-  },
-]
 
 // ============= COMPONENTS =============
 
@@ -2185,17 +1845,100 @@ function SettingsTab({
 export default function ScarletAdminPage() {
   const [activeTab, setActiveTab] = useState("overview")
   const [settings, setSettings] = useState<ScarletSettings>(defaultSettings)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  
+  // Data states - loaded from API
+  const [searchLogs, setSearchLogs] = useState<ScarletSearchLog[]>([])
+  const [abandonedBookings, setAbandonedBookings] = useState<AbandonedBooking[]>([])
+  const [promotions, setPromotions] = useState<ScarletPromotion[]>([])
+  const [visits, setVisits] = useState<ScarletVisit[]>([])
+  const [conversations, setConversations] = useState<AIChatConversation[]>([])
 
-  // Calculate stats
+  // Load data from APIs
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true)
+      try {
+        // Load search logs
+        const logsRes = await fetch("/api/admin/template-logs?template=scarlet")
+        if (logsRes.ok) {
+          const logsData = await logsRes.json()
+          setSearchLogs(logsData.logs || [])
+        }
+
+        // Load abandoned bookings
+        const abandonedRes = await fetch("/api/admin/abandoned-bookings?template=scarlet")
+        if (abandonedRes.ok) {
+          const abandonedData = await abandonedRes.json()
+          setAbandonedBookings(abandonedData.bookings || [])
+        }
+
+        // Load settings
+        const settingsRes = await fetch("/api/admin/template-settings?template=scarlet")
+        if (settingsRes.ok) {
+          const settingsData = await settingsRes.json()
+          if (settingsData.settings) {
+            setSettings(prev => ({ ...prev, ...settingsData.settings }))
+          }
+        }
+
+        // Load promotions
+        const promosRes = await fetch("/api/admin/promotions?template=scarlet")
+        if (promosRes.ok) {
+          const promosData = await promosRes.json()
+          setPromotions(promosData.promotions || [])
+        }
+
+        // Load visits/traffic
+        const visitsRes = await fetch("/api/admin/visits?template=scarlet")
+        if (visitsRes.ok) {
+          const visitsData = await visitsRes.json()
+          setVisits(visitsData.visits || [])
+        }
+
+        // Load AI chat conversations
+        const chatsRes = await fetch("/api/admin/chat-conversations?template=scarlet")
+        if (chatsRes.ok) {
+          const chatsData = await chatsRes.json()
+          setConversations(chatsData.conversations || [])
+        }
+      } catch (error) {
+        console.error("Error loading admin data:", error)
+        toast.error("שגיאה בטעינת הנתונים")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadData()
+  }, [])
+
+  // Calculate stats from loaded data
   const stats: ScarletStats = {
-    totalSearches: mockSearchLogs.length,
-    totalBookings: mockSearchLogs.filter(l => l.completed).length,
-    conversionRate: Math.round((mockSearchLogs.filter(l => l.completed).length / mockSearchLogs.length) * 100),
-    abandonedCarts: mockAbandonedBookings.length,
-    recoveryRate: 15,
-    revenue: mockSearchLogs.filter(l => l.completed).reduce((sum, l) => sum + (l.priceShown || 0), 0),
-    averageBookingValue: 2850,
+    totalSearches: searchLogs.length,
+    totalBookings: searchLogs.filter(l => l.completed).length,
+    conversionRate: searchLogs.length > 0 
+      ? Math.round((searchLogs.filter(l => l.completed).length / searchLogs.length) * 100) 
+      : 0,
+    abandonedCarts: abandonedBookings.length,
+    recoveryRate: abandonedBookings.length > 0
+      ? Math.round((abandonedBookings.filter(b => b.recovered).length / abandonedBookings.length) * 100)
+      : 0,
+    revenue: searchLogs.filter(l => l.completed).reduce((sum, l) => sum + (l.priceShown || 0), 0),
+    averageBookingValue: searchLogs.filter(l => l.completed).length > 0
+      ? Math.round(searchLogs.filter(l => l.completed).reduce((sum, l) => sum + (l.priceShown || 0), 0) / searchLogs.filter(l => l.completed).length)
+      : 0,
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
+        <div className="text-center space-y-4">
+          <RefreshCw className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+          <p className="text-muted-foreground">טוען נתונים...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -2340,7 +2083,7 @@ export default function ScarletAdminPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {mockSearchLogs.slice(0, 5).map((log) => (
+                  {searchLogs.slice(0, 5).map((log) => (
                     <div key={log.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
                       <div className="flex items-center gap-3">
                         {log.completed ? (
@@ -2417,29 +2160,29 @@ export default function ScarletAdminPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <SearchLogsTab logs={mockSearchLogs} />
+                <SearchLogsTab logs={searchLogs} />
               </CardContent>
             </Card>
           </TabsContent>
 
           {/* Abandoned Tab */}
           <TabsContent value="abandoned">
-            <AbandonedBookingsTab bookings={mockAbandonedBookings} />
+            <AbandonedBookingsTab bookings={abandonedBookings} />
           </TabsContent>
 
           {/* AI Chat Conversations Tab */}
           <TabsContent value="ai-chat">
-            <ChatConversationsTab conversations={mockAIChatConversations} />
+            <ChatConversationsTab conversations={conversations} />
           </TabsContent>
 
           {/* Promotions Tab */}
           <TabsContent value="promotions">
-            <PromotionsTab promotions={mockPromotions} />
+            <PromotionsTab promotions={promotions} />
           </TabsContent>
 
           {/* Visits Tab */}
           <TabsContent value="visits">
-            <VisitsTab visits={mockVisits} />
+            <VisitsTab visits={visits} />
           </TabsContent>
 
           {/* Settings Tab */}

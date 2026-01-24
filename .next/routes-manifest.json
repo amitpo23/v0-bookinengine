@@ -189,6 +189,12 @@
       "namedRegex": "^/api/admin/audit\\-logs(?:/)?$"
     },
     {
+      "page": "/api/admin/chat-conversations",
+      "regex": "^/api/admin/chat\\-conversations(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/chat\\-conversations(?:/)?$"
+    },
+    {
       "page": "/api/admin/email",
       "regex": "^/api/admin/email(?:/)?$",
       "routeKeys": {},
@@ -223,6 +229,12 @@
       "regex": "^/api/admin/template\\-settings(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/admin/template\\-settings(?:/)?$"
+    },
+    {
+      "page": "/api/admin/visits",
+      "regex": "^/api/admin/visits(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/visits(?:/)?$"
     },
     {
       "page": "/api/affiliate/convert",

@@ -5,11 +5,15 @@ import { emailService } from "@/lib/email/email-service"
 import { SearchLogger } from "@/lib/search-logger"
 import { format } from "date-fns"
 import { ChatMemoryService } from "@/lib/services/chat-memory-service"
+import { scarletKnowledgeBase } from "@/lib/hotels/scarlet-ai-knowledge"
 
 const MEDICI_API_BASE = "https://medici-backend.azurewebsites.net"
 const MEDICI_IMAGES_BASE = "https://cdn.medicihotels.com/images/"
 const MEDICI_TOKEN =
   "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJtaXNzaW9ucyI6IjEiLCJVc2VySWQiOiIxMSIsIm5iZiI6MTc2ODQ1NzU5NSwiZXhwIjoyMDgzOTkwMzk1LCJpc3MiOiJodHRwczovL2FkbWluLm1lZGljaWhvdGVscy5jb20vIiwiYXVkIjoiaHR0cHM6Ly9hZG1pbi5tZWRpY2lob3RlbHMuY29tLyJ9.g-CO7I75BlowE-F3J3GqlXsbIgNtG8_w2v1WMwG6djE"
+const STATIC_DATA_API = "https://static-data.innstant-servers.com"
+const STATIC_DATA_KEY = "$2y$10$yWot7dUYoc7.viH8vK1s0OG.D0n5uKm19Z84WznDiB.ESBnPOikr6"
+const TAVILY_API_KEY = process.env.TAVILY_API_KEY
 
 const DEFAULT_HOTEL_NAME = "Dizengoff Inn"
 
@@ -34,6 +38,47 @@ function buildImageGallery(images: any[]): string[] {
     .slice(0, 10)
     .map((img) => buildImageUrl(img))
     .filter(Boolean)
+}
+
+/**
+ * חיפוש מידע מקומי (אטרקציות, מסעדות, אירועים) עם Tavily
+ */
+async function searchLocalInfo(city: string, query: string): Promise<string | null> {
+  if (!TAVILY_API_KEY) {
+    console.log("[Tavily] API key not configured")
+    return null
+  }
+
+  try {
+    const response = await fetch("https://api.tavily.com/search", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        api_key: TAVILY_API_KEY,
+        query: `${query} in ${city}`,
+        search_depth: "basic",
+        max_results: 5,
+      }),
+    })
+
+    if (!response.ok) {
+      console.log("[Tavily] Error:", response.status)
+      return null
+    }
+
+    const data = await response.json()
+    if (data.results && data.results.length > 0) {
+      return data.results
+        .map((r: any) => `${r.title}: ${r.content}`)
+        .join("\n")
+    }
+    return null
+  } catch (error) {
+    console.error("[Tavily] Search error:", error)
+    return null
+  }
 }
 
 async function searchMediciHotels(params: {
@@ -393,6 +438,77 @@ export async function POST(req: Request) {
       hotelConfig?.systemInstructions
     )
     
+    // Add Scarlet-specific knowledge
+    if (hotelConfig?.id === "scarlet-hotel") {
+      const kb = scarletKnowledgeBase
+      systemPrompt += `\n\n## 🏨 מידע מפורט על מלון סקרלט תל אביב:\n\n`
+      
+      systemPrompt += `**זהות המלון:**\n`
+      systemPrompt += `- שם: ${kb.identity.name} (${kb.identity.englishName})\n`
+      systemPrompt += `- סלוגן: ${kb.identity.tagline}\n`
+      systemPrompt += `- קונצפט: ${kb.identity.concept}\n`
+      systemPrompt += `- קהל יעד: ${kb.identity.targetAudience}\n\n`
+      
+      systemPrompt += `**נקודות מכירה ייחודיות:**\n`
+      kb.identity.uniqueSellingPoints.forEach((point: string) => {
+        systemPrompt += `- ${point}\n`
+      })
+      systemPrompt += `\n`
+      
+      systemPrompt += `**מיקום:**\n`
+      systemPrompt += `- כתובת: ${kb.location.address}\n`
+      systemPrompt += `- שכונה: ${kb.location.neighborhood}\n`
+      systemPrompt += `- אטרקציות בקרבת מקום:\n`
+      kb.location.nearbyAttractions.slice(0, 5).forEach((attr: any) => {
+        systemPrompt += `  * ${attr.name} - ${attr.distance} (${attr.description})\n`
+      })
+      systemPrompt += `\n`
+      
+      systemPrompt += `**7 סוגי חדרים:**\n`
+      kb.rooms.forEach((room: any) => {
+        systemPrompt += `\n**${room.name}** (${room.englishName})\n`
+        systemPrompt += `- גודל: ${room.size}\n`
+        systemPrompt += `- תיאור: ${room.description}\n`
+        systemPrompt += `- מקסימום אורחים: ${room.maxGuests}\n`
+        systemPrompt += `- טווח מחירים: ${room.priceRange}\n`
+        if (room.detailedFeatures) {
+          systemPrompt += `- מיטה: ${room.detailedFeatures.bedding}\n`
+          systemPrompt += `- חדר רחצה: ${room.detailedFeatures.bathroom}\n`
+          systemPrompt += `- נוף: ${room.detailedFeatures.view}\n`
+        }
+      })
+      systemPrompt += `\n`
+      
+      systemPrompt += `**שירותים:**\n`
+      systemPrompt += `- דלפק קבלה: ${kb.services.frontDesk.hours}\n`
+      systemPrompt += `- שפות: ${kb.services.frontDesk.languages.join(", ")}\n`
+      systemPrompt += `- שירותים מיוחדים: ${kb.services.specialServices.join(", ")}\n\n`
+      
+      systemPrompt += `**מדיניות:**\n`
+      systemPrompt += `- צ'ק-אין: ${kb.policies.checkIn}\n`
+      systemPrompt += `- צ'ק-אאוט: ${kb.policies.checkOut}\n`
+      systemPrompt += `- ביטול: ${kb.policies.cancellation.join("; ")}\n\n`
+      
+      systemPrompt += `**יתרונות תחרותיים:**\n`
+      kb.competitiveAdvantages.forEach((adv: any) => {
+        systemPrompt += `- ${adv.advantage}: ${adv.description}\n`
+      })
+      systemPrompt += `\n`
+      
+      systemPrompt += `**הנחיות תקשורת:**\n`
+      systemPrompt += `- ${kb.agentInstructions.tone}\n`
+      systemPrompt += `- ${kb.agentInstructions.priorities}\n`
+      systemPrompt += `- ${kb.agentInstructions.upselling}\n`
+      systemPrompt += `- ${kb.agentInstructions.objectionHandling}\n\n`
+      
+      systemPrompt += `**טיפים חשובים:**\n`
+      kb.agentInstructions.keyTips.forEach((tip: string) => {
+        systemPrompt += `✨ ${tip}\n`
+      })
+      
+      console.log("[Scarlet] Enhanced system prompt with full knowledge base")
+    }
+    
     // Add custom instructions if in admin mode
     const customInstructions = ChatMemoryService.getCustomInstructions(currentSessionId)
     if (customInstructions) {
@@ -427,6 +543,25 @@ export async function POST(req: Request) {
       try {
         const searchParams = JSON.parse(searchMatch[1])
         console.log("[v0] Parsed search params:", searchParams)
+
+        // For Scarlet Hotel, prioritize Static Data API for accurate room info
+        let scarletStaticRooms: any[] = []
+        if (hotelConfig?.id === "scarlet-hotel") {
+          try {
+            const staticResponse = await fetch(`${STATIC_DATA_API}/hotels/863233`, {
+              headers: {
+                "Authorization": `Bearer ${STATIC_DATA_KEY}`,
+              },
+            })
+            if (staticResponse.ok) {
+              const staticData = await staticResponse.json()
+              console.log("[Scarlet] Static Data API response:", staticData)
+              scarletStaticRooms = staticData.rooms || []
+            }
+          } catch (error) {
+            console.log("[Scarlet] Static Data API error:", error)
+          }
+        }
 
         const { results: searchResults, jsonRequest } = await searchMediciHotels({
           hotelName: hotelApiName,

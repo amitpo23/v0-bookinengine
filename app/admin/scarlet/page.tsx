@@ -68,6 +68,19 @@ import {
   Globe,
   Lock,
   ChevronLeft,
+  Tag,
+  Percent,
+  Plus,
+  Edit,
+  Trash2,
+  ToggleLeft,
+  ToggleRight,
+  MousePointerClick,
+  Monitor,
+  Smartphone,
+  Laptop,
+  Globe2,
+  Activity,
 } from "lucide-react"
 import { format, differenceInDays, subDays } from "date-fns"
 import { he } from "date-fns/locale"
@@ -143,6 +156,39 @@ interface ScarletSettings {
   accentColor: string
   logoUrl: string
   backgroundImageUrl: string
+}
+
+interface ScarletPromotion {
+  id: string
+  code: string
+  title: string
+  description: string
+  discountType: "percentage" | "fixed"
+  discountValue: number
+  minNights?: number
+  validFrom: string
+  validTo: string
+  usageCount: number
+  maxUsage?: number
+  active: boolean
+  mobileOnly: boolean
+}
+
+interface ScarletVisit {
+  id: string
+  sessionId: string
+  timestamp: string
+  source: string
+  medium?: string
+  campaign?: string
+  device: "desktop" | "mobile" | "tablet"
+  browser: string
+  country: string
+  city?: string
+  pageViews: number
+  duration: number // seconds
+  converted: boolean
+  bookingValue?: number
 }
 
 // ============= MOCK DATA =============
@@ -281,6 +327,142 @@ const defaultSettings: ScarletSettings = {
   logoUrl: "/scarlet-logo.png",
   backgroundImageUrl: "/scarlet-hero.jpg",
 }
+
+const mockPromotions: ScarletPromotion[] = [
+  {
+    id: "promo_1",
+    code: "WINTER25",
+    title: "הנחת חורף 25%",
+    description: "25% הנחה על כל ההזמנות בחודשי החורף",
+    discountType: "percentage",
+    discountValue: 25,
+    minNights: 2,
+    validFrom: "2026-01-01",
+    validTo: "2026-02-28",
+    usageCount: 45,
+    maxUsage: 100,
+    active: true,
+    mobileOnly: false,
+  },
+  {
+    id: "promo_2",
+    code: "MOBILE100",
+    title: "₪100 הנחה למובייל",
+    description: "הנחה מיוחדת להזמנות דרך הנייד",
+    discountType: "fixed",
+    discountValue: 100,
+    validFrom: "2026-01-01",
+    validTo: "2026-12-31",
+    usageCount: 128,
+    active: true,
+    mobileOnly: true,
+  },
+  {
+    id: "promo_3",
+    code: "WEEKEND15",
+    title: "סופ״ש רומנטי",
+    description: "15% הנחה על הזמנות סופ״ש",
+    discountType: "percentage",
+    discountValue: 15,
+    minNights: 2,
+    validFrom: "2026-01-01",
+    validTo: "2026-06-30",
+    usageCount: 67,
+    active: false,
+    mobileOnly: false,
+  },
+]
+
+const mockVisits: ScarletVisit[] = [
+  {
+    id: "v1",
+    sessionId: "sess_abc123",
+    timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+    source: "google",
+    medium: "organic",
+    device: "mobile",
+    browser: "Chrome",
+    country: "Israel",
+    city: "Tel Aviv",
+    pageViews: 5,
+    duration: 245,
+    converted: true,
+    bookingValue: 2800,
+  },
+  {
+    id: "v2",
+    sessionId: "sess_def456",
+    timestamp: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+    source: "facebook",
+    medium: "cpc",
+    campaign: "winter_sale",
+    device: "desktop",
+    browser: "Safari",
+    country: "Israel",
+    city: "Haifa",
+    pageViews: 3,
+    duration: 120,
+    converted: false,
+  },
+  {
+    id: "v3",
+    sessionId: "sess_ghi789",
+    timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+    source: "direct",
+    device: "tablet",
+    browser: "Safari",
+    country: "Israel",
+    city: "Jerusalem",
+    pageViews: 8,
+    duration: 380,
+    converted: true,
+    bookingValue: 3500,
+  },
+  {
+    id: "v4",
+    sessionId: "sess_jkl012",
+    timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+    source: "google",
+    medium: "cpc",
+    campaign: "brand",
+    device: "mobile",
+    browser: "Chrome",
+    country: "Israel",
+    city: "Netanya",
+    pageViews: 2,
+    duration: 45,
+    converted: false,
+  },
+  {
+    id: "v5",
+    sessionId: "sess_mno345",
+    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    source: "instagram",
+    medium: "social",
+    device: "mobile",
+    browser: "Instagram",
+    country: "Israel",
+    city: "Eilat",
+    pageViews: 4,
+    duration: 180,
+    converted: true,
+    bookingValue: 4200,
+  },
+  {
+    id: "v6",
+    sessionId: "sess_pqr678",
+    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+    source: "tripadvisor",
+    medium: "referral",
+    device: "desktop",
+    browser: "Firefox",
+    country: "USA",
+    city: "New York",
+    pageViews: 6,
+    duration: 290,
+    converted: false,
+  },
+]
 
 // ============= COMPONENTS =============
 
@@ -681,6 +863,479 @@ function AbandonedBookingsTab({ bookings }: { bookings: AbandonedBooking[] }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  )
+}
+
+// ============= PROMOTIONS TAB =============
+function PromotionsTab({ promotions: initialPromotions }: { promotions: ScarletPromotion[] }) {
+  const [promotions, setPromotions] = useState(initialPromotions)
+  const [isEditing, setIsEditing] = useState(false)
+  const [currentPromotion, setCurrentPromotion] = useState<Partial<ScarletPromotion>>({})
+
+  const handleSave = () => {
+    if (currentPromotion.id) {
+      setPromotions(promotions.map(p => p.id === currentPromotion.id ? { ...p, ...currentPromotion } as ScarletPromotion : p))
+    } else {
+      const newPromo: ScarletPromotion = {
+        id: `promo_${Date.now()}`,
+        code: currentPromotion.code || "",
+        title: currentPromotion.title || "",
+        description: currentPromotion.description || "",
+        discountType: currentPromotion.discountType || "percentage",
+        discountValue: currentPromotion.discountValue || 0,
+        minNights: currentPromotion.minNights,
+        validFrom: currentPromotion.validFrom || new Date().toISOString().split("T")[0],
+        validTo: currentPromotion.validTo || new Date().toISOString().split("T")[0],
+        usageCount: 0,
+        maxUsage: currentPromotion.maxUsage,
+        active: true,
+        mobileOnly: currentPromotion.mobileOnly || false,
+      }
+      setPromotions([...promotions, newPromo])
+    }
+    setIsEditing(false)
+    setCurrentPromotion({})
+    toast.success("המבצע נשמר בהצלחה")
+  }
+
+  const handleDelete = (id: string) => {
+    if (confirm("האם אתה בטוח שברצונך למחוק את המבצע?")) {
+      setPromotions(promotions.filter(p => p.id !== id))
+      toast.success("המבצע נמחק")
+    }
+  }
+
+  const toggleActive = (id: string) => {
+    setPromotions(promotions.map(p => p.id === id ? { ...p, active: !p.active } : p))
+  }
+
+  const totalDiscount = promotions
+    .filter(p => p.active)
+    .reduce((sum, p) => sum + (p.discountType === "percentage" ? p.usageCount * 250 : p.usageCount * p.discountValue), 0)
+
+  return (
+    <div className="space-y-6">
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <StatCard
+          title="מבצעים פעילים"
+          value={promotions.filter(p => p.active).length}
+          icon={Tag}
+          trendUp={true}
+        />
+        <StatCard
+          title="סה״כ שימושים"
+          value={promotions.reduce((sum, p) => sum + p.usageCount, 0)}
+          icon={MousePointerClick}
+          trend="+23% מהשבוע"
+          trendUp={true}
+        />
+        <StatCard
+          title="הנחות שניתנו"
+          value={`₪${totalDiscount.toLocaleString()}`}
+          icon={Percent}
+          trend="החודש"
+        />
+        <StatCard
+          title="ממוצע המרה"
+          value="18%"
+          icon={TrendingUp}
+          trend="+2%"
+          trendUp={true}
+        />
+      </div>
+
+      {/* Add Button */}
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">רשימת מבצעים</h3>
+        <Button onClick={() => { setCurrentPromotion({}); setIsEditing(true); }}>
+          <Plus className="h-4 w-4 mr-2" />
+          מבצע חדש
+        </Button>
+      </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent className="max-w-2xl" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>{currentPromotion.id ? "עריכת מבצע" : "מבצע חדש"}</DialogTitle>
+            <DialogDescription>הגדר פרטי המבצע וההנחה</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-4 py-4">
+            <div className="space-y-2">
+              <Label>קוד מבצע</Label>
+              <Input
+                value={currentPromotion.code || ""}
+                onChange={e => setCurrentPromotion({ ...currentPromotion, code: e.target.value.toUpperCase() })}
+                placeholder="SUMMER20"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>כותרת</Label>
+              <Input
+                value={currentPromotion.title || ""}
+                onChange={e => setCurrentPromotion({ ...currentPromotion, title: e.target.value })}
+                placeholder="הנחת קיץ 20%"
+              />
+            </div>
+            <div className="col-span-2 space-y-2">
+              <Label>תיאור</Label>
+              <Textarea
+                value={currentPromotion.description || ""}
+                onChange={e => setCurrentPromotion({ ...currentPromotion, description: e.target.value })}
+                placeholder="תיאור המבצע..."
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>סוג הנחה</Label>
+              <Select
+                value={currentPromotion.discountType || "percentage"}
+                onValueChange={v => setCurrentPromotion({ ...currentPromotion, discountType: v as "percentage" | "fixed" })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="percentage">אחוזים (%)</SelectItem>
+                  <SelectItem value="fixed">סכום קבוע (₪)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>ערך הנחה</Label>
+              <Input
+                type="number"
+                value={currentPromotion.discountValue || ""}
+                onChange={e => setCurrentPromotion({ ...currentPromotion, discountValue: Number(e.target.value) })}
+                placeholder={currentPromotion.discountType === "fixed" ? "100" : "20"}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>מ-תאריך</Label>
+              <Input
+                type="date"
+                value={currentPromotion.validFrom || ""}
+                onChange={e => setCurrentPromotion({ ...currentPromotion, validFrom: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>עד תאריך</Label>
+              <Input
+                type="date"
+                value={currentPromotion.validTo || ""}
+                onChange={e => setCurrentPromotion({ ...currentPromotion, validTo: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>מינימום לילות</Label>
+              <Input
+                type="number"
+                value={currentPromotion.minNights || ""}
+                onChange={e => setCurrentPromotion({ ...currentPromotion, minNights: Number(e.target.value) })}
+                placeholder="ללא הגבלה"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>מקסימום שימושים</Label>
+              <Input
+                type="number"
+                value={currentPromotion.maxUsage || ""}
+                onChange={e => setCurrentPromotion({ ...currentPromotion, maxUsage: Number(e.target.value) })}
+                placeholder="ללא הגבלה"
+              />
+            </div>
+            <div className="col-span-2 flex items-center gap-2">
+              <Switch
+                checked={currentPromotion.mobileOnly || false}
+                onCheckedChange={c => setCurrentPromotion({ ...currentPromotion, mobileOnly: c })}
+              />
+              <Label>למובייל בלבד</Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditing(false)}>ביטול</Button>
+            <Button onClick={handleSave}>שמור מבצע</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Promotions List */}
+      <div className="space-y-4">
+        {promotions.map(promo => (
+          <Card key={promo.id} className={!promo.active ? "opacity-60" : ""}>
+            <CardContent className="pt-4">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-4">
+                  <div className={`p-3 rounded-full ${promo.active ? "bg-green-500/10" : "bg-gray-500/10"}`}>
+                    {promo.discountType === "percentage" ? (
+                      <Percent className={`h-6 w-6 ${promo.active ? "text-green-500" : "text-gray-500"}`} />
+                    ) : (
+                      <DollarSign className={`h-6 w-6 ${promo.active ? "text-green-500" : "text-gray-500"}`} />
+                    )}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-semibold">{promo.title}</h4>
+                      <Badge variant="outline" className="font-mono">{promo.code}</Badge>
+                      {promo.mobileOnly && <Badge variant="secondary">📱 מובייל</Badge>}
+                      {!promo.active && <Badge variant="destructive">לא פעיל</Badge>}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">{promo.description}</p>
+                    <div className="flex items-center gap-4 mt-3 text-sm">
+                      <span className="font-medium text-green-600">
+                        {promo.discountType === "percentage" ? `${promo.discountValue}%` : `₪${promo.discountValue}`} הנחה
+                      </span>
+                      {promo.minNights && <span className="text-muted-foreground">מינימום {promo.minNights} לילות</span>}
+                      <span className="text-muted-foreground">
+                        {promo.validFrom} → {promo.validTo}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="text-left mr-4">
+                    <p className="text-2xl font-bold">{promo.usageCount}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {promo.maxUsage ? `מתוך ${promo.maxUsage}` : "שימושים"}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => toggleActive(promo.id)}
+                  >
+                    {promo.active ? (
+                      <ToggleRight className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <ToggleLeft className="h-5 w-5 text-gray-400" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => { setCurrentPromotion(promo); setIsEditing(true); }}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDelete(promo.id)}
+                  >
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ============= VISITS TAB =============
+function VisitsTab({ visits }: { visits: ScarletVisit[] }) {
+  const [sourceFilter, setSourceFilter] = useState<string>("all")
+  const [deviceFilter, setDeviceFilter] = useState<string>("all")
+
+  const filteredVisits = visits.filter(v => {
+    const matchesSource = sourceFilter === "all" || v.source === sourceFilter
+    const matchesDevice = deviceFilter === "all" || v.device === deviceFilter
+    return matchesSource && matchesDevice
+  })
+
+  const sources = [...new Set(visits.map(v => v.source))]
+  
+  const stats = {
+    totalVisits: filteredVisits.length,
+    uniqueSessions: new Set(filteredVisits.map(v => v.sessionId)).size,
+    avgPageViews: Math.round(filteredVisits.reduce((sum, v) => sum + v.pageViews, 0) / filteredVisits.length) || 0,
+    avgDuration: Math.round(filteredVisits.reduce((sum, v) => sum + v.duration, 0) / filteredVisits.length) || 0,
+    conversionRate: Math.round((filteredVisits.filter(v => v.converted).length / filteredVisits.length) * 100) || 0,
+    totalRevenue: filteredVisits.filter(v => v.converted).reduce((sum, v) => sum + (v.bookingValue || 0), 0),
+  }
+
+  const deviceCounts = {
+    mobile: filteredVisits.filter(v => v.device === "mobile").length,
+    desktop: filteredVisits.filter(v => v.device === "desktop").length,
+    tablet: filteredVisits.filter(v => v.device === "tablet").length,
+  }
+
+  const getDeviceIcon = (device: string) => {
+    const icons: Record<string, any> = {
+      mobile: Smartphone,
+      desktop: Monitor,
+      tablet: Laptop,
+    }
+    return icons[device] || Monitor
+  }
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, "0")}`
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <StatCard
+          title="כניסות היום"
+          value={stats.totalVisits}
+          icon={Activity}
+          trend="+18%"
+          trendUp={true}
+        />
+        <StatCard
+          title="מבקרים ייחודיים"
+          value={stats.uniqueSessions}
+          icon={Users}
+        />
+        <StatCard
+          title="ממוצע דפים"
+          value={stats.avgPageViews}
+          icon={Eye}
+        />
+        <StatCard
+          title="זמן ממוצע"
+          value={formatDuration(stats.avgDuration)}
+          icon={Clock}
+        />
+        <StatCard
+          title="אחוז המרה"
+          value={`${stats.conversionRate}%`}
+          icon={TrendingUp}
+          trendUp={stats.conversionRate > 20}
+        />
+        <StatCard
+          title="הכנסות"
+          value={`₪${stats.totalRevenue.toLocaleString()}`}
+          icon={DollarSign}
+          trendUp={true}
+        />
+      </div>
+
+      {/* Device Breakdown */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Monitor className="h-5 w-5" />
+            התפלגות מכשירים
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-3 gap-4">
+            {Object.entries(deviceCounts).map(([device, count]) => {
+              const Icon = getDeviceIcon(device)
+              const percentage = Math.round((count / filteredVisits.length) * 100) || 0
+              return (
+                <div key={device} className="text-center p-4 rounded-lg bg-muted/30">
+                  <Icon className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                  <p className="text-2xl font-bold">{percentage}%</p>
+                  <p className="text-sm text-muted-foreground capitalize">{device}</p>
+                  <p className="text-xs text-muted-foreground">{count} כניסות</p>
+                </div>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Traffic Sources */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Globe2 className="h-5 w-5" />
+              מקורות תנועה
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="כל המקורות" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כל המקורות</SelectItem>
+                  {sources.map(s => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={deviceFilter} onValueChange={setDeviceFilter}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="כל המכשירים" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">הכל</SelectItem>
+                  <SelectItem value="mobile">מובייל</SelectItem>
+                  <SelectItem value="desktop">דסקטופ</SelectItem>
+                  <SelectItem value="tablet">טאבלט</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>זמן</TableHead>
+                <TableHead>מקור</TableHead>
+                <TableHead>קמפיין</TableHead>
+                <TableHead>מכשיר</TableHead>
+                <TableHead>מיקום</TableHead>
+                <TableHead>דפים</TableHead>
+                <TableHead>משך</TableHead>
+                <TableHead>המרה</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredVisits.map(visit => {
+                const DeviceIcon = getDeviceIcon(visit.device)
+                return (
+                  <TableRow key={visit.id}>
+                    <TableCell>
+                      {format(new Date(visit.timestamp), "HH:mm", { locale: he })}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{visit.source}</Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {visit.campaign || visit.medium || "-"}
+                    </TableCell>
+                    <TableCell>
+                      <DeviceIcon className="h-4 w-4" />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3 text-muted-foreground" />
+                        {visit.city || visit.country}
+                      </div>
+                    </TableCell>
+                    <TableCell>{visit.pageViews}</TableCell>
+                    <TableCell>{formatDuration(visit.duration)}</TableCell>
+                    <TableCell>
+                      {visit.converted ? (
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <span className="text-green-600 font-medium">
+                            ₪{visit.bookingValue?.toLocaleString()}
+                          </span>
+                        </div>
+                      ) : (
+                        <XCircle className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   )
 }
@@ -1091,10 +1746,14 @@ export default function ScarletAdminPage() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsList className="grid w-full grid-cols-6 mb-6">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
-              סקירה כללית
+              סקירה
+            </TabsTrigger>
+            <TabsTrigger value="visits" className="flex items-center gap-2">
+              <Activity className="h-4 w-4" />
+              כניסות
             </TabsTrigger>
             <TabsTrigger value="searches" className="flex items-center gap-2">
               <Search className="h-4 w-4" />
@@ -1103,6 +1762,10 @@ export default function ScarletAdminPage() {
             <TabsTrigger value="abandoned" className="flex items-center gap-2">
               <ShoppingCart className="h-4 w-4" />
               נטושות
+            </TabsTrigger>
+            <TabsTrigger value="promotions" className="flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              מבצעים
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
@@ -1265,6 +1928,16 @@ export default function ScarletAdminPage() {
           {/* Abandoned Tab */}
           <TabsContent value="abandoned">
             <AbandonedBookingsTab bookings={mockAbandonedBookings} />
+          </TabsContent>
+
+          {/* Promotions Tab */}
+          <TabsContent value="promotions">
+            <PromotionsTab promotions={mockPromotions} />
+          </TabsContent>
+
+          {/* Visits Tab */}
+          <TabsContent value="visits">
+            <VisitsTab visits={mockVisits} />
           </TabsContent>
 
           {/* Settings Tab */}

@@ -5,7 +5,9 @@ export const scarletRoomTypes = [
     hebrewName: "הקלאסי הזוגי",
     emoji: "💎",
     tagline: "שקט, מדויק וכל מה שצריך לחופשה אורבנית",
+    taglineEn: "Quiet, precise and everything you need for an urban vacation",
     description: "החדר הקלאסי שלנו תוכנן בקפידה כדי להעניק לכם מפלט של שקט בלב העיר. עם עיצוב מודרני ונעים בגודל 15 מ\"ר, זהו המרחב האידיאלי לזוגות או יחידים שמחפשים את השילוב המושלם בין נוחות לסטייל. כאן תוכלו להירגע מול הטלוויזיה החכמה, ליהנות מקפה איכותי ולהתעורר רעננים ליום חדש.",
+    descriptionEn: "Our classic room is carefully designed to give you a peaceful retreat in the heart of the city. With a modern and pleasant design of 15 sqm, this is the ideal space for couples or singles looking for the perfect combination of comfort and style.",
     size: 15,
     maxGuests: 2,
     basePrice: 450,
@@ -18,7 +20,17 @@ export const scarletRoomTypes = [
       "מגבות רכות ותמרוקים",
       "נוף אורבני או חצר פנימית"
     ],
+    featuresEn: [
+      "Pampering double bed",
+      "Smart TV",
+      "Coffee and tea corner",
+      "Air conditioning",
+      "Equipped bathroom",
+      "Soft towels and toiletries",
+      "Urban view or courtyard"
+    ],
     suitableFor: "זוגות או יחידים",
+    suitableForEn: "Couples or singles",
     images: [
       "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/classic-balcony/SCARLET%20DAY2-1.jpg",
       "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/classic-balcony/SCARLET%20DAY2-2.jpg",
@@ -34,7 +46,9 @@ export const scarletRoomTypes = [
     hebrewName: "הרומנטי הזוגי",
     emoji: "❤️",
     tagline: "להצית את האהבה מחדש – עם טאץ' של יוקרה",
+    taglineEn: "Rekindle the love – with a touch of luxury",
     description: "חדר מעוצב בקפידה עם צבעים נועזים ומספק חוויה זוגית בלתי נשכחת. גולת הכותרת היא מיטה עגולה הממוקמת במרכז החדר שמשקיפה אל אמבטיה מעוצבת (Free-standing), שנועדה לרגעים של רוגע ופינוק משותף. זהו החדר המושלם לחגוג בו אהבה, ימי הולדת או פשוט לברוח מהשגרה.",
+    descriptionEn: "A carefully designed room with bold colors providing an unforgettable couples experience. The highlight is a round bed in the center of the room overlooking a designer free-standing bathtub, designed for moments of shared relaxation and pampering.",
     size: 18,
     maxGuests: 2,
     basePrice: 650,
@@ -48,8 +62,20 @@ export const scarletRoomTypes = [
       "עיצוב צבעוני ונועז",
       "נוף אורבני או חצר פנימית"
     ],
+    featuresEn: [
+      "Round bed in room center",
+      "Luxury free-standing bathtub",
+      "Personal safe",
+      "Smart TV",
+      "Coffee/tea corner",
+      "Pampering bath products",
+      "Colorful and bold design",
+      "Urban view or courtyard"
+    ],
     suitableFor: "זוגות לרגעים רומנטיים",
+    suitableForEn: "Couples for romantic moments",
     special: "אמבטיה יוקרתית במרכז החלל",
+    specialEn: "Luxury bathtub in the center of the space",
     images: [
       "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/romantic-classic/Scarlet%20Hotel-100.jpg",
       "https://wsmchexmtiijufemzzwu.supabase.co/storage/v1/object/public/hotel-assets/romantic-classic/Scarlet%20Hotel-101.jpg",

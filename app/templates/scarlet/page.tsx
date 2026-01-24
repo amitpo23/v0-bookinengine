@@ -844,11 +844,20 @@ function ScarletTemplateContent() {
 
       console.log(`🎯 Found ${scarletHotels.length} Scarlet Hotel Tel Aviv results`)
 
-      setScarletSearchResults(scarletHotels)
-      setShowApiResults(true)
+      // If API found Scarlet Hotel with rooms - show API results
+      // Otherwise, fallback to static room data
+      if (scarletHotels.length > 0 && scarletHotels[0]?.rooms?.length > 0) {
+        setScarletSearchResults(scarletHotels)
+        setShowApiResults(true)
+      } else {
+        // No results from API - show static rooms from scarletRoomTypes
+        setScarletSearchResults([])
+        setShowApiResults(false)
+        console.log('📋 Showing static room data (API returned no Scarlet results)')
+      }
 
       // ===== LOG SEARCH TO ADMIN =====
-      const roomCount = scarletHotels[0]?.rooms?.length || 0
+      const roomCount = scarletHotels[0]?.rooms?.length || scarletRoomTypes.length
       logToAdmin({
         stage: 'search',
         sessionId: getSessionId(),
@@ -860,10 +869,11 @@ function ScarletTemplateContent() {
       })
 
       if (!silent) {
-        if (scarletHotels.length > 0) {
-          showToast?.(`נמצאו ${scarletHotels.length} חדרים זמינים במלון סקרלט תל אביב`, 'success')
+        if (scarletHotels.length > 0 && scarletHotels[0]?.rooms?.length > 0) {
+          showToast?.(`נמצאו ${scarletHotels[0].rooms.length} חדרים זמינים במלון סקרלט תל אביב`, 'success')
         } else {
-          showToast?.('מלון סקרלט תל אביב אינו זמין בתאריכים אלה. אנא נסו תאריכים אחרים.', 'error')
+          // Show static rooms with a friendly message
+          showToast?.(`מציג ${scarletRoomTypes.length} סוגי חדרים זמינים במלון סקרלט`, 'success')
         }
       }
     } catch (err: any) {
@@ -1635,16 +1645,16 @@ function ScarletTemplateContent() {
                 <div className="p-8 lg:p-12 flex flex-col justify-center">
                   <div className="mb-4">
                     <h3 className="text-4xl font-bold mb-2 text-white">
-                      {room.hebrewName}
+                      {locale === 'he' ? room.hebrewName : room.name}
                     </h3>
-                    <p className="text-sm text-gray-400 mb-1">{room.name}</p>
+                    <p className="text-sm text-gray-400 mb-1">{locale === 'he' ? room.name : room.hebrewName}</p>
                     <p className="text-lg text-red-400 italic">
-                      {room.tagline}
+                      {locale === 'he' ? room.tagline : (room.taglineEn || room.tagline)}
                     </p>
                   </div>
 
-                  <p className="text-gray-300 leading-relaxed mb-6 text-right">
-                    {room.description}
+                  <p className="text-gray-300 leading-relaxed mb-6 text-right" dir={locale === 'he' ? 'rtl' : 'ltr'}>
+                    {locale === 'he' ? room.description : (room.descriptionEn || room.description)}
                   </p>
 
                   {/* Room Details */}
@@ -1670,7 +1680,7 @@ function ScarletTemplateContent() {
                   <div className="mb-6">
                     <h4 className="font-semibold mb-3 text-red-400">{t('whatsIncluded')}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                      {room.features.map((feature, idx) => (
+                      {(locale === 'he' ? room.features : (room.featuresEn || room.features)).map((feature: string, idx: number) => (
                         <div key={idx} className="flex items-start gap-2">
                           <span className="text-red-500 mt-1">•</span>
                           <span className="text-gray-300">{feature}</span>
@@ -1685,7 +1695,9 @@ function ScarletTemplateContent() {
                         <Sparkles className="h-4 w-4" />
                         <span className="font-semibold">{t('unique')}</span>
                       </div>
-                      <p className="text-sm text-gray-300">{room.special}</p>
+                      <p className="text-sm text-gray-300">
+                        {locale === 'he' ? room.special : (room.specialEn || room.special)}
+                      </p>
                     </div>
                   )}
 

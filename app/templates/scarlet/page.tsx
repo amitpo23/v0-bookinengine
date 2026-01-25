@@ -1409,12 +1409,14 @@ function ScarletTemplateContent() {
             }}>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center gap-2">
+                <label htmlFor="checkIn" className="text-sm font-medium flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-red-400" />
                   {t('checkIn')}
                 </label>
                 <input
                   type="date"
+                  id="checkIn"
+                  name="checkIn"
                   value={checkIn}
                   onChange={(e) => setCheckIn(e.target.value)}
                   className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -1422,12 +1424,14 @@ function ScarletTemplateContent() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center gap-2">
+                <label htmlFor="checkOut" className="text-sm font-medium flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-red-400" />
                   {t('checkOut')}
                 </label>
                 <input
                   type="date"
+                  id="checkOut"
+                  name="checkOut"
                   value={checkOut}
                   min={checkIn ? format(addDays(new Date(checkIn), 1), "yyyy-MM-dd") : ""}
                   onChange={(e) => setCheckOut(e.target.value)}
@@ -1436,11 +1440,13 @@ function ScarletTemplateContent() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center gap-2">
+                <label htmlFor="guests" className="text-sm font-medium flex items-center gap-2">
                   <Users className="h-4 w-4 text-red-400" />
                   {t('guests')}
                 </label>
                 <select
+                  id="guests"
+                  name="guests"
                   value={guests}
                   onChange={(e) => setGuests(Number(e.target.value))}
                   className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white focus:outline-none focus:ring-2 focus:ring-red-500"

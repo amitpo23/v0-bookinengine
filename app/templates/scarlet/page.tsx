@@ -1087,9 +1087,7 @@ function ScarletTemplateContent() {
             
             // Mark as unavailable for these dates
             available: false,
-            unavailableMessage: nights < 2 
-              ? "המלון דורש מינימום 2 לילות - נסו תאריכים ארוכים יותר" 
-              : "לא זמין לתאריכים אלו",
+            unavailableMessage: "אין זמינות לתאריכים אלו - נסו תאריכים אחרים",
             isFallback: true,
             
             // Add suggested alternative dates
@@ -1102,11 +1100,9 @@ function ScarletTemplateContent() {
         
         console.log(`💡 Fallback: Showing ${fallbackHotel.rooms.length} rooms from config as unavailable`)
         
-        // Show specific message for short stays
-        if (nights < 2 && !silent) {
-          showToast.warning('המלון דורש מינימום 2 לילות. מוצגים כל החדרים - אנא בחרו תאריכים ארוכים יותר.')
-        } else if (!silent) {
-          showToast.warning('אין זמינות לתאריכים אלו. מציג את כל סוגי החדרים - נסו תאריכים אחרים.')
+        // Show message for fallback data
+        if (!silent) {
+          showToast.info('מחירים בזמן אמת לא זמינים לתאריכים אלו. מציג מחירי בסיס.')
         }
       } else {
         // API results exist - use them
@@ -1485,20 +1481,7 @@ function ScarletTemplateContent() {
             </div>
             </form>
 
-            {/* Minimum Nights Warning */}
-            {checkIn && checkOut && (() => {
-              const nights = Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60 * 24))
-              return nights < 2 && (
-                <Alert className="mt-4 bg-yellow-900/30 border-yellow-500/50 text-yellow-200">
-                  <AlertCircle className="h-4 w-4 text-yellow-400" />
-                  <AlertDescription className="text-yellow-200">
-                    ⚠️ <strong>שימו לב:</strong> Scarlet Hotel דורש מינימום 2 לילות. 
-                    כרגע בחרתם {nights} {nights === 1 ? 'לילה' : 'לילות'} בלבד. 
-                    אנא בחרו תאריכים עם לפחות 2 לילות לקבלת תוצאות עם מחירים בפועל.
-                  </AlertDescription>
-                </Alert>
-              )
-            })()}
+            {/* Note: No minimum nights restriction - removed false warning */}
 
             {/* Error Message */}
             {booking.error && (

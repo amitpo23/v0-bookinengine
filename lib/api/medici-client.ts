@@ -597,8 +597,16 @@ export class MediciApiClient {
 
     for (const item of items) {
       // Support new Medici format with ShowExtendedData
-      const hotelIdRaw = item.id || item.hotelId || item.hotelCode || item.HotelId || item.hotel_id || 
-        (item.items?.[0]?.hotelId) || 0
+      // IMPORTANT: items[0].hotelId is most reliable - check it FIRST before item.id (which is often 0)
+      let hotelIdRaw = 
+        (item.items?.[0]?.hotelId) ||  // Most reliable: hotelId inside items array
+        item.hotelId ||                  // Direct hotelId field
+        (item.code?.split(':')?.[0]) ||  // Extract from code (e.g., "863233:standard:...")
+        item.hotelCode || 
+        item.HotelId || 
+        item.hotel_id ||
+        (item.id && item.id !== 0 ? item.id : null) ||  // Only use id if it's not 0
+        0
       const hotelId = typeof hotelIdRaw === "number" ? hotelIdRaw : Number.parseInt(String(hotelIdRaw), 10) || 0
       const hotelName = item.name || item.hotelName || item.HotelName || item.items?.[0]?.hotelName || "Unknown Hotel"
 

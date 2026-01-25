@@ -14,7 +14,7 @@ const scarletAgent = {
   id: "scarlet-concierge",
   name: "קונסיירז' סקרלט",
   englishName: "Scarlet Concierge",
-  avatar: "/scarlet-logo.png",
+  avatar: "/placeholder-logo.png",
   description: "הקונסיירז' הוירטואלי המתקדם של מלון סקרלט תל אביב עם 13 יכולות חכמות",
   tagline: "היכן שהאורבני פוגש את הרומנטי",
   

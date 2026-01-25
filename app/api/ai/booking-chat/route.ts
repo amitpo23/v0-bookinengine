@@ -1,4 +1,4 @@
-import { generateText } from "ai"
+import Groq from "groq-sdk"
 import type { HotelConfig } from "@/types/saas"
 import { getBookingAgentPrompt } from "@/lib/prompts/booking-agent-prompt"
 import { emailService } from "@/lib/email/email-service"
@@ -6,6 +6,11 @@ import { SearchLogger } from "@/lib/search-logger"
 import { format } from "date-fns"
 import { ChatMemoryService } from "@/lib/services/chat-memory-service"
 import { scarletKnowledgeBase } from "@/lib/hotels/scarlet-ai-knowledge"
+
+// Initialize Groq client
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+})
 
 const MEDICI_API_BASE = "https://medici-backend.azurewebsites.net"
 const MEDICI_IMAGES_BASE = "https://cdn.medicihotels.com/images/"
@@ -520,16 +525,23 @@ export async function POST(req: Request) {
     const conversationSummary = ChatMemoryService.getSummary(currentSessionId)
     systemPrompt += `\n\n## 💬 הקשר שיחה:\n${conversationSummary}`
 
-    console.log("[v0] Calling AI model...")
+    console.log("[v0] Calling AI model (Groq)...")
 
-    const { text } = await generateText({
-      model: "anthropic/claude-sonnet-4-20250514",
-      system: systemPrompt,
-      messages: messages.map((m) => ({
-        role: m.role as "user" | "assistant",
-        content: m.content,
-      })),
+    // Use Groq API for chat completion
+    const chatCompletion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...messages.map((m) => ({
+          role: m.role as "user" | "assistant",
+          content: m.content,
+        })),
+      ],
+      temperature: 0.7,
+      max_tokens: 2048,
     })
+
+    const text = chatCompletion.choices[0]?.message?.content || ""
 
     console.log("[v0] AI response:", text.slice(0, 500))
     

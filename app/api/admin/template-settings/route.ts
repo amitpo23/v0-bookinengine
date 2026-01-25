@@ -111,7 +111,7 @@ const defaultScarletSettings: TemplateSettings = {
   
   primaryColor: "#dc2626",
   accentColor: "#f97316",
-  logoUrl: "/scarlet-logo.png",
+  logoUrl: "/placeholder-logo.png",
   backgroundImageUrl: "/scarlet-hero.jpg",
   customCss: "",
   

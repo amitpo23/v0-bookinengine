@@ -747,7 +747,8 @@ function ScarletTemplateContent() {
       setCheckIn(tomorrow)
     }
     if (!checkOut) {
-      const dayAfter = format(addDays(new Date(), 3), "yyyy-MM-dd")
+      // Set to 4 days from now (3 nights) to ensure minimum stay requirement
+      const dayAfter = format(addDays(new Date(), 4), "yyyy-MM-dd")
       console.log('Setting checkOut to:', dayAfter)
       setCheckOut(dayAfter)
     }
@@ -1435,6 +1436,21 @@ function ScarletTemplateContent() {
               </div>
             </div>
             </form>
+
+            {/* Minimum Nights Warning */}
+            {checkIn && checkOut && (() => {
+              const nights = Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60 * 24))
+              return nights < 2 && (
+                <Alert className="mt-4 bg-yellow-900/30 border-yellow-500/50 text-yellow-200">
+                  <AlertCircle className="h-4 w-4 text-yellow-400" />
+                  <AlertDescription className="text-yellow-200">
+                    ⚠️ <strong>שימו לב:</strong> Scarlet Hotel דורש מינימום 2 לילות. 
+                    כרגע בחרתם {nights} {nights === 1 ? 'לילה' : 'לילות'} בלבד. 
+                    אנא בחרו תאריכים עם לפחות 2 לילות לקבלת תוצאות עם מחירים בפועל.
+                  </AlertDescription>
+                </Alert>
+              )
+            })()}
 
             {/* Error Message */}
             {booking.error && (

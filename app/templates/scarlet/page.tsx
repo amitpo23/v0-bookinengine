@@ -525,7 +525,7 @@ function normalizeApiRoom(apiRoom: any, index: number) {
     description: templateRoom.description,
     size: templateRoom.size,
     maxGuests: templateRoom.maxGuests,
-    basePrice: Math.round(apiRoom.buyPrice || 0), // REAL API PRICE!
+    basePrice: Math.round(apiRoom.buyPrice || apiRoom.basePrice || 0), // REAL API PRICE!
     currency: apiRoom.currency || "USD",
     features: templateRoom.features,
     isPremium: templateRoom.isPremium || false,
@@ -533,6 +533,13 @@ function normalizeApiRoom(apiRoom: any, index: number) {
     special: templateRoom.special,
     suitableFor: templateRoom.suitableFor,
     images: templateRoom.images,
+    
+    // Preserve fallback/static data markers
+    isFallback: apiRoom.isFallback || false,
+    isStaticData: apiRoom.isStaticData || false,
+    available: apiRoom.available !== false, // Default to true unless explicitly false
+    unavailableMessage: apiRoom.unavailableMessage,
+    
     apiRoom: apiRoom // Keep original API data for PreBook
   }
 }
@@ -797,18 +804,18 @@ function ScarletTemplateContent() {
     }
   }
 
-  // 🔥 LAYER 3: Static Data Fallback
+  // 🔥 LAYER 3: Static Data Fallback (via backend proxy to avoid CORS)
   const fetchStaticDataFallback = async (hotelId: string) => {
     try {
-      console.log('🏨 Fetching static data for hotel:', hotelId)
-      const response = await fetch(`https://static-data.innstant-servers.com/hotels/${hotelId}`)
+      console.log('🏨 Fetching static data via backend proxy for hotel:', hotelId)
+      const response = await fetch(`/api/hotels/static-data/${hotelId}`)
       
       if (!response.ok) {
-        throw new Error(`Static data API returned ${response.status}`)
+        throw new Error(`Static data proxy returned ${response.status}`)
       }
       
       const staticData = await response.json()
-      console.log('✅ Static data received:', staticData)
+      console.log('✅ Static data received via proxy:', staticData)
       
       // Create hotel object with config rooms
       return {
@@ -1874,10 +1881,14 @@ function ScarletTemplateContent() {
                   )}
 
                   {/* Price Tag or Unavailable Badge */}
-                  {room.isFallback ? (
+                  {room.isFallback || !room.basePrice || room.basePrice === 0 || room.available === false ? (
                     <div className="absolute bottom-4 left-4 bg-gray-800/90 backdrop-blur-md px-6 py-3 rounded-full border-2 border-yellow-500/50">
-                      <div className="text-lg font-bold text-yellow-400">לא זמין</div>
-                      <div className="text-xs text-gray-300">לתאריכים אלו</div>
+                      <div className="text-lg font-bold text-yellow-400">
+                        {room.isStaticData ? 'התקשרו למחירים' : 'לא זמין'}
+                      </div>
+                      <div className="text-xs text-gray-300">
+                        {room.unavailableMessage || 'לתאריכים אלו'}
+                      </div>
                     </div>
                   ) : (
                     <div className="absolute bottom-4 left-4 bg-red-600/90 backdrop-blur-md px-6 py-3 rounded-full">

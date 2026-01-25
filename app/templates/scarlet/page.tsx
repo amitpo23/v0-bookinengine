@@ -698,6 +698,14 @@ function ScarletTemplateContent() {
     }
   }, [showApiResults, scarletSearchResults])
 
+  // Debug: Log date changes
+  useEffect(() => {
+    console.log('📅 === DATES CHANGED ===')
+    console.log('checkIn:', checkIn)
+    console.log('checkOut:', checkOut)
+    console.log('guests:', guests)
+  }, [checkIn, checkOut, guests])
+
   // Auto-rotate background images every 5 seconds
   useEffect(() => {
     console.log('Setting up background image rotation for', scarletHotelConfig.images.length, 'images')
@@ -755,9 +763,12 @@ function ScarletTemplateContent() {
 
   // Real API Search
   const handleSearch = async (silent?: boolean) => {
-    console.log('handleSearch called! checkIn:', checkIn, 'checkOut:', checkOut)
+    console.log('🔍 === HANDLE SEARCH CALLED ===')
+    console.log('📅 Search params - checkIn:', checkIn, 'checkOut:', checkOut, 'guests:', guests)
+    console.log('🔇 Silent mode:', silent)
 
     if (!checkIn || !checkOut) {
+      console.warn('⚠️ Missing dates!')
       showToast?.('אנא בחרו תאריכים', 'error')
       return
     }
@@ -856,17 +867,69 @@ function ScarletTemplateContent() {
         })))
       } else if (searchResult && searchResult.length > 0) {
         console.warn('⚠️ API returned results but Scarlet (863233) was not found!')
-        console.log('Sample hotels from API:', searchResult.slice(0, 5).map((h: any) => ({ 
+        console.log('📦 ALL hotels from API:', searchResult.map((h: any) => ({ 
           id: h.hotelId, 
-          name: h.hotelName 
+          name: h.hotelName,
+          rooms: h.rooms?.length || 0
         })))
+        console.log('🔍 Raw first hotel from API:', JSON.stringify(searchResult[0], null, 2))
       }
 
-      setScarletSearchResults(scarletHotels)
-      setShowApiResults(true)
+      // ===== FALLBACK MECHANISM =====
+      // If no API results, create fallback display from config
+      if (scarletHotels.length === 0 || (scarletHotels[0] && scarletHotels[0].rooms?.length === 0)) {
+        console.log('🔄 Activating fallback mechanism - displaying all rooms from config as unavailable')
+        
+        // Create fallback hotel object with all rooms from config marked as unavailable
+        const fallbackHotel = {
+          hotelId: scarletHotelConfig.hotelId,
+          hotelName: scarletHotelConfig.hebrewName,
+          hotelNameEn: scarletHotelConfig.englishName,
+          address: scarletHotelConfig.address,
+          city: "Tel Aviv",
+          stars: 4,
+          rating: 4.5,
+          images: [scarletHotelConfig.images.heroBackground],
+          description: scarletHotelConfig.description,
+          rooms: Object.entries(scarletRoomTypes).map(([id, room]) => ({
+            roomId: `fallback_${id}`,
+            roomType: id,
+            roomName: room.hebrewName,
+            roomNameEn: room.englishName,
+            roomCategory: room.category,
+            description: room.description,
+            images: room.images,
+            maxOccupancy: room.maxOccupancy,
+            basePrice: room.basePrice,
+            totalPrice: room.basePrice,
+            currency: "USD",
+            boardType: "Room Only",
+            amenities: room.amenities,
+            
+            // Mark as unavailable for these dates
+            available: false,
+            unavailableMessage: "לא זמין לתאריכים אלו",
+            isFallback: true,
+            
+            // Add suggested alternative dates
+            suggestAlternativeDates: true
+          }))
+        }
+        
+        setScarletSearchResults([fallbackHotel])
+        setShowApiResults(true)
+        
+        console.log(`💡 Fallback: Showing ${fallbackHotel.rooms.length} rooms from config as unavailable`)
+      } else {
+        // API results exist - use them
+        setScarletSearchResults(scarletHotels)
+        setShowApiResults(true)
+      }
 
       // ===== LOG SEARCH TO ADMIN =====
       const roomCount = scarletHotels[0]?.rooms?.length || 0
+      const isFallback = scarletHotels.length === 0
+      
       logToAdmin({
         stage: 'search',
         sessionId: getSessionId(),
@@ -880,19 +943,15 @@ function ScarletTemplateContent() {
       if (!silent) {
         if (scarletHotels.length > 0 && scarletHotels[0]?.rooms?.length > 0) {
           showToast?.(`נמצאו ${scarletHotels[0].rooms.length} חדרים זמינים במלון סקרלט תל אביב`, 'success')
-        } else if (scarletHotels.length === 0) {
-          // No Scarlet Hotel found at all in API results
-          console.warn('⚠️ No Scarlet Hotel (863233) found in search results!')
+        } else if (scarletHotels.length === 0 || scarletHotels[0]?.rooms?.length === 0) {
+          // No API results - fallback activated
+          console.warn('⚠️ No availability from API - showing fallback rooms')
           console.log('Total API results:', searchResult?.length || 0)
-          showToast?.('מלון סקרלט לא זמין לתאריכים אלו. נסו תאריכים אחרים.', 'warning')
-        } else if (scarletHotels[0]?.rooms?.length === 0) {
-          // Scarlet found but no rooms available
-          console.warn('⚠️ Scarlet Hotel found but no rooms available')
-          showToast?.('אין חדרים פנויים במלון סקרלט לתאריכים אלו. נסו תאריכים אחרים.', 'warning')
+          showToast?.('אין זמינות לתאריכים אלו. מציג את כל סוגי החדרים - נסו תאריכים אחרים.', 'warning')
         }
       }
     } catch (err: any) {
-      console.error('Scarlet Hotel search failed:', err)
+      console.error('❌ Scarlet Hotel search failed:', err)
       
       // Clear results on error
       setScarletSearchResults([])
@@ -1118,6 +1177,36 @@ function ScarletTemplateContent() {
 
           {/* Search Box */}
           <Card className="bg-white/10 backdrop-blur-lg border-white/20 p-6 rounded-2xl max-w-4xl mx-auto">
+            <form onSubmit={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              
+              console.log('📝 === FORM SUBMITTED ===')
+              console.log('📅 Form values - checkIn:', checkIn, 'checkOut:', checkOut, 'guests:', guests)
+              
+              if (!checkIn || !checkOut) {
+                console.warn('⚠️ Missing dates on submit!')
+                showToast?.('אנא בחרו תאריכי כניסה ויציאה', 'error')
+                return
+              }
+              
+              if (new Date(checkOut) <= new Date(checkIn)) {
+                console.warn('⚠️ Invalid date range on submit!')
+                showToast?.('תאריך היציאה חייב להיות אחרי תאריך הכניסה', 'error')
+                return
+              }
+              
+              console.log('✅ Form validation passed - calling handleSearch')
+              
+              // Clear previous results
+              setShowApiResults(false)
+              setScarletSearchResults([])
+              
+              // Call search
+              handleSearch().catch(err => {
+                console.error('❌ Form handleSearch failed:', err)
+              })
+            }}>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium flex items-center gap-2">
@@ -1166,12 +1255,9 @@ function ScarletTemplateContent() {
 
               <div className="flex items-end">
                 <Button
-                  onClick={() => {
-                    console.log('Button clicked!')
-                    handleSearch()
-                  }}
-                  disabled={booking.isLoading}
-                  className="w-full h-[52px] bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg shadow-red-500/50 disabled:opacity-50"
+                  type="submit"
+                  disabled={booking.isLoading || !checkIn || !checkOut}
+                  className="w-full h-[52px] bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg shadow-red-500/50 disabled:opacity-50 cursor-pointer"
                 >
                   {booking.isLoading ? (
                     <>
@@ -1179,11 +1265,15 @@ function ScarletTemplateContent() {
                       {t('searching') || 'מחפש...'}
                     </>
                   ) : (
-                    t('searchRooms')
+                    <>
+                      <Sparkles className="h-4 w-4 ml-2" />
+                      {t('searchRooms')}
+                    </>
                   )}
                 </Button>
               </div>
             </div>
+            </form>
 
             {/* Error Message */}
             {booking.error && (
@@ -1512,6 +1602,19 @@ function ScarletTemplateContent() {
             </div>
           )}
           
+          {/* Fallback warning banner */}
+          {!booking.isLoading && showApiResults && scarletSearchResults.length > 0 && scarletSearchResults[0]?.rooms?.[0]?.isFallback && (
+            <Alert className="mb-8 bg-yellow-900/30 border-yellow-500/50 text-yellow-200">
+              <AlertCircle className="h-5 w-5 text-yellow-400" />
+              <AlertDescription className="text-base font-medium">
+                <div className="mb-2">⚠️ <strong>אין זמינות לתאריכים שבחרת</strong></div>
+                <div className="text-sm text-yellow-300">
+                  מציג את כל סוגי החדרים במלון סקרלט. אנא בחר תאריכים אחרים כדי לבדוק זמינות ומחירים עדכניים.
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Room cards - show API results */}
           {!booking.isLoading && (() => {
             const shouldShowApi = showApiResults && scarletSearchResults.length > 0
@@ -1529,7 +1632,7 @@ function ScarletTemplateContent() {
             if (roomsToRender[0]) {
               console.log('First room price (basePrice):', roomsToRender[0].basePrice)
               console.log('First room currency:', roomsToRender[0].currency)
-              console.log('First room apiRoom:', roomsToRender[0].apiRoom)
+              console.log('First room isFallback:', roomsToRender[0].isFallback)
             }
             
             return roomsToRender
@@ -1537,7 +1640,9 @@ function ScarletTemplateContent() {
             <Card
               key={room.id}
               className={`bg-gradient-to-br ${
-                room.isPremium
+                room.isFallback
+                  ? "from-gray-800/40 via-gray-900/40 to-gray-900/40 border-gray-600/30 opacity-75"
+                  : room.isPremium
                   ? "from-yellow-900/20 via-gray-900/20 to-gray-900/20 border-yellow-500/30"
                   : room.wowFactor
                   ? "from-pink-900/20 via-gray-900/20 to-gray-900/20 border-pink-500/30"
@@ -1644,13 +1749,20 @@ function ScarletTemplateContent() {
                     </div>
                   )}
 
-                  {/* Price Tag */}
-                  <div className="absolute bottom-4 left-4 bg-red-600/90 backdrop-blur-md px-6 py-3 rounded-full">
-                    <div className="text-2xl font-bold">
-                      {room.currency === 'USD' ? '$' : room.currency === 'EUR' ? '€' : '₪'}{room.basePrice}
+                  {/* Price Tag or Unavailable Badge */}
+                  {room.isFallback ? (
+                    <div className="absolute bottom-4 left-4 bg-gray-800/90 backdrop-blur-md px-6 py-3 rounded-full border-2 border-yellow-500/50">
+                      <div className="text-lg font-bold text-yellow-400">לא זמין</div>
+                      <div className="text-xs text-gray-300">לתאריכים אלו</div>
                     </div>
-                    <div className="text-xs text-gray-200">{t('perNight')}</div>
-                  </div>
+                  ) : (
+                    <div className="absolute bottom-4 left-4 bg-red-600/90 backdrop-blur-md px-6 py-3 rounded-full">
+                      <div className="text-2xl font-bold">
+                        {room.currency === 'USD' ? '$' : room.currency === 'EUR' ? '€' : '₪'}{room.basePrice}
+                      </div>
+                      <div className="text-xs text-gray-200">{t('perNight')}</div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Content */}
@@ -1714,14 +1826,25 @@ function ScarletTemplateContent() {
                   )}
 
                   <Button
-                    onClick={() => handleSelectRoom(room)}
+                    onClick={() => room.isFallback ? window.scrollTo({ top: 0, behavior: 'smooth' }) : handleSelectRoom(room)}
                     disabled={booking.isLoading}
-                    className="w-full h-14 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-lg rounded-lg shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-all disabled:opacity-50"
+                    className={`w-full h-14 ${
+                      room.isFallback
+                        ? "bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700"
+                        : "bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700"
+                    } text-white font-bold text-lg rounded-lg shadow-lg ${
+                      room.isFallback ? "shadow-yellow-500/30 hover:shadow-yellow-500/50" : "shadow-red-500/30 hover:shadow-red-500/50"
+                    } transition-all disabled:opacity-50`}
                   >
                     {booking.isLoading ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin ml-2" />
                         {t('processing') || 'מעבד...'}
+                      </>
+                    ) : room.isFallback ? (
+                      <>
+                        <Calendar className="h-5 w-5 ml-2" />
+                        בחר תאריכים אחרים
                       </>
                     ) : (
                       t('bookNow')

@@ -206,6 +206,11 @@ export class MediciApiClient {
       })
 
       console.log("✅ Medici API response received, length:", JSON.stringify(response).length)
+      console.log("=" * 80)
+      console.log("📦 RAW MEDICI RESPONSE - FIRST HOTEL:")
+      console.log(JSON.stringify(response[0], null, 2))
+      console.log("=" * 80)
+      
       const hotels = this.transformSearchResults(response)
       console.log("🏨 Transformed to", hotels.length, "hotels")
 

@@ -502,7 +502,10 @@ class MediciApiClient {
             aetherAccessToken: KNOWAA_LIVE_AETHER_TOKEN,
             aetherApplicationKey: KNOWAA_LIVE_AETHER_APP_KEY
         };
-        if (params.hotelName) {
+        if (params.hotelId) {
+            searchBody.hotelId = Number(params.hotelId);
+            console.log("🎯 Direct hotel ID search:", params.hotelId);
+        } else if (params.hotelName) {
             searchBody.hotelName = params.hotelName;
         } else if (params.city) {
             searchBody.city = params.city;
@@ -1309,11 +1312,12 @@ async function POST(request) {
     try {
         const body = await request.json();
         console.log("🔥 REAL API - Body received:", JSON.stringify(body, null, 2));
-        const { hotelName, city, adults, children, stars, limit } = body;
+        const { hotelName, hotelId, city, adults, children, stars, limit } = body;
         const dateFrom = body.dateFrom || body.checkIn;
         const dateTo = body.dateTo || body.checkOut;
         const cityParam = body.city || body.destination;
         console.log("🔍 Searching Medici API for:", {
+            hotelId,
             hotelName,
             city: cityParam,
             dateFrom,
@@ -1326,9 +1330,9 @@ async function POST(request) {
                 status: 400
             });
         }
-        if (!hotelName && !cityParam) {
+        if (!hotelId && !hotelName && !cityParam) {
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-                error: "Either hotelName or city is required"
+                error: "Either hotelId, hotelName or city is required"
             }, {
                 status: 400
             });
@@ -1336,6 +1340,7 @@ async function POST(request) {
         const results = await __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$api$2f$medici$2d$client$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__["mediciApi"].searchHotels({
             dateFrom,
             dateTo,
+            hotelId: hotelId || undefined,
             hotelName: hotelName || undefined,
             city: cityParam || undefined,
             adults: adults || 2,

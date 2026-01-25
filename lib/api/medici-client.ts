@@ -185,13 +185,19 @@ export class MediciApiClient {
       aetherApplicationKey: KNOWAA_LIVE_AETHER_APP_KEY, // Application key for Knowaa Live
     }
 
+    // IMPORTANT: Medici API works best with city, even when hotelId is provided
+    // Send city first, then add hotelId/hotelName as additional filter
+    if (params.city) {
+      searchBody.city = params.city
+    }
+    
     if (params.hotelId) {
       searchBody.hotelId = Number(params.hotelId)
-      console.log("🎯 Direct hotel ID search:", params.hotelId)
-    } else if (params.hotelName) {
+      console.log("🎯 Direct hotel ID search:", params.hotelId, "with city:", params.city || "none")
+    }
+    
+    if (params.hotelName) {
       searchBody.hotelName = params.hotelName
-    } else if (params.city) {
-      searchBody.city = params.city
     }
 
     console.log("🌐 ========== MEDICI API REQUEST ==========")

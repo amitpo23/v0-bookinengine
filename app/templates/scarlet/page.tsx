@@ -862,15 +862,23 @@ function ScarletTemplateContent() {
     isSearchingRef.current = true
     
     try {
-      // Get current values from ref (avoiding closure issues)
-      const { checkIn: currentCheckIn, checkOut: currentCheckOut, guests: currentGuests } = searchParamsRef.current
+      // CRITICAL FIX: Use latest state values, not ref!
+      // The ref may be stale if called immediately after state update
+      const currentCheckIn = checkIn || searchParamsRef.current.checkIn
+      const currentCheckOut = checkOut || searchParamsRef.current.checkOut
+      const currentGuests = guests || searchParamsRef.current.guests
       
       console.log('🔍 === HANDLE SEARCH CALLED ===')
-      console.log('📅 Search params from ref:', { currentCheckIn, currentCheckOut, currentGuests })
+      console.log('📅 State values:', { checkIn, checkOut, guests })
+      console.log('📦 Ref values:', searchParamsRef.current)
+      console.log('✅ Using values:', { currentCheckIn, currentCheckOut, currentGuests })
       console.log('🔇 Silent mode:', silent)
+      console.log('⏰ Timestamp:', new Date().toISOString())
 
       if (!currentCheckIn || !currentCheckOut) {
         console.warn('⚠️ Missing dates!')
+        console.warn('⚠️ State:', { checkIn, checkOut })
+        console.warn('⚠️ Ref:', searchParamsRef.current)
         showToast.error('אנא בחרו תאריכים')
         return
       }
@@ -1123,7 +1131,7 @@ function ScarletTemplateContent() {
       isSearchingRef.current = false
       console.log('🏁 Search completed')
     }
-  }, [booking, showToast]) // Add dependencies for useCallback
+  }, [checkIn, checkOut, guests, booking, showToast]) // CRITICAL: Include state values in dependencies!
 
   // Trigger auto-search once handleSearch is defined
   useEffect(() => {

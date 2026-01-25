@@ -903,38 +903,78 @@ function ScarletTemplateContent() {
       try {
         let searchResult = null
         let searchError = null
+        let scarletHotels: any[] = []
         
-        // 🔥 LAYER 2: Strategy 1 with retry - City search
+        // 🔥 STRATEGY 0: DIRECT HOTEL ID SEARCH (MOST RELIABLE)
+        // This should ALWAYS return Scarlet if it's available
         try {
-          console.log('🔍 Strategy 1: Searching Tel Aviv with limit 100 (with retry)...')
-          const searchParams = {
-            checkIn: new Date(currentCheckIn),
-            checkOut: new Date(currentCheckOut),
-            adults: currentGuests,
-            children: [],
-            city: "Tel Aviv",
-            limit: 100
+          console.log('🎯 Strategy 0: DIRECT search by hotelId 863233...')
+          const directResult = await searchWithRetry(async () => {
+            return await booking.searchHotels({
+              checkIn: new Date(currentCheckIn),
+              checkOut: new Date(currentCheckOut),
+              adults: currentGuests,
+              children: [],
+              hotelId: "863233"  // Direct Scarlet Hotel ID
+            })
+          })
+          
+          console.log(`📊 Strategy 0 returned ${directResult?.length || 0} results`)
+          
+          if (directResult && directResult.length > 0) {
+            console.log('✅ Strategy 0 SUCCESS! Found Scarlet directly by ID')
+            scarletHotels = directResult.filter(isScarletHotel)
+            if (scarletHotels.length > 0) {
+              console.log('🎉 Scarlet Hotel found via direct ID search!')
+            }
           }
-          console.log('📤 API Request Params:', {
-            checkIn: searchParams.checkIn.toISOString(),
-            checkOut: searchParams.checkOut.toISOString(),
-            adults: searchParams.adults,
-            city: searchParams.city,
-            limit: searchParams.limit
-          })
-          searchResult = await searchWithRetry(async () => {
-            return await booking.searchHotels(searchParams)
-          })
         } catch (error) {
-          console.warn('❌ Strategy 1 (city) failed after retries:', error)
-          searchError = error
+          console.warn('⚠️ Strategy 0 (direct ID) failed:', error)
+        }
+        
+        // Only try other strategies if Strategy 0 didn't find Scarlet
+        if (scarletHotels.length === 0) {
+          // 🔥 STRATEGY 1: City search (backup)
+          try {
+            console.log('🔍 Strategy 1: Searching Tel Aviv with limit 100 (with retry)...')
+            const searchParams = {
+              checkIn: new Date(currentCheckIn),
+              checkOut: new Date(currentCheckOut),
+              adults: currentGuests,
+              children: [],
+              city: "Tel Aviv",
+              limit: 100
+            }
+            console.log('📤 API Request Params:', {
+              checkIn: searchParams.checkIn.toISOString(),
+              checkOut: searchParams.checkOut.toISOString(),
+              adults: searchParams.adults,
+              city: searchParams.city,
+              limit: searchParams.limit
+            })
+            searchResult = await searchWithRetry(async () => {
+              return await booking.searchHotels(searchParams)
+            })
+            
+            // Filter for Scarlet
+            if (searchResult && searchResult.length > 0) {
+              const filtered = searchResult.filter(isScarletHotel)
+              if (filtered.length > 0) {
+                console.log('✅ Strategy 1: Found Scarlet in city results')
+                scarletHotels = filtered
+              }
+            }
+          } catch (error) {
+            console.warn('❌ Strategy 1 (city) failed after retries:', error)
+            searchError = error
+          }
         }
 
-        // Strategy 2 with retry: Fallback to hotelName search if city failed
-        if (!searchResult && searchError) {
+        // Strategy 2: Fallback to hotelName search if nothing found yet
+        if (scarletHotels.length === 0) {
           try {
             console.log('🔍 Strategy 2: Searching by hotelName "Scarlet" (with retry)...')
-            searchResult = await searchWithRetry(async () => {
+            const nameResult = await searchWithRetry(async () => {
               return await booking.searchHotels({
                 checkIn: new Date(currentCheckIn),
                 checkOut: new Date(currentCheckOut),
@@ -943,26 +983,22 @@ function ScarletTemplateContent() {
                 hotelName: "Scarlet"
               })
             })
+            if (nameResult && nameResult.length > 0) {
+              const filtered = nameResult.filter(isScarletHotel)
+              if (filtered.length > 0) {
+                console.log('✅ Strategy 2: Found Scarlet by name search')
+                scarletHotels = filtered
+              }
+            }
           } catch (fallbackError) {
             console.warn('❌ Strategy 2 (name) failed after retries:', fallbackError)
           }
         }
 
-        // Filter ONLY Scarlet Hotel Tel Aviv by ID 863233
-        console.log(`📊 Total API results before filter: ${searchResult?.length || 0}`)
+        console.log(`🎯 Found ${scarletHotels.length} Scarlet Hotel (ID: 863233) results after all strategies`)
         
-        let scarletHotels = searchResult?.filter((hotel: any) => {
-          const match = isScarletHotel(hotel)
-          if (!match && hotel.hotelId) {
-            console.log('❌ Filtered out hotel:', hotel.hotelId, hotel.hotelName)
-          }
-          return match
-        }) || []
-
-        console.log(`🎯 Found ${scarletHotels.length} Scarlet Hotel (ID: 863233) results after filter`)
-        
-        // Strategy 3 with retry: If city search didn't return Scarlet, try searching with "Scarlet Hotel"
-        if (scarletHotels.length === 0 && searchResult && searchResult.length > 0) {
+        // Strategy 3: If still nothing, try city + hotelName combination
+        if (scarletHotels.length === 0) {
           console.log('🔍 Strategy 3: Trying search with full hotel name "Scarlet Hotel" (with retry)...')
           try {
             const directSearch = await searchWithRetry(async () => {
@@ -1011,14 +1047,8 @@ function ScarletTemplateContent() {
             name: h.hotelName, 
             rooms: h.rooms?.length || 0 
           })))
-        } else if (searchResult && searchResult.length > 0) {
-          console.warn('⚠️ API returned results but Scarlet (863233) was not found!')
-          console.log('📦 ALL hotels from API:', searchResult.map((h: any) => ({ 
-            id: h.hotelId, 
-            name: h.hotelName,
-            rooms: h.rooms?.length || 0
-          })))
-          console.log('🔍 Raw first hotel from API:', JSON.stringify(searchResult[0], null, 2))
+        } else {
+          console.warn('⚠️ No Scarlet results found from any strategy!')
         }
 
         // 🔥 LAYER 4 & 5: Config Fallback - If no API results, create fallback display from config

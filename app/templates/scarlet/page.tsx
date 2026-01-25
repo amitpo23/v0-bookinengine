@@ -875,6 +875,12 @@ function ScarletTemplateContent() {
         return
       }
 
+      // Check number of nights
+      const checkInDate = new Date(currentCheckIn)
+      const checkOutDate = new Date(currentCheckOut)
+      const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
+      console.log(`📅 Nights: ${nights}`)
+
       setShowApiResults(false)
       setScarletSearchResults([])
 
@@ -938,9 +944,9 @@ function ScarletTemplateContent() {
 
         console.log(`🎯 Found ${scarletHotels.length} Scarlet Hotel (ID: 863233) results after filter`)
         
-        // Strategy 3 with retry: If city search didn't return Scarlet, try direct hotel ID search
+        // Strategy 3 with retry: If city search didn't return Scarlet, try searching with "Scarlet Hotel"
         if (scarletHotels.length === 0 && searchResult && searchResult.length > 0) {
-          console.log('🔍 Strategy 3: Trying direct search by hotel ID 863233 (with retry)...')
+          console.log('🔍 Strategy 3: Trying search with full hotel name "Scarlet Hotel" (with retry)...')
           try {
             const directSearch = await searchWithRetry(async () => {
               return await booking.searchHotels({
@@ -948,19 +954,26 @@ function ScarletTemplateContent() {
                 checkOut: new Date(currentCheckOut),
                 adults: currentGuests,
                 children: [],
-                hotelId: "863233"
+                city: "Tel Aviv",
+                hotelName: "Scarlet Hotel"
               })
             })
             
+            console.log(`📊 Strategy 3 returned ${directSearch?.length || 0} results`)
             if (directSearch && directSearch.length > 0) {
-              console.log('✅ Found Scarlet via direct ID search!')
+              console.log('🔍 Hotels from Strategy 3:', directSearch.map((h: any) => `${h.hotelId} - ${h.hotelName}`))
               const filteredDirect = directSearch.filter(isScarletHotel)
               if (filteredDirect.length > 0) {
+                console.log('✅ Found Scarlet via full hotel name search!')
                 scarletHotels = filteredDirect
+              } else {
+                console.warn('⚠️ Strategy 3 returned results but none matched Scarlet (863233)')
               }
+            } else {
+              console.warn('⚠️ Strategy 3 returned no results')
             }
           } catch (directError) {
-            console.warn('❌ Strategy 3 (direct ID) failed after retries:', directError)
+            console.warn('❌ Strategy 3 (full hotel name) failed after retries:', directError)
           }
         }
         
@@ -1023,7 +1036,9 @@ function ScarletTemplateContent() {
             
             // Mark as unavailable for these dates
             available: false,
-            unavailableMessage: "לא זמין לתאריכים אלו",
+            unavailableMessage: nights < 2 
+              ? "המלון דורש מינימום 2 לילות - נסו תאריכים ארוכים יותר" 
+              : "לא זמין לתאריכים אלו",
             isFallback: true,
             
             // Add suggested alternative dates
@@ -1035,6 +1050,13 @@ function ScarletTemplateContent() {
         setShowApiResults(true)
         
         console.log(`💡 Fallback: Showing ${fallbackHotel.rooms.length} rooms from config as unavailable`)
+        
+        // Show specific message for short stays
+        if (nights < 2 && !silent) {
+          showToast.warning('המלון דורש מינימום 2 לילות. מוצגים כל החדרים - אנא בחרו תאריכים ארוכים יותר.')
+        } else if (!silent) {
+          showToast.warning('אין זמינות לתאריכים אלו. מציג את כל סוגי החדרים - נסו תאריכים אחרים.')
+        }
       } else {
         // API results exist - use them
         setScarletSearchResults(scarletHotels)

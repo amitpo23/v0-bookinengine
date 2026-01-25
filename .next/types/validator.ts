@@ -794,6 +794,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../app/api/debug/raw-medici/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/debug/raw-medici">> = Specific
+  const handler = {} as typeof import("../../app/api/debug/raw-medici/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../app/api/destination/attractions/route.ts
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/destination/attractions">> = Specific
@@ -969,6 +978,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/hotels/search">> = Specific
   const handler = {} as typeof import("../../app/api/hotels/search/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../app/api/hotels/static-data/[hotelId]/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/hotels/static-data/[hotelId]">> = Specific
+  const handler = {} as typeof import("../../app/api/hotels/static-data/[hotelId]/route.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check

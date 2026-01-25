@@ -907,9 +907,10 @@ function ScarletTemplateContent() {
         
         // 🔥 STRATEGY 0: DIRECT HOTEL ID SEARCH (MOST RELIABLE)
         // This should ALWAYS return Scarlet if it's available
-        // Note: Medici API requires city even when searching by hotelId
+        // Note: Medici API requires city AND limit - hotelId alone returns error
+        // Scarlet is typically at position 30-34 in results, so limit must be > 34
         try {
-          console.log('🎯 Strategy 0: DIRECT search by hotelId 863233 + city Tel Aviv...')
+          console.log('🎯 Strategy 0: DIRECT search by hotelId 863233 + city Tel Aviv + limit 100...')
           const directResult = await searchWithRetry(async () => {
             return await booking.searchHotels({
               checkIn: new Date(currentCheckIn),
@@ -917,7 +918,8 @@ function ScarletTemplateContent() {
               adults: currentGuests,
               children: [],
               hotelId: "863233",  // Direct Scarlet Hotel ID
-              city: "Tel Aviv"   // Required by Medici API
+              city: "Tel Aviv",  // Required by Medici API
+              limit: 100         // CRITICAL: Scarlet is at position ~30-34, need limit > 34
             })
           })
           

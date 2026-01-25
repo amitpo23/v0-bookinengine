@@ -37,6 +37,14 @@
       "namedRegex": "^/api/embed/config/(?<nxtPhotelId>[^/]+?)(?:/)?$"
     },
     {
+      "page": "/api/hotels/static-data/[hotelId]",
+      "regex": "^/api/hotels/static\\-data/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPhotelId": "nxtPhotelId"
+      },
+      "namedRegex": "^/api/hotels/static\\-data/(?<nxtPhotelId>[^/]+?)(?:/)?$"
+    },
+    {
       "page": "/embed/ai-chat/[hotelId]",
       "regex": "^/embed/ai\\-chat/([^/]+?)(?:/)?$",
       "routeKeys": {
@@ -415,6 +423,12 @@
       "regex": "^/api/customer/recommendations(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/customer/recommendations(?:/)?$"
+    },
+    {
+      "page": "/api/debug/raw-medici",
+      "regex": "^/api/debug/raw\\-medici(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/debug/raw\\-medici(?:/)?$"
     },
     {
       "page": "/api/debug-token",

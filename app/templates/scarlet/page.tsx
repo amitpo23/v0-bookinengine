@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { format } from "date-fns"
 import { he } from "date-fns/locale"
 import { Calendar, Users, Heart, Sparkles, Bath, Home, Crown, User, ChevronLeft, ChevronRight, MessageCircle, X, Loader2, AlertCircle } from "lucide-react"
@@ -669,6 +669,16 @@ function ScarletTemplateContent() {
   const [prebookExpiry, setPrebookExpiry] = useState<Date | null>(null)
   const [scarletSearchResults, setScarletSearchResults] = useState<any[]>([])
   const [hasAutoSearched, setHasAutoSearched] = useState(false)
+  
+  // 🔥 LAYER 1: Use refs to avoid closure issues
+  const searchParamsRef = useRef({ checkIn, checkOut, guests })
+  const isSearchingRef = useRef(false)
+
+  // Update ref whenever search params change
+  useEffect(() => {
+    searchParamsRef.current = { checkIn, checkOut, guests }
+    console.log('📦 Search params ref updated:', searchParamsRef.current)
+  }, [checkIn, checkOut, guests])
 
   // Track page view on mount
   useEffect(() => {
@@ -758,153 +768,251 @@ function ScarletTemplateContent() {
     
     console.log('Starting auto search...')
     setHasAutoSearched(true)
-    handleSearch(true).catch((err) => console.error('Auto search failed', err))
+    // handleSearch will be defined below
   }, [checkIn, checkOut, hasAutoSearched])
 
-  // Real API Search
-  const handleSearch = async (silent?: boolean) => {
-    console.log('🔍 === HANDLE SEARCH CALLED ===')
-    console.log('📅 Search params - checkIn:', checkIn, 'checkOut:', checkOut, 'guests:', guests)
-    console.log('🔇 Silent mode:', silent)
+  // 🔥 LAYER 2: Retry logic with exponential backoff
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+  
+  const searchWithRetry = async (searchFn: () => Promise<any>, maxRetries = 3) => {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🔄 Attempt ${attempt}/${maxRetries}`)
+        const result = await searchFn()
+        console.log(`✅ Attempt ${attempt} succeeded`)
+        return result
+      } catch (error) {
+        console.warn(`⚠️ Attempt ${attempt} failed:`, error)
+        
+        if (attempt === maxRetries) {
+          console.error(`❌ All ${maxRetries} attempts failed`)
+          throw error
+        }
+        
+        // Exponential backoff: 1s, 2s, 4s
+        const waitTime = 1000 * Math.pow(2, attempt - 1)
+        console.log(`⏳ Waiting ${waitTime}ms before retry...`)
+        await sleep(waitTime)
+      }
+    }
+  }
 
-    if (!checkIn || !checkOut) {
-      console.warn('⚠️ Missing dates!')
-      showToast?.('אנא בחרו תאריכים', 'error')
+  // 🔥 LAYER 3: Static Data Fallback
+  const fetchStaticDataFallback = async (hotelId: string) => {
+    try {
+      console.log('🏨 Fetching static data for hotel:', hotelId)
+      const response = await fetch(`https://static-data.innstant-servers.com/hotels/${hotelId}`)
+      
+      if (!response.ok) {
+        throw new Error(`Static data API returned ${response.status}`)
+      }
+      
+      const staticData = await response.json()
+      console.log('✅ Static data received:', staticData)
+      
+      // Create hotel object with config rooms
+      return {
+        hotelId: staticData.id,
+        hotelName: staticData.name,
+        address: staticData.address,
+        city: staticData.city,
+        stars: staticData.stars,
+        rating: staticData.rating,
+        images: scarletHotelConfig.images,
+        description: scarletHotelConfig.description,
+        rooms: scarletRoomTypes.map((room) => ({
+          roomId: `static_${room.id}`,
+          roomType: room.id,
+          roomName: room.hebrewName,
+          roomCategory: room.id,
+          description: room.description,
+          images: room.images,
+          maxOccupancy: room.maxGuests,
+          basePrice: room.basePrice,
+          totalPrice: room.basePrice,
+          currency: "USD",
+          boardType: "Room Only",
+          amenities: room.features,
+          available: false,
+          isStaticData: true,
+          unavailableMessage: "מחירים משוערים - אנא התקשרו לאישור"
+        }))
+      }
+    } catch (error) {
+      console.error('❌ Static data fallback failed:', error)
+      return null
+    }
+  }
+
+  // Real API Search with all 5 layers of protection
+  const handleSearch = useCallback(async (silent?: boolean) => {
+    // Prevent concurrent searches
+    if (isSearchingRef.current) {
+      console.warn('⚠️ Search already in progress, skipping...')
       return
     }
 
-    setShowApiResults(false)
-    setScarletSearchResults([])
-
-    trackSearch(`${checkIn} to ${checkOut}, ${guests} guests`, {
-      check_in: checkIn,
-      check_out: checkOut,
-      guests,
-      hotel_id: scarletHotelConfig.hotelId
-    })
-
+    isSearchingRef.current = true
+    
     try {
-      // Multi-strategy search for Scarlet Hotel Tel Aviv
-      // Based on API tests: city search with higher limit finds Scarlet Tel Aviv
-      let searchResult = null
-      let searchError = null
+      // Get current values from ref (avoiding closure issues)
+      const { checkIn: currentCheckIn, checkOut: currentCheckOut, guests: currentGuests } = searchParamsRef.current
       
-      // Strategy 1: City search with high limit (this worked in tests)
+      console.log('🔍 === HANDLE SEARCH CALLED ===')
+      console.log('📅 Search params from ref:', { currentCheckIn, currentCheckOut, currentGuests })
+      console.log('🔇 Silent mode:', silent)
+
+      if (!currentCheckIn || !currentCheckOut) {
+        console.warn('⚠️ Missing dates!')
+        showToast.error('אנא בחרו תאריכים')
+        return
+      }
+
+      setShowApiResults(false)
+      setScarletSearchResults([])
+
+      trackSearch(`${currentCheckIn} to ${currentCheckOut}, ${currentGuests} guests`, {
+        check_in: currentCheckIn,
+        check_out: currentCheckOut,
+        guests: currentGuests,
+        hotel_id: scarletHotelConfig.hotelId
+      })
+
       try {
-        console.log('🔍 Searching Tel Aviv with limit 100...')
-        searchResult = await booking.searchHotels({
-          checkIn: new Date(checkIn),
-          checkOut: new Date(checkOut),
-          adults: guests,
-          children: [],
-          city: "Tel Aviv",
-          limit: 100
-        })
-      } catch (error) {
-        console.warn('City search failed:', error)
-        searchError = error
-      }
-
-      // Strategy 2: Fallback to hotelName search if city failed
-      if (!searchResult && searchError) {
-        try {
-          console.log('🔍 Fallback: Searching by hotelName "Scarlet"...')
-          searchResult = await booking.searchHotels({
-            checkIn: new Date(checkIn),
-            checkOut: new Date(checkOut),
-            adults: guests,
-            children: [],
-            hotelName: "Scarlet"
-          })
-        } catch (fallbackError) {
-          console.error('Both search strategies failed:', { searchError, fallbackError })
-          throw fallbackError
-        }
-      }
-
-      // Filter ONLY Scarlet Hotel Tel Aviv by ID 863233
-      console.log(`📊 Total API results before filter: ${searchResult?.length || 0}`)
-      
-      let scarletHotels = searchResult?.filter((hotel: any) => {
-        const match = isScarletHotel(hotel)
-        if (!match && hotel.hotelId) {
-          console.log('❌ Filtered out hotel:', hotel.hotelId, hotel.hotelName)
-        }
-        return match
-      }) || []
-
-      console.log(`🎯 Found ${scarletHotels.length} Scarlet Hotel (ID: 863233) results after filter`)
-      
-      // Strategy 3: If city search didn't return Scarlet, try direct hotel ID search
-      if (scarletHotels.length === 0 && searchResult && searchResult.length > 0) {
-        console.log('🔍 Strategy 3: Trying direct search by hotel ID 863233...')
-        try {
-          const directSearch = await booking.searchHotels({
-            checkIn: new Date(checkIn),
-            checkOut: new Date(checkOut),
-            adults: guests,
-            children: [],
-            hotelId: "863233"
-          })
-          
-          if (directSearch && directSearch.length > 0) {
-            console.log('✅ Found Scarlet via direct ID search!')
-            const filteredDirect = directSearch.filter(isScarletHotel)
-            if (filteredDirect.length > 0) {
-              scarletHotels = filteredDirect
-            }
-          }
-        } catch (directError) {
-          console.warn('Direct hotel ID search failed:', directError)
-        }
-      }
-      
-      if (scarletHotels.length > 0) {
-        console.log('Scarlet hotels:', scarletHotels.map((h: any) => ({ 
-          id: h.hotelId, 
-          name: h.hotelName, 
-          rooms: h.rooms?.length || 0 
-        })))
-      } else if (searchResult && searchResult.length > 0) {
-        console.warn('⚠️ API returned results but Scarlet (863233) was not found!')
-        console.log('📦 ALL hotels from API:', searchResult.map((h: any) => ({ 
-          id: h.hotelId, 
-          name: h.hotelName,
-          rooms: h.rooms?.length || 0
-        })))
-        console.log('🔍 Raw first hotel from API:', JSON.stringify(searchResult[0], null, 2))
-      }
-
-      // ===== FALLBACK MECHANISM =====
-      // If no API results, create fallback display from config
-      if (scarletHotels.length === 0 || (scarletHotels[0] && scarletHotels[0].rooms?.length === 0)) {
-        console.log('🔄 Activating fallback mechanism - displaying all rooms from config as unavailable')
+        let searchResult = null
+        let searchError = null
         
-        // Create fallback hotel object with all rooms from config marked as unavailable
-        const fallbackHotel = {
+        // 🔥 LAYER 2: Strategy 1 with retry - City search
+        try {
+          console.log('🔍 Strategy 1: Searching Tel Aviv with limit 100 (with retry)...')
+          searchResult = await searchWithRetry(async () => {
+            return await booking.searchHotels({
+              checkIn: new Date(currentCheckIn),
+              checkOut: new Date(currentCheckOut),
+              adults: currentGuests,
+              children: [],
+              city: "Tel Aviv",
+              limit: 100
+            })
+          })
+        } catch (error) {
+          console.warn('❌ Strategy 1 (city) failed after retries:', error)
+          searchError = error
+        }
+
+        // Strategy 2 with retry: Fallback to hotelName search if city failed
+        if (!searchResult && searchError) {
+          try {
+            console.log('🔍 Strategy 2: Searching by hotelName "Scarlet" (with retry)...')
+            searchResult = await searchWithRetry(async () => {
+              return await booking.searchHotels({
+                checkIn: new Date(currentCheckIn),
+                checkOut: new Date(currentCheckOut),
+                adults: currentGuests,
+                children: [],
+                hotelName: "Scarlet"
+              })
+            })
+          } catch (fallbackError) {
+            console.warn('❌ Strategy 2 (name) failed after retries:', fallbackError)
+          }
+        }
+
+        // Filter ONLY Scarlet Hotel Tel Aviv by ID 863233
+        console.log(`📊 Total API results before filter: ${searchResult?.length || 0}`)
+        
+        let scarletHotels = searchResult?.filter((hotel: any) => {
+          const match = isScarletHotel(hotel)
+          if (!match && hotel.hotelId) {
+            console.log('❌ Filtered out hotel:', hotel.hotelId, hotel.hotelName)
+          }
+          return match
+        }) || []
+
+        console.log(`🎯 Found ${scarletHotels.length} Scarlet Hotel (ID: 863233) results after filter`)
+        
+        // Strategy 3 with retry: If city search didn't return Scarlet, try direct hotel ID search
+        if (scarletHotels.length === 0 && searchResult && searchResult.length > 0) {
+          console.log('🔍 Strategy 3: Trying direct search by hotel ID 863233 (with retry)...')
+          try {
+            const directSearch = await searchWithRetry(async () => {
+              return await booking.searchHotels({
+                checkIn: new Date(currentCheckIn),
+                checkOut: new Date(currentCheckOut),
+                adults: currentGuests,
+                children: [],
+                hotelId: "863233"
+              })
+            })
+            
+            if (directSearch && directSearch.length > 0) {
+              console.log('✅ Found Scarlet via direct ID search!')
+              const filteredDirect = directSearch.filter(isScarletHotel)
+              if (filteredDirect.length > 0) {
+                scarletHotels = filteredDirect
+              }
+            }
+          } catch (directError) {
+            console.warn('❌ Strategy 3 (direct ID) failed after retries:', directError)
+          }
+        }
+        
+        // 🔥 LAYER 3: Static Data Fallback if all strategies failed
+        if (scarletHotels.length === 0) {
+          console.log('🏨 All API strategies failed - trying static data fallback...')
+          const staticData = await fetchStaticDataFallback("863233")
+          
+          if (staticData) {
+            console.log('✅ Static data fallback successful!')
+            scarletHotels = [staticData]
+          }
+        }
+        
+        if (scarletHotels.length > 0) {
+          console.log('Scarlet hotels:', scarletHotels.map((h: any) => ({ 
+            id: h.hotelId, 
+            name: h.hotelName, 
+            rooms: h.rooms?.length || 0 
+          })))
+        } else if (searchResult && searchResult.length > 0) {
+          console.warn('⚠️ API returned results but Scarlet (863233) was not found!')
+          console.log('📦 ALL hotels from API:', searchResult.map((h: any) => ({ 
+            id: h.hotelId, 
+            name: h.hotelName,
+            rooms: h.rooms?.length || 0
+          })))
+          console.log('🔍 Raw first hotel from API:', JSON.stringify(searchResult[0], null, 2))
+        }
+
+        // 🔥 LAYER 4 & 5: Config Fallback - If no API results, create fallback display from config
+        if (scarletHotels.length === 0 || (scarletHotels[0] && scarletHotels[0].rooms?.length === 0)) {
+          console.log('🔄 LAYER 5: Activating config fallback - displaying all rooms from config as unavailable')
+          
+          // Create fallback hotel object with all rooms from config marked as unavailable
+          const fallbackHotel = {
           hotelId: scarletHotelConfig.hotelId,
           hotelName: scarletHotelConfig.hebrewName,
-          hotelNameEn: scarletHotelConfig.englishName,
-          address: scarletHotelConfig.address,
+          hotelNameEn: scarletHotelConfig.name,
+          address: scarletHotelConfig.location.address,
           city: "Tel Aviv",
           stars: 4,
           rating: 4.5,
-          images: [scarletHotelConfig.images.heroBackground],
+          images: [scarletHotelConfig.images[0]],
           description: scarletHotelConfig.description,
-          rooms: Object.entries(scarletRoomTypes).map(([id, room]) => ({
-            roomId: `fallback_${id}`,
-            roomType: id,
+          rooms: scarletRoomTypes.map((room) => ({
+            roomId: `fallback_${room.id}`,
+            roomType: room.id,
             roomName: room.hebrewName,
-            roomNameEn: room.englishName,
-            roomCategory: room.category,
+            roomNameEn: room.name,
+            roomCategory: room.id,
             description: room.description,
             images: room.images,
-            maxOccupancy: room.maxOccupancy,
+            maxOccupancy: room.maxGuests,
             basePrice: room.basePrice,
             totalPrice: room.basePrice,
             currency: "USD",
             boardType: "Room Only",
-            amenities: room.amenities,
+            amenities: room.features,
             
             // Mark as unavailable for these dates
             available: false,
@@ -936,50 +1044,66 @@ function ScarletTemplateContent() {
         dateFrom: checkIn,
         dateTo: checkOut,
         guests,
-        resultsCount: roomCount,
         completed: false,
       })
 
       if (!silent) {
         if (scarletHotels.length > 0 && scarletHotels[0]?.rooms?.length > 0) {
-          showToast?.(`נמצאו ${scarletHotels[0].rooms.length} חדרים זמינים במלון סקרלט תל אביב`, 'success')
+          showToast.success(`נמצאו ${scarletHotels[0].rooms.length} חדרים זמינים במלון סקרלט תל אביב`)
         } else if (scarletHotels.length === 0 || scarletHotels[0]?.rooms?.length === 0) {
           // No API results - fallback activated
           console.warn('⚠️ No availability from API - showing fallback rooms')
           console.log('Total API results:', searchResult?.length || 0)
-          showToast?.('אין זמינות לתאריכים אלו. מציג את כל סוגי החדרים - נסו תאריכים אחרים.', 'warning')
+          showToast.warning('אין זמינות לתאריכים אלו. מציג את כל סוגי החדרים - נסו תאריכים אחרים.')
+        }
+      }
+      } catch (err: any) {
+        console.error('❌ Scarlet Hotel search failed:', err)
+        
+        // Clear results on error
+        setScarletSearchResults([])
+        setShowApiResults(false)
+        
+        // Determine error type and show appropriate message
+        let errorMessage = 'שגיאה בחיפוש המלון. אנא נסו שוב.'
+        
+        if (err.message?.includes('401') || err.message?.includes('token')) {
+          errorMessage = 'שגיאת הרשאה. אנא רענן את הדף ונסה שוב.'
+          console.error('🔐 Token authentication failed - token may be expired')
+        } else if (err.message?.includes('404') || err.message?.includes('not found')) {
+          errorMessage = 'מלון סקרלט תל אביב לא נמצא במערכת.'
+          console.error('🏨 Scarlet Hotel not found in system')  
+        } else if (err.message?.includes('network') || err.message?.includes('fetch')) {
+          errorMessage = 'בעיית תקשורת. אנא בדקו את החיבור לאינטרנט.'
+          console.error('🌐 Network error during search')
+        } else if (err.message?.includes('timeout')) {
+          errorMessage = 'החיפוש ארך זמן רב מידי. אנא נסו שוב.'
+          console.error('⏰ Search timeout')
+        }
+        
+        if (!silent) {
+          showToast.error(errorMessage)
         }
       }
     } catch (err: any) {
-      console.error('❌ Scarlet Hotel search failed:', err)
-      
-      // Clear results on error
-      setScarletSearchResults([])
-      setShowApiResults(false)
-      
-      // Determine error type and show appropriate message
-      let errorMessage = 'שגיאה בחיפוש המלון. אנא נסו שוב.'
-      
-      if (err.message?.includes('401') || err.message?.includes('token')) {
-        errorMessage = 'שגיאת הרשאה. אנא רענן את הדף ונסה שוב.'
-        console.error('🔐 Token authentication failed - token may be expired')
-      } else if (err.message?.includes('404') || err.message?.includes('not found')) {
-        errorMessage = 'מלון סקרלט תל אביב לא נמצא במערכת.'
-        console.error('🏨 Scarlet Hotel not found in system')  
-      } else if (err.message?.includes('network') || err.message?.includes('fetch')) {
-        errorMessage = 'בעיית תקשורת. אנא בדקו את החיבור לאינטרנט.'
-        console.error('🌐 Network error during search')
-      } else if (err.message?.includes('timeout')) {
-        errorMessage = 'החיפוש ארך זמן רב מידי. אנא נסו שוב.'
-        console.error('⏰ Search timeout')
-      }
-      
+      console.error('❌ Unexpected error in handleSearch:', err)
       if (!silent) {
-        showToast?.(errorMessage, 'error')
+        showToast.error('שגיאה לא צפויה בחיפוש')
       }
-      showToast?.('החיפוש נכשל, נסו שוב', 'error')
+    } finally {
+      isSearchingRef.current = false
+      console.log('🏁 Search completed')
     }
-  }
+  }, [booking, showToast]) // Add dependencies for useCallback
+
+  // Trigger auto-search once handleSearch is defined
+  useEffect(() => {
+    if (!checkIn || !checkOut || hasAutoSearched) return
+    
+    console.log('Triggering auto search with handleSearch defined')
+    handleSearch(true).catch((err) => console.error('Auto search failed', err))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkIn, checkOut, hasAutoSearched]) // handleSearch intentionally excluded to avoid circular dependency
 
   // Handle room selection with PreBook
   const handleSelectRoom = async (room: any) => {
@@ -1087,7 +1211,7 @@ function ScarletTemplateContent() {
           console.log('✅ PreBook successful - should show details form now')
         } else {
           console.error('❌ PreBook failed')
-          showToast?.('שגיאה בהכנת ההזמנה. אנא נסו שוב.', 'error')
+          showToast.error('שגיאה בהכנת ההזמנה. אנא נסו שוב.')
         }
         return
       }
@@ -1101,7 +1225,7 @@ function ScarletTemplateContent() {
   const handlePrebookExpired = () => {
     setPrebookExpiry(null)
     booking.reset()
-    showToast?.("זמן ההזמנה פג. אנא חפש שוב.", "error")
+    showToast.error("זמן ההזמנה פג. אנא חפש שוב.")
   }
 
   return (
@@ -1186,13 +1310,13 @@ function ScarletTemplateContent() {
               
               if (!checkIn || !checkOut) {
                 console.warn('⚠️ Missing dates on submit!')
-                showToast?.('אנא בחרו תאריכי כניסה ויציאה', 'error')
+                showToast.error('אנא בחרו תאריכי כניסה ויציאה')
                 return
               }
               
               if (new Date(checkOut) <= new Date(checkIn)) {
                 console.warn('⚠️ Invalid date range on submit!')
-                showToast?.('תאריך היציאה חייב להיות אחרי תאריך הכניסה', 'error')
+                showToast.error('תאריך היציאה חייב להיות אחרי תאריך הכניסה')
                 return
               }
               
@@ -1262,7 +1386,7 @@ function ScarletTemplateContent() {
                   {booking.isLoading ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin ml-2" />
-                      {t('searching') || 'מחפש...'}
+                      {'מחפש...'}
                     </>
                   ) : (
                     <>
@@ -1484,7 +1608,7 @@ function ScarletTemplateContent() {
                   const success = await booking.completeBooking()
                   if (success) {
                     console.log('✅ Booking completed successfully!')
-                    showToast?.('ההזמנה אושרה בהצלחה! 🎉', 'success')
+                    showToast.success('ההזמנה אושרה בהצלחה! 🎉')
                     
                     // ===== LOG COMPLETED BOOKING TO ADMIN =====
                     logToAdmin({
@@ -1503,7 +1627,7 @@ function ScarletTemplateContent() {
                     })
                   } else {
                     console.error('❌ Booking failed')
-                    showToast?.('ההזמנה נכשלה. אנא נסה שוב.', 'error')
+                    showToast.error('ההזמנה נכשלה. אנא נסה שוב.')
                     
                     // Track abandoned at payment stage
                     if (booking.selectedRoom && booking.guestInfo) {
@@ -1524,7 +1648,7 @@ function ScarletTemplateContent() {
                   }
                 } catch (error: any) {
                   console.error('❌ Booking error:', error)
-                  showToast?.(error.message || 'שגיאה בהזמנה', 'error')
+                  showToast.error(error.message || 'שגיאה בהזמנה')
                 }
               }}
               isProcessing={booking.isLoading}
@@ -1636,7 +1760,7 @@ function ScarletTemplateContent() {
             }
             
             return roomsToRender
-          })().map((room, index) => (
+          })().map((room: any, index: number) => (
             <Card
               key={room.id}
               className={`bg-gradient-to-br ${
@@ -1734,7 +1858,7 @@ function ScarletTemplateContent() {
                   {/* Dots Navigation - only show if multiple images */}
                   {room.images.length > 1 && (
                     <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex gap-2">
-                      {room.images.map((_, imgIndex) => (
+                      {room.images.map((_: string, imgIndex: number) => (
                         <button
                           key={imgIndex}
                           onClick={() => setRoomImageIndexes(prev => ({ ...prev, [room.id]: imgIndex }))}
@@ -1839,7 +1963,7 @@ function ScarletTemplateContent() {
                     {booking.isLoading ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin ml-2" />
-                        {t('processing') || 'מעבד...'}
+                        {'מעבד...'}
                       </>
                     ) : room.isFallback ? (
                       <>
@@ -2056,7 +2180,7 @@ function ScarletTemplateContent() {
                 {t('clickBookNowToSee')}
               </p>
               <Button 
-                onClick={handleSearch}
+                onClick={() => handleSearch(false)}
                 disabled={booking.isLoading}
                 size="lg"
                 className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold text-xl px-12 py-6 shadow-2xl shadow-red-500/50 disabled:opacity-50"

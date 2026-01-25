@@ -907,15 +907,23 @@ function ScarletTemplateContent() {
         // 🔥 LAYER 2: Strategy 1 with retry - City search
         try {
           console.log('🔍 Strategy 1: Searching Tel Aviv with limit 100 (with retry)...')
+          const searchParams = {
+            checkIn: new Date(currentCheckIn),
+            checkOut: new Date(currentCheckOut),
+            adults: currentGuests,
+            children: [],
+            city: "Tel Aviv",
+            limit: 100
+          }
+          console.log('📤 API Request Params:', {
+            checkIn: searchParams.checkIn.toISOString(),
+            checkOut: searchParams.checkOut.toISOString(),
+            adults: searchParams.adults,
+            city: searchParams.city,
+            limit: searchParams.limit
+          })
           searchResult = await searchWithRetry(async () => {
-            return await booking.searchHotels({
-              checkIn: new Date(currentCheckIn),
-              checkOut: new Date(currentCheckOut),
-              adults: currentGuests,
-              children: [],
-              city: "Tel Aviv",
-              limit: 100
-            })
+            return await booking.searchHotels(searchParams)
           })
         } catch (error) {
           console.warn('❌ Strategy 1 (city) failed after retries:', error)

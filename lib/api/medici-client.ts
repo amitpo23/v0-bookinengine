@@ -194,10 +194,25 @@ export class MediciApiClient {
       searchBody.city = params.city
     }
 
-    console.log("🌐 Making request to Medici API:")
+    console.log("🌐 ========== MEDICI API REQUEST ==========")
     console.log("URL:", `${this.baseUrl}/api/hotels/GetInnstantSearchPrice`)
-    console.log("Body:", JSON.stringify(searchBody, null, 2))
+    console.log("📅 DATES:", {
+      dateFrom: searchBody.dateFrom,
+      dateTo: searchBody.dateTo,
+      dateFromType: typeof searchBody.dateFrom,
+      dateToType: typeof searchBody.dateTo
+    })
+    console.log("👥 PAX:", JSON.stringify(searchBody.pax))
+    console.log("🏨 SEARCH CRITERIA:", {
+      hotelId: searchBody.hotelId,
+      hotelName: searchBody.hotelName,
+      city: searchBody.city,
+      stars: searchBody.stars,
+      limit: searchBody.limit
+    })
+    console.log("📦 FULL REQUEST BODY:", JSON.stringify(searchBody, null, 2))
     console.log("Token (first 20 chars):", this.token.substring(0, 20) + "...")
+    console.log("============================================")
 
     try {
       const response = await this.request<any>("/api/hotels/GetInnstantSearchPrice", {

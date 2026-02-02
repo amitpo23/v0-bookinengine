@@ -1,5 +1,5 @@
 var R=require("../../../chunks/[turbopack]_runtime.js")("server/app/api/test-knowaa/route.js")
-R.c("server/chunks/[root-of-the-server]__3cb2b988._.js")
+R.c("server/chunks/[root-of-the-server]__1a5f12a6._.js")
 R.c("server/chunks/node_modules_8d130f24._.js")
 R.c("server/chunks/_b7032dc5._.js")
 R.c("server/chunks/node_modules_next_dist_bfd7b269._.js")
